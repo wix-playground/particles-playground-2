@@ -1,7 +1,7 @@
 import {Particle} from './interfaces';
 import {calculateDistance, lerp} from './utils';
 
-export const applyLinearMovement = (particle: Particle) => {
+const applyLinearMovement = (particle: Particle) => {
   const targetCoordinates = {x: particle.targetX, y: particle.targetY};
   // Calculate the distance to the target
   const distance = calculateDistance(
@@ -21,7 +21,7 @@ export const applyLinearMovement = (particle: Particle) => {
   }
 };
 
-export const applyBezierMovement = (particle: Particle) => {
+const applyBezierMovement = (particle: Particle) => {
   const targetCoordinates = {x: particle.targetX, y: particle.targetY};
 
   if (!particle.t) {
