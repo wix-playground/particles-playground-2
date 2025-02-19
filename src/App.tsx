@@ -1,5 +1,6 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import './App.css';
+import {movementConfig} from './movement';
 
 function App() {
   const imageRef = useRef<HTMLImageElement>(null);
@@ -13,7 +14,8 @@ function App() {
   const canvasInitialized = useRef<boolean>(false);
   const particlesReachedTarget = useRef<boolean>(false);
   const [isImageReady, setIsImageReady] = useState(false);
-
+  const [selectedMovementFunction, setSelectedMovementFunction] =
+    useState('linear');
   useEffect(() => {
     // Create the Web Worker
     workerRef.current = new Worker(new URL('./worker', import.meta.url), {
@@ -35,6 +37,10 @@ function App() {
       workerRef.current?.terminate();
       canvasInitialized.current = false;
     };
+  }, []);
+
+  const movementOptions = useMemo(() => {
+    return Object.keys(movementConfig);
   }, []);
 
   useEffect(() => {
@@ -70,8 +76,9 @@ function App() {
 
     workerRef.current?.postMessage({
       type: 'play',
+      data: {movement: selectedMovementFunction},
     });
-  }, []);
+  }, [selectedMovementFunction]);
 
   const reset = useCallback(() => {
     workerRef.current?.postMessage({type: 'reset'});
@@ -122,6 +129,22 @@ function App() {
         Play
       </button>
       <button onClick={reset}>Reset</button>
+      <div>
+        {movementOptions.map((option) => (
+          <button
+            style={{
+              border:
+                selectedMovementFunction === option
+                  ? '2px solid #646cff'
+                  : undefined,
+            }}
+            key={option}
+            onClick={() => setSelectedMovementFunction(option)}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -8,11 +8,6 @@ export interface Particle extends Coordinates {
   targetY: number;
   initialX: number;
   initialY: number;
-  vx: number;
-  vy: number;
-  startDelay: number;
-  speed: number;
-  angle?: number;
   t?: number;
   controlX?: number;
   controlY?: number;

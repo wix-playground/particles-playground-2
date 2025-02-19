@@ -1,6 +1,7 @@
 import {PARTICLE_RADIUS} from './constants';
 import {Particle} from './interfaces';
-import {applyBezierMovement, getRandomInt, getValidImageBlocks} from './utils';
+import {applyBezierMovement, movementConfig} from './movement';
+import {getRandomInt, getValidImageBlocks} from './utils';
 
 let workerParticles: Particle[] = [];
 let imageBitmap: ImageBitmap;
@@ -44,13 +45,13 @@ const initialize = async (data: any) => {
   });
 };
 
-const renderParticles = () => {
+const renderParticles = (movement: string) => {
   let particlesReachedTarget = true;
   frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
 
   workerParticles.forEach((particle) => {
     // Update particles position by calling your movement function here:
-    applyBezierMovement(particle);
+    movementConfig[movement](particle);
 
     // Draw particle on frame context
     frameContext.drawImage(
@@ -80,7 +81,7 @@ const renderParticles = () => {
       cancelAnimationFrame(animationFrameId);
     }
   } else {
-    animationFrameId = requestAnimationFrame(renderParticles);
+    animationFrameId = requestAnimationFrame(() => renderParticles(movement));
   }
 };
 
@@ -93,7 +94,7 @@ self.onmessage = (event) => {
       break;
     }
     case 'play': {
-      renderParticles();
+      renderParticles(data.movement);
       break;
     }
     case 'reset': {
@@ -146,12 +147,8 @@ const generateParticles = ({
           targetY: y,
           x: initialX,
           y: initialY,
-          vx: 1,
-          vy: 1,
           initialX,
           initialY,
-          startDelay: 0,
-          speed: 1,
         });
       }
     }
