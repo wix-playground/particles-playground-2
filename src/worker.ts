@@ -52,7 +52,6 @@ const renderParticles = (movement: string) => {
 
   workerParticles.forEach((particle) => {
     // Update particles position by calling your movement function here:
-    // movementConfig[movement](particle);
     customMovementFunction(particle);
 
     // Draw particle on frame context

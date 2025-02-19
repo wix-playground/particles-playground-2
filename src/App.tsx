@@ -2,6 +2,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import './App.css';
 import {getPredefinedMovementOptions} from './movement';
 import Editor from '@monaco-editor/react';
+import {EXAMPLE_CODE} from './constants';
 
 function App() {
   const imageRef = useRef<HTMLImageElement>(null);
@@ -15,28 +16,7 @@ function App() {
   const canvasInitialized = useRef<boolean>(false);
   const particlesReachedTarget = useRef<boolean>(false);
   const [isImageReady, setIsImageReady] = useState(false);
-  const [code, setCode] = useState<string>(`return (particle) => {
-    /**
-    * This function will be called on each requestAnimationFrame until the particle reaches target coordinates.
-    * Write your movement animation code here to incrementally update particle position.
-    * The particle is mutable here so you can add whatever properties you need to achieve your animation.
-    */
-
-    const DELTA = 1
-
-    // To keep the example simple, particle coordinates are updated by DELTA until target coordinates are reached.
-    const getUpdatedPosition = (currentPosition, targetPosition, delta) => {
-        const distance = Math.abs(currentPosition - targetPosition)
-        if (distance <= delta) {
-            return targetPosition
-        } else {
-            return currentPosition < targetPosition ? currentPosition + delta : currentPosition - delta
-        }
-    }
-
-    particle.x = getUpdatedPosition(particle.x, particle.targetX, DELTA)
-    particle.y = getUpdatedPosition(particle.y, particle.targetY, DELTA)
-}`);
+  const [code, setCode] = useState<string>(EXAMPLE_CODE);
   const editorRef = useRef(null);
   const [selectedMovementFunction, setSelectedMovementFunction] = useState<
     string | null
@@ -183,7 +163,7 @@ function App() {
         <button disabled={!isImageReady} onClick={play}>
           Play animation
         </button>
-        <button onClick={reset}>Reset animation</button>
+        <button onClick={reset}>Reset particles</button>
         <div>
           <div>
             Predefined movement functions:
