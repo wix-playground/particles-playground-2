@@ -1,4 +1,4 @@
-import {Coordinates, Particle} from './interfaces';
+import {Coordinates} from './interfaces';
 
 export const getValidImageBlocks = (
   imageData: ImageData,
@@ -37,9 +37,6 @@ export const getValidImageBlocks = (
 
 export const lerp = (start: number, end: number, t: number) =>
   start + t * (end - start);
-
-export const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max);
 
 export const calculateDistance = (point1: Coordinates, point2: Coordinates) => {
   const dx = point2.x - point1.x;
