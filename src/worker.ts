@@ -1,6 +1,5 @@
 import {PARTICLE_RADIUS} from './constants';
 import {Particle} from './interfaces';
-import {movementConfig} from './movement';
 import {getRandomInt, getValidImageBlocks} from './utils';
 
 let workerParticles: Particle[] = [];
@@ -13,6 +12,8 @@ let frameContext: OffscreenCanvasRenderingContext2D;
 
 let mainCanvas: OffscreenCanvas;
 let mainContext: ImageBitmapRenderingContext;
+
+let customMovementFunction: (particle: Particle) => void;
 
 const initializeCanvas = async (canvas: OffscreenCanvas) => {
   mainCanvas = canvas;
@@ -51,7 +52,8 @@ const renderParticles = (movement: string) => {
 
   workerParticles.forEach((particle) => {
     // Update particles position by calling your movement function here:
-    movementConfig[movement](particle);
+    // movementConfig[movement](particle);
+    customMovementFunction(particle);
 
     // Draw particle on frame context
     frameContext.drawImage(
@@ -94,6 +96,7 @@ self.onmessage = (event) => {
       break;
     }
     case 'play': {
+      customMovementFunction = new Function(data.code)();
       renderParticles(data.movement);
       break;
     }
