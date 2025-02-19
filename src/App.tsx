@@ -16,6 +16,7 @@ function App() {
   const [isImageReady, setIsImageReady] = useState(false);
   const [selectedMovementFunction, setSelectedMovementFunction] =
     useState('linear');
+
   useEffect(() => {
     // Create the Web Worker
     workerRef.current = new Worker(new URL('./worker', import.meta.url), {
@@ -132,12 +133,9 @@ function App() {
       <div>
         {movementOptions.map((option) => (
           <button
-            style={{
-              border:
-                selectedMovementFunction === option
-                  ? '2px solid #646cff'
-                  : undefined,
-            }}
+            className={
+              selectedMovementFunction === option ? 'selected' : undefined
+            }
             key={option}
             onClick={() => setSelectedMovementFunction(option)}
           >
