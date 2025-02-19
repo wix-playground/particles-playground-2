@@ -1,6 +1,6 @@
 import {PARTICLE_RADIUS} from './constants';
 import {Particle} from './interfaces';
-import {applyBezierMovement, movementConfig} from './movement';
+import {movementConfig} from './movement';
 import {getRandomInt, getValidImageBlocks} from './utils';
 
 let workerParticles: Particle[] = [];
