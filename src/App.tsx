@@ -3,6 +3,7 @@ import './App.css';
 import {getPredefinedMovementOptions} from './movement';
 import Editor from '@monaco-editor/react';
 import {EXAMPLE_CODE} from './constants';
+import {editor} from 'monaco-editor';
 
 function App() {
   const imageRef = useRef<HTMLImageElement>(null);
@@ -17,7 +18,7 @@ function App() {
   const particlesReachedTarget = useRef<boolean>(false);
   const [isImageReady, setIsImageReady] = useState(false);
   const [code, setCode] = useState<string>(EXAMPLE_CODE);
-  const editorRef = useRef(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [selectedMovementFunction, setSelectedMovementFunction] = useState<
     string | null
   >(null);
@@ -63,8 +64,7 @@ function App() {
 
   const play = useCallback(() => {
     if (editorRef.current) {
-      //@ts-expect-error
-      editorRef.current.getAction('editor.action.formatDocument').run();
+      editorRef.current.getAction('editor.action.formatDocument')?.run();
     }
     const canvas = canvasRef.current;
 
@@ -100,18 +100,27 @@ function App() {
     particlesReachedTarget.current = false;
   }, []);
 
-  const handleEditorChange = (value, event) => {
+  const handleEditorChange = (value: string | undefined) => {
     setSelectedMovementFunction(null);
-    setCode(value);
+    if (value) {
+      setCode(value);
+    } else {
+      setCode('');
+    }
   };
 
-  const handleEditorDidMount = (editor, monaco) => {
+  const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
   };
 
   const handlePredefinedMovementClick = (option: string) => {
     setSelectedMovementFunction(option);
     setCode(predefinedMovementOptions[option]);
+  };
+
+  const handleResetCode = () => {
+    setSelectedMovementFunction(null);
+    setCode(EXAMPLE_CODE);
   };
 
   return (
@@ -181,14 +190,19 @@ function App() {
           </div>
         </div>
       </div>
-      <Editor
-        onMount={handleEditorDidMount}
-        height="40vh"
-        width={'80vw'}
-        defaultLanguage="javascript"
-        value={code}
-        onChange={handleEditorChange}
-      />
+      <div style={{display: 'flex', flexDirection: 'column'}}>
+        <Editor
+          onMount={handleEditorDidMount}
+          height="40vh"
+          width={'80vw'}
+          defaultLanguage="javascript"
+          value={code}
+          onChange={handleEditorChange}
+        />
+        <button disabled={code === EXAMPLE_CODE} onClick={handleResetCode}>
+          Reset code to example
+        </button>
+      </div>
     </div>
   );
 }
