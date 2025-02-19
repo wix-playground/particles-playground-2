@@ -1,5 +1,3 @@
-export const PARTICLE_RADIUS = 2;
-
 export const EXAMPLE_CODE = `return (particle) => {
     /**
     * This function will be called on each requestAnimationFrame until the particle reaches target coordinates.

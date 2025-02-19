@@ -19,6 +19,7 @@ function App() {
   const [isImageReady, setIsImageReady] = useState(false);
   const [code, setCode] = useState<string>(EXAMPLE_CODE);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const [particleRadius, setParticleRadius] = useState<number>(2);
   const [selectedMovementFunction, setSelectedMovementFunction] = useState<
     string | null
   >(null);
@@ -66,34 +67,19 @@ function App() {
     if (editorRef.current) {
       editorRef.current.getAction('editor.action.formatDocument')?.run();
     }
-    const canvas = canvasRef.current;
-
-    if (!canvas || !imageBitmap.current) {
-      console.error('Animation components not fully initialized');
-      return;
-    }
-
-    if (!canvasInitialized.current) {
-      const transferrableCanvas = canvas.transferControlToOffscreen();
-      workerRef.current?.postMessage(
-        {
-          type: 'initialize',
-          data: {
-            canvas: transferrableCanvas,
-            dimensions: {width: canvas.width, height: canvas.height},
-            imageBitmap: imageBitmap.current,
-          },
-        },
-        [transferrableCanvas, imageBitmap.current!]
-      );
-      imageBitmap.current.close();
-    }
 
     workerRef.current?.postMessage({
       type: 'play',
-      data: {movement: selectedMovementFunction, code},
+      data: {movement: selectedMovementFunction, code, particleRadius},
     });
-  }, [selectedMovementFunction, code]);
+  }, [selectedMovementFunction, code, particleRadius]);
+
+  const resizeParticleRadius = useCallback((radius: number) => {
+    workerRef.current?.postMessage({
+      type: 'resizeParticleRadius',
+      data: {particleRadius: Number(radius)},
+    });
+  }, []);
 
   const reset = useCallback(() => {
     workerRef.current?.postMessage({type: 'reset'});
@@ -111,6 +97,29 @@ function App() {
 
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
+
+    const canvas = canvasRef.current;
+
+    if (!canvas || !imageBitmap.current) {
+      console.error('Animation components not fully initialized');
+      return;
+    }
+    if (!canvasInitialized.current) {
+      const transferrableCanvas = canvas.transferControlToOffscreen();
+      workerRef.current?.postMessage(
+        {
+          type: 'initialize',
+          data: {
+            canvas: transferrableCanvas,
+            dimensions: {width: canvas.width, height: canvas.height},
+            imageBitmap: imageBitmap.current,
+            particleRadius,
+          },
+        },
+        [transferrableCanvas, imageBitmap.current!]
+      );
+      imageBitmap.current.close();
+    }
   };
 
   const handlePredefinedMovementClick = (option: string) => {
@@ -126,7 +135,7 @@ function App() {
   return (
     <div style={{display: 'flex', gap: '24px', flexDirection: 'column'}}>
       <div style={{display: 'flex', flexDirection: 'column'}}>
-        <h1>Particles playground</h1>
+        <h1>Particles playground v0.0</h1>
         {/* We need an image source for creating ImageBitmap, this hidden image is for that. */}
         <img
           style={{display: 'none'}}
@@ -169,10 +178,26 @@ function App() {
           height={150}
           style={{width: '300px', height: '150px'}}
         />
-        <button disabled={!isImageReady} onClick={play}>
-          Play animation
-        </button>
-        <button onClick={reset}>Reset particles</button>
+        <div>
+          <button disabled={!isImageReady} onClick={play}>
+            Play animation
+          </button>
+          <button onClick={reset}>Reset particles</button>
+        </div>
+        <div>
+          Particle radius:
+          <input
+            value={particleRadius}
+            type="number"
+            onChange={(e) => {
+              const numberValue = Number(e.target.value);
+              if (!Number.isNaN(numberValue) && numberValue > 0) {
+                setParticleRadius(e.target.value as unknown as number);
+                resizeParticleRadius(e.target.value as unknown as number);
+              }
+            }}
+          />
+        </div>
         <div>
           <div>
             Predefined movement functions:

@@ -1,4 +1,3 @@
-import {PARTICLE_RADIUS} from './constants';
 import {Particle} from './interfaces';
 import {getRandomInt, getValidImageBlocks} from './utils';
 
@@ -13,6 +12,8 @@ let frameContext: OffscreenCanvasRenderingContext2D;
 let mainCanvas: OffscreenCanvas;
 let mainContext: ImageBitmapRenderingContext;
 
+let particleRadius: number;
+
 let customMovementFunction: (particle: Particle) => void;
 
 const initializeCanvas = async (canvas: OffscreenCanvas) => {
@@ -25,28 +26,33 @@ const initializeCanvas = async (canvas: OffscreenCanvas) => {
   frameContext = frameCanvas.getContext('2d', {
     willReadFrequently: true,
   })! as OffscreenCanvasRenderingContext2D;
-
-  frameContext.drawImage(imageBitmap, 0, 0);
 };
 
 const initialize = async (data: any) => {
-  const {imageBitmap: _imageBitmap, canvas, dimensions} = data;
+  const {
+    imageBitmap: _imageBitmap,
+    canvas,
+    dimensions,
+    particleRadius: _particleRadius,
+  } = data;
   imageBitmap = _imageBitmap;
+  particleRadius = _particleRadius;
   initializeCanvas(canvas);
+  frameContext.drawImage(imageBitmap, 0, 0);
   const {validBlocks, blockHeight, blockWidth} = getValidImageBlocks(
     frameContext.getImageData(0, 0, mainCanvas.width, mainCanvas.height),
-    PARTICLE_RADIUS
+    particleRadius
   );
   workerParticles = generateParticles({
     validBlocks,
     dimensions,
-    radius: PARTICLE_RADIUS,
+    radius: particleRadius,
     blockHeight,
     blockWidth,
   });
 };
 
-const renderParticles = (movement: string) => {
+const renderParticles = () => {
   let particlesReachedTarget = true;
   frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
 
@@ -59,12 +65,12 @@ const renderParticles = (movement: string) => {
       imageBitmap,
       particle.targetX,
       particle.targetY,
-      PARTICLE_RADIUS,
-      PARTICLE_RADIUS,
+      particleRadius,
+      particleRadius,
       Math.floor(particle.x),
       Math.floor(particle.y),
-      PARTICLE_RADIUS,
-      PARTICLE_RADIUS
+      particleRadius,
+      particleRadius
     );
 
     if (particle.x !== particle.targetX || particle.y !== particle.targetY) {
@@ -82,7 +88,7 @@ const renderParticles = (movement: string) => {
       cancelAnimationFrame(animationFrameId);
     }
   } else {
-    animationFrameId = requestAnimationFrame(() => renderParticles(movement));
+    animationFrameId = requestAnimationFrame(renderParticles);
   }
 };
 
@@ -94,9 +100,30 @@ self.onmessage = (event) => {
       self.postMessage({type: 'initialized'});
       break;
     }
+    case 'resizeParticleRadius': {
+      particleRadius = data.particleRadius;
+      frameContext.drawImage(imageBitmap, 0, 0);
+      const {validBlocks, blockHeight, blockWidth} = getValidImageBlocks(
+        frameContext.getImageData(0, 0, mainCanvas.width, mainCanvas.height),
+        particleRadius
+      );
+
+      workerParticles = generateParticles({
+        validBlocks,
+        dimensions: {width: mainCanvas.width, height: mainCanvas.height},
+        radius: particleRadius,
+        blockHeight,
+        blockWidth,
+      });
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        renderParticles();
+      }
+      break;
+    }
     case 'play': {
       customMovementFunction = new Function(data.code)();
-      renderParticles(data.movement);
+      renderParticles();
       break;
     }
     case 'reset': {
