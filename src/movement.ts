@@ -1,6 +1,35 @@
 import {Particle} from './interfaces';
 import {calculateDistance, lerp} from './utils';
 
+// Example function of how particle position is updated
+const applySimpleExampleMovement = (particle: Particle) => {
+  // Every time this function is called, particle coordinates will change by DELTA
+  const DELTA = 2;
+
+  // Snap particle to target coordinate if distance is less than SNAP_THRESHOLD
+  const SNAP_THRESHOLD = 5;
+
+  // If distance from target is more than SNAP_THRESHOLD, move particle by delta. Else snap to target.
+
+  // Check X coordinate:
+  if (Math.abs(particle.x - particle.targetX) > SNAP_THRESHOLD) {
+    const newX =
+      particle.x < particle.targetX ? particle.x + DELTA : particle.x - DELTA;
+    particle.x = newX;
+  } else {
+    particle.x = particle.targetX;
+  }
+
+  // Same for Y:
+  if (Math.abs(particle.y - particle.targetY) > SNAP_THRESHOLD) {
+    const newY =
+      particle.y < particle.targetY ? particle.y + DELTA : particle.y - DELTA;
+    particle.y = newY;
+  } else {
+    particle.y = particle.targetY;
+  }
+};
+
 const applyLinearMovement = (particle: Particle) => {
   const targetCoordinates = {x: particle.targetX, y: particle.targetY};
   // Calculate the distance to the target
@@ -53,10 +82,12 @@ const applyBezierMovement = (particle: Particle) => {
   }
 };
 
+// Add your own movement functions here, they will appear on UI
 export const movementConfig: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [movementFunction: string]: (...args: any[]) => void;
 } = {
+  simpleExample: applySimpleExampleMovement,
   linear: applyLinearMovement,
   bezier: applyBezierMovement,
 };

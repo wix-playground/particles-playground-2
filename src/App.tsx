@@ -15,7 +15,7 @@ function App() {
   const particlesReachedTarget = useRef<boolean>(false);
   const [isImageReady, setIsImageReady] = useState(false);
   const [selectedMovementFunction, setSelectedMovementFunction] =
-    useState('linear');
+    useState('simpleExample');
 
   useEffect(() => {
     // Create the Web Worker
