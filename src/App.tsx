@@ -2,8 +2,9 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import './App.css';
 import {getPredefinedMovementOptions} from './movement';
 import Editor from '@monaco-editor/react';
-import {EXAMPLE_CODE} from './constants';
+import {DEFAULT_PARTICLE_RADIUS, EXAMPLE_CODE} from './constants';
 import {editor} from 'monaco-editor';
+import {Settings} from './components/Settings';
 
 function App() {
   const imageRef = useRef<HTMLImageElement>(null);
@@ -19,7 +20,6 @@ function App() {
   const [isImageReady, setIsImageReady] = useState(false);
   const [code, setCode] = useState<string>(EXAMPLE_CODE);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const [particleRadius, setParticleRadius] = useState<number>(2);
   const [selectedMovementFunction, setSelectedMovementFunction] = useState<
     string | null
   >(null);
@@ -70,16 +70,11 @@ function App() {
 
     workerRef.current?.postMessage({
       type: 'play',
-      data: {movement: selectedMovementFunction, code, particleRadius},
+      data: {
+        code,
+      },
     });
-  }, [selectedMovementFunction, code, particleRadius]);
-
-  const resizeParticleRadius = useCallback((radius: number) => {
-    workerRef.current?.postMessage({
-      type: 'resizeParticleRadius',
-      data: {particleRadius: Number(radius)},
-    });
-  }, []);
+  }, [code]);
 
   const reset = useCallback(() => {
     workerRef.current?.postMessage({type: 'reset'});
@@ -113,7 +108,7 @@ function App() {
             canvas: transferrableCanvas,
             dimensions: {width: canvas.width, height: canvas.height},
             imageBitmap: imageBitmap.current,
-            particleRadius,
+            particleRadius: DEFAULT_PARTICLE_RADIUS,
           },
         },
         [transferrableCanvas, imageBitmap.current!]
@@ -184,20 +179,7 @@ function App() {
           </button>
           <button onClick={reset}>Reset particles</button>
         </div>
-        <div>
-          Particle radius:
-          <input
-            value={particleRadius}
-            type="number"
-            onChange={(e) => {
-              const numberValue = Number(e.target.value);
-              if (!Number.isNaN(numberValue) && numberValue > 0) {
-                setParticleRadius(e.target.value as unknown as number);
-                resizeParticleRadius(e.target.value as unknown as number);
-              }
-            }}
-          />
-        </div>
+        <Settings workerRef={workerRef} />
         <div>
           <div>
             Predefined movement functions:
