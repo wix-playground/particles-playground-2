@@ -149,14 +149,16 @@ function App() {
           height="100px"
           width="100px"
         />
-        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+        <div
+          style={{display: 'flex', justifyContent: 'space-between', gap: '8px'}}
+        >
           <Settings
             workerRef={workerRef}
             editorRef={editorRef}
             setSelectedMovementFunction={setSelectedMovementFunction}
             selectedMovementFunction={selectedMovementFunction}
           />
-          <div className="card">
+          <div className="card" style={{width: '70%'}}>
             <span className="cardTitle">Canvas</span>
             <div className="card noPadding">
               <canvas

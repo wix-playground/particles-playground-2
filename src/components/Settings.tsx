@@ -55,7 +55,7 @@ export const Settings = ({
   }, [predefinedMovementOptions]);
 
   return (
-    <div className="card">
+    <div className="card" style={{width: '30%'}}>
       <span className="cardTitle">Settings</span>
       <div style={{display: 'flex', gap: '4px'}}>
         <button onClick={play}>Play animation</button>
