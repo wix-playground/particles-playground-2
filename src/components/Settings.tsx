@@ -5,18 +5,21 @@ import {getPredefinedMovementOptions} from '../movement';
 export const Settings = ({
   workerRef,
   editorRef,
+  setSelectedMovementFunction,
+  selectedMovementFunction,
 }: {
   workerRef: React.RefObject<Worker | null>;
   editorRef: React.RefObject<editor.IStandaloneCodeEditor | null>;
+  selectedMovementFunction: string | null;
+  setSelectedMovementFunction: React.Dispatch<
+    React.SetStateAction<string | null>
+  >;
 }) => {
   const [particleRadius, setParticleRadius] = useState<number>(2);
-  const [selectedMovementFunction, setSelectedMovementFunction] = useState<
-    string | null
-  >(null);
   const resizeParticleRadius = useCallback((radius: number) => {
     workerRef.current?.postMessage({
       type: 'resizeParticleRadius',
-      data: {particleRadius: Number(radius)},
+      data: {particleRadius: radius},
     });
   }, []);
 

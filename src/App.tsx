@@ -20,6 +20,9 @@ function App() {
   const [code, setCode] = useState<string>(EXAMPLE_CODE);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [selectedMovementFunction, setSelectedMovementFunction] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     // Create the Web Worker
@@ -51,7 +54,7 @@ function App() {
   }, []);
 
   const handleEditorChange = (value: string | undefined) => {
-    // setSelectedMovementFunction(null);
+    setSelectedMovementFunction(null);
     if (value) {
       setCode(value);
     } else {
@@ -89,7 +92,7 @@ function App() {
   };
 
   const handleResetCode = () => {
-    // setSelectedMovementFunction(null);
+    setSelectedMovementFunction(null);
     setCode(EXAMPLE_CODE);
   };
 
@@ -153,7 +156,12 @@ function App() {
         />
         <div style={{display: 'flex', justifyContent: 'space-between'}}>
           {isImageReady && (
-            <Settings workerRef={workerRef} editorRef={editorRef} />
+            <Settings
+              workerRef={workerRef}
+              editorRef={editorRef}
+              setSelectedMovementFunction={setSelectedMovementFunction}
+              selectedMovementFunction={selectedMovementFunction}
+            />
           )}
           <div className="card">
             <span className="cardTitle">Canvas</span>
