@@ -56,6 +56,32 @@ import {DEV_EXAMPLE_CODE} from './constants';
 //   }
 // };
 
+const easing = (particle, animationStartTime, currentTime) => {
+  const animationDuration = 2000;
+  // This is obviously inefficient because the same constant will be recalculated for every particle, but this is a playground and its not that expensive.
+  /**
+   * Back-in easing function.
+   * @param {number} t - The time value (between 0 and 1).
+   * @returns The eased value.
+   */
+  const backIn = (t) => 2.70158 * t ** 3 - 1.70158 * t ** 2;
+  const lerp = (start, end, t) => start + t * (end - start);
+
+  const totalElapsedTime = currentTime - animationStartTime;
+  const progress = Math.min(totalElapsedTime / animationDuration, 1);
+  const easedProgress = backIn(progress);
+  particle.x = lerp(
+    particle.initialCoordinates.x,
+    particle.targetX,
+    easedProgress
+  );
+  particle.y = lerp(
+    particle.initialCoordinates.y,
+    particle.targetY,
+    easedProgress
+  );
+};
+
 const linearMovementFunctionString = `return (particle, animationStartTime, currentTime) => {
     const calculateDistance = (point1, point2) => {
         const dx = point2.x - point1.x;
@@ -117,10 +143,37 @@ const bezierMovementFunctionString = `return (particle, animationStartTime, curr
     }
 };`;
 
+const easingBackInFunctionString = `return (particle, animationStartTime, currentTime) => {
+    const animationDuration = 2000;
+    // This is obviously inefficient because the same constant will be recalculated for every particle, but this is a playground and its not that expensive.
+    /**
+     * Back-in easing function.
+     * @param {number} t - The time value (between 0 and 1).
+     * @returns The eased value.
+     */
+    const backIn = (t) => 2.70158 * t ** 3 - 1.70158 * t ** 2;
+    const lerp = (start, end, t) => start + t * (end - start);
+
+    const totalElapsedTime = currentTime - animationStartTime;
+    const progress = Math.min(totalElapsedTime / animationDuration, 1);
+    const easedProgress = backIn(progress);
+    particle.x = lerp(particle.initialX, particle.targetX, easedProgress);
+    particle.y = lerp(particle.initialY, particle.targetY, easedProgress);
+
+    if (
+        Math.abs(particle.x - particle.targetX) < 0.8 &&
+        Math.abs(particle.y - particle.targetY) < 0.8
+    ) {
+        particle.x = particle.targetX;
+        particle.y = particle.targetY;
+    }
+};`;
+
 export const getPredefinedMovementOptions: () => {
   [functionName: string]: string;
 } = () => ({
   linear: linearMovementFunctionString,
   bezier: bezierMovementFunctionString,
+  easingBackIn: easingBackInFunctionString,
   DEV_TWO_FRAMES: DEV_EXAMPLE_CODE,
 });

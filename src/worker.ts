@@ -169,6 +169,7 @@ self.onmessage = (event) => {
       break;
     }
     case 'updateStartPosition': {
+      // TODO: fix start position for easing ??
       startPosition = data.startPosition;
 
       if (workerParticles.length) {
