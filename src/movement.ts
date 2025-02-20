@@ -1,5 +1,7 @@
 // Keeping this commented code for when we actually need to develop/update movement functions
 
+import {DEV_EXAMPLE_CODE} from './constants';
+
 // import {Particle} from './interfaces';
 // import {calculateDistance, lerp} from './utils';
 // const applyLinearMovement = (particle: Particle) => {
@@ -54,7 +56,7 @@
 //   }
 // };
 
-const linearMovementFunctionString = `return (particle) => {
+const linearMovementFunctionString = `return (particle, animationStartTime, currentTime) => {
     const calculateDistance = (point1, point2) => {
         const dx = point2.x - point1.x;
         const dy = point2.y - point1.y;
@@ -83,7 +85,7 @@ const linearMovementFunctionString = `return (particle) => {
 };
 `;
 
-const bezierMovementFunctionString = `return (particle) => {
+const bezierMovementFunctionString = `return (particle, animationStartTime, currentTime) => {
     const targetCoordinates = { x: particle.targetX, y: particle.targetY };
 
     if (!particle.t) {
@@ -120,4 +122,5 @@ export const getPredefinedMovementOptions: () => {
 } = () => ({
   linear: linearMovementFunctionString,
   bezier: bezierMovementFunctionString,
+  DEV_TWO_FRAMES: DEV_EXAMPLE_CODE,
 });

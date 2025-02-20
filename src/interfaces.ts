@@ -13,9 +13,6 @@ export interface Particle extends Coordinates {
   targetY: number;
   initialX: number;
   initialY: number;
-  t?: number;
-  controlX?: number;
-  controlY?: number;
 }
 
 export type StartPositionType =

@@ -20,7 +20,11 @@ let blockWidth: number;
 
 let startPosition: StartPositionType;
 
-let customMovementFunction: (particle: Particle) => void;
+let customMovementFunction: (
+  particle: Particle,
+  animationStartTime: number,
+  requestAnimationFrameTime: number
+) => void;
 
 let startCoordinatesConfig: ReturnType<typeof getStartCoordinatesConfig>;
 
@@ -71,13 +75,20 @@ const initialize = async (data: any) => {
   });
 };
 
-const renderParticles = () => {
+const renderParticles = (
+  animationStartTime: number,
+  requestAnimationFrameTime: number
+) => {
   let particlesReachedTarget = true;
   frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
 
   workerParticles.forEach((particle) => {
     // Update particles position by calling your movement function here:
-    customMovementFunction(particle);
+    customMovementFunction(
+      particle,
+      animationStartTime,
+      requestAnimationFrameTime
+    );
 
     // Draw particle on frame context
     frameContext.drawImage(
@@ -107,7 +118,9 @@ const renderParticles = () => {
       cancelAnimationFrame(animationFrameId);
     }
   } else {
-    animationFrameId = requestAnimationFrame(renderParticles);
+    animationFrameId = requestAnimationFrame((requestAnimationFrameTime) =>
+      renderParticles(animationStartTime, requestAnimationFrameTime)
+    );
   }
 };
 
@@ -144,13 +157,15 @@ self.onmessage = (event) => {
       });
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
-        renderParticles();
+        const startTime = performance.now();
+        renderParticles(startTime, startTime);
       }
       break;
     }
     case 'play': {
       customMovementFunction = new Function(data.code)();
-      renderParticles();
+      const startTime = performance.now();
+      renderParticles(startTime, startTime);
       break;
     }
     case 'updateStartPosition': {
@@ -166,7 +181,8 @@ self.onmessage = (event) => {
 
         if (animationFrameId) {
           cancelAnimationFrame(animationFrameId);
-          renderParticles();
+          const startTime = performance.now();
+          renderParticles(startTime, startTime);
         }
       } else {
         console.error(
