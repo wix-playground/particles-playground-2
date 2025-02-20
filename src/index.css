@@ -80,7 +80,8 @@ div.layout {
 }
 
 div.editorContainer > section {
-  min-width: 70vw;
+  min-width: 60vw;
+  max-width: 1280px;
 }
 
 div.card span.cardTitle {
@@ -93,6 +94,7 @@ div.card span.innerTitle {
   font-weight: bold;
   font-size: 1em;
   padding-bottom: 4px;
+  text-align: start;
 }
 
 button.iconButton {

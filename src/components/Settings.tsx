@@ -28,24 +28,6 @@ export const Settings = ({
     setSelectedMovementFunction(option);
     editorRef.current?.setValue(predefinedMovementOptions[option]);
   };
-
-  const play = useCallback(() => {
-    if (editorRef.current) {
-      editorRef.current.getAction('editor.action.formatDocument')?.run();
-    }
-
-    workerRef.current?.postMessage({
-      type: 'play',
-      data: {
-        code: editorRef.current?.getValue(),
-      },
-    });
-  }, []);
-
-  const reset = useCallback(() => {
-    workerRef.current?.postMessage({type: 'reset'});
-  }, []);
-
   const predefinedMovementOptions = useMemo(
     () => getPredefinedMovementOptions(),
     []
@@ -58,10 +40,6 @@ export const Settings = ({
   return (
     <div className="layout card" style={{width: '30%'}}>
       <span className="cardTitle">Settings</span>
-      <div style={{display: 'flex', gap: '4px'}}>
-        <button onClick={play}>Play animation</button>
-        <button onClick={reset}>Reset particles</button>
-      </div>
       <div>
         Particle radius:
         <input
@@ -81,18 +59,20 @@ export const Settings = ({
       <div>Text size???: TBD</div>
       <div>Text color: TBD</div>
       <div className="card">
-        <span className="innerTitle">Predefined movement functions:</span>
-        {movementOptionKeys.map((option) => (
-          <button
-            className={
-              selectedMovementFunction === option ? 'selected' : undefined
-            }
-            key={option}
-            onClick={() => handlePredefinedMovementClick(option)}
-          >
-            {option}
-          </button>
-        ))}
+        <span className="innerTitle">Predefined movement functions</span>
+        <div>
+          {movementOptionKeys.map((option) => (
+            <button
+              className={
+                selectedMovementFunction === option ? 'selected' : undefined
+              }
+              key={option}
+              onClick={() => handlePredefinedMovementClick(option)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -136,6 +136,23 @@ function App() {
     }
   };
 
+  const play = useCallback(() => {
+    if (editorRef.current) {
+      editorRef.current.getAction('editor.action.formatDocument')?.run();
+    }
+
+    workerRef.current?.postMessage({
+      type: 'play',
+      data: {
+        code: editorRef.current?.getValue(),
+      },
+    });
+  }, []);
+
+  const reset = useCallback(() => {
+    workerRef.current?.postMessage({type: 'reset'});
+  }, []);
+
   const handleResetCode = () => {
     setSelectedMovementFunction(null);
     setCode(EXAMPLE_CODE);
@@ -186,7 +203,21 @@ function App() {
             selectedMovementFunction={selectedMovementFunction}
           />
           <div className="card" style={{width: '70%'}}>
-            <span className="cardTitle">Canvas</span>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
+              <div>
+                <span className="cardTitle">Canvas</span>
+              </div>
+              <div style={{display: 'flex', gap: '4px'}}>
+                <button onClick={play}>Play animation</button>
+                <button onClick={reset}>Reset particles</button>
+              </div>
+            </div>
             <div className="card noPadding">
               <canvas
                 ref={canvasRef}
