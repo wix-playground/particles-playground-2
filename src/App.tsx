@@ -19,6 +19,7 @@ function App() {
   const [isImageReady, setIsImageReady] = useState(false);
   const [code, setCode] = useState<string>(EXAMPLE_CODE);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     // Create the Web Worker
@@ -64,7 +65,9 @@ function App() {
     const canvas = canvasRef.current;
 
     if (!canvas || !imageBitmap.current) {
+      // TODO: fix load error
       console.error('Animation components not fully initialized');
+      setLoadError(true);
       return;
     }
     if (!canvasInitialized.current) {
@@ -92,6 +95,21 @@ function App() {
 
   return (
     <div style={{display: 'flex', gap: '24px', flexDirection: 'column'}}>
+      {loadError && (
+        <div
+          className="card"
+          style={{backgroundColor: '#FFAAAA', color: '#4a0b0b'}}
+        >
+          Load error, refresh the page
+          <button
+            onClick={() => {
+              window.location.reload();
+            }}
+          >
+            Refresh
+          </button>
+        </div>
+      )}
       <div
         className="layout"
         style={{display: 'flex', flexDirection: 'column'}}
@@ -163,7 +181,7 @@ function App() {
               width: '100%',
             }}
           >
-            <span className="cardTitle">Movement function playground</span>
+            <span className="cardTitle">Movement function editor</span>
             <button disabled={code === EXAMPLE_CODE} onClick={handleResetCode}>
               Reset code to example
             </button>
