@@ -16,7 +16,6 @@ function App() {
   const workerRef = useRef<Worker | null>(null);
   const canvasInitialized = useRef<boolean>(false);
   const particlesReachedTarget = useRef<boolean>(false);
-  const [isImageReady, setIsImageReady] = useState(false);
   const [code, setCode] = useState<string>(EXAMPLE_CODE);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -62,13 +61,32 @@ function App() {
     }
   };
 
-  const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
+  const handleEditorDidMount = async (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
 
     const canvas = canvasRef.current;
 
+    offscreenContextRef.current!.drawImage(
+      imageRef.current!,
+      0,
+      0,
+      imageRef.current!.width,
+      imageRef.current!.height
+    );
+
+    // TODO: hack-ish, do proper image loading for next stage
+    await createImageBitmap(
+      offscreenContextRef.current!.getImageData(
+        0,
+        0,
+        imageRef.current!.width,
+        imageRef.current!.height
+      )
+    ).then((bitmap) => {
+      imageBitmap.current = bitmap;
+    });
+
     if (!canvas || !imageBitmap.current) {
-      // TODO: fix load error
       console.error('Animation components not fully initialized');
       setLoadError(true);
       return;
@@ -130,39 +148,14 @@ function App() {
           alt="Vite logo"
           height="100px"
           width="100px"
-          onLoad={() => {
-            setTimeout(() => {
-              offscreenContextRef.current!.drawImage(
-                imageRef.current!,
-                0,
-                0,
-                imageRef.current!.width,
-                imageRef.current!.height
-              );
-
-              createImageBitmap(
-                offscreenContextRef.current!.getImageData(
-                  0,
-                  0,
-                  imageRef.current!.width,
-                  imageRef.current!.height
-                )
-              ).then((bitmap) => {
-                imageBitmap.current = bitmap;
-                setIsImageReady(true);
-              });
-            }, 100);
-          }}
         />
         <div style={{display: 'flex', justifyContent: 'space-between'}}>
-          {isImageReady && (
-            <Settings
-              workerRef={workerRef}
-              editorRef={editorRef}
-              setSelectedMovementFunction={setSelectedMovementFunction}
-              selectedMovementFunction={selectedMovementFunction}
-            />
-          )}
+          <Settings
+            workerRef={workerRef}
+            editorRef={editorRef}
+            setSelectedMovementFunction={setSelectedMovementFunction}
+            selectedMovementFunction={selectedMovementFunction}
+          />
           <div className="card">
             <span className="cardTitle">Canvas</span>
             <div className="card noPadding">
