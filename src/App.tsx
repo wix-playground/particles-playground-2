@@ -1,6 +1,5 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import './App.css';
-import {getPredefinedMovementOptions} from './movement';
 import Editor from '@monaco-editor/react';
 import {DEFAULT_PARTICLE_RADIUS, EXAMPLE_CODE} from './constants';
 import {editor} from 'monaco-editor';
@@ -20,9 +19,6 @@ function App() {
   const [isImageReady, setIsImageReady] = useState(false);
   const [code, setCode] = useState<string>(EXAMPLE_CODE);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const [selectedMovementFunction, setSelectedMovementFunction] = useState<
-    string | null
-  >(null);
 
   useEffect(() => {
     // Create the Web Worker
@@ -46,16 +42,6 @@ function App() {
       canvasInitialized.current = false;
     };
   }, []);
-
-  const predefinedMovementOptions = useMemo(
-    () => getPredefinedMovementOptions(),
-    []
-  );
-
-  const movementOptionKeys = useMemo(() => {
-    return Object.keys(predefinedMovementOptions);
-  }, [predefinedMovementOptions]);
-
   useEffect(() => {
     offscreenCanvasRef.current = new OffscreenCanvas(300, 150);
     offscreenContextRef.current = offscreenCanvasRef.current.getContext('2d', {
@@ -63,26 +49,8 @@ function App() {
     });
   }, []);
 
-  const play = useCallback(() => {
-    if (editorRef.current) {
-      editorRef.current.getAction('editor.action.formatDocument')?.run();
-    }
-
-    workerRef.current?.postMessage({
-      type: 'play',
-      data: {
-        code,
-      },
-    });
-  }, [code]);
-
-  const reset = useCallback(() => {
-    workerRef.current?.postMessage({type: 'reset'});
-    particlesReachedTarget.current = false;
-  }, []);
-
   const handleEditorChange = (value: string | undefined) => {
-    setSelectedMovementFunction(null);
+    // setSelectedMovementFunction(null);
     if (value) {
       setCode(value);
     } else {
@@ -117,20 +85,18 @@ function App() {
     }
   };
 
-  const handlePredefinedMovementClick = (option: string) => {
-    setSelectedMovementFunction(option);
-    setCode(predefinedMovementOptions[option]);
-  };
-
   const handleResetCode = () => {
-    setSelectedMovementFunction(null);
+    // setSelectedMovementFunction(null);
     setCode(EXAMPLE_CODE);
   };
 
   return (
     <div style={{display: 'flex', gap: '24px', flexDirection: 'column'}}>
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        <h1>Particles playground v0.0</h1>
+      <div
+        className="layout"
+        style={{display: 'flex', flexDirection: 'column'}}
+      >
+        <h1>Particles playground v0.1</h1>
         {/* We need an image source for creating ImageBitmap, this hidden image is for that. */}
         <img
           style={{display: 'none'}}
@@ -167,48 +133,49 @@ function App() {
             }, 100);
           }}
         />
-        <canvas
-          ref={canvasRef}
-          width={300}
-          height={150}
-          style={{width: '300px', height: '150px'}}
-        />
-        <div>
-          <button disabled={!isImageReady} onClick={play}>
-            Play animation
-          </button>
-          <button onClick={reset}>Reset particles</button>
-        </div>
-        <Settings workerRef={workerRef} />
-        <div>
-          <div>
-            Predefined movement functions:
-            {movementOptionKeys.map((option) => (
-              <button
-                className={
-                  selectedMovementFunction === option ? 'selected' : undefined
-                }
-                key={option}
-                onClick={() => handlePredefinedMovementClick(option)}
-              >
-                {option}
-              </button>
-            ))}
+        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+          {isImageReady && (
+            <Settings workerRef={workerRef} editorRef={editorRef} />
+          )}
+          <div className="card">
+            <span className="cardTitle">Canvas</span>
+            <div className="card noPadding">
+              <canvas
+                ref={canvasRef}
+                width={300}
+                height={150}
+                style={{width: '300px', height: '150px'}}
+              />
+            </div>
           </div>
         </div>
-      </div>
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        <Editor
-          onMount={handleEditorDidMount}
-          height="40vh"
-          width={'80vw'}
-          defaultLanguage="javascript"
-          value={code}
-          onChange={handleEditorChange}
-        />
-        <button disabled={code === EXAMPLE_CODE} onClick={handleResetCode}>
-          Reset code to example
-        </button>
+        <div
+          className="card layout editorContainer"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              width: '100%',
+            }}
+          >
+            <span className="cardTitle">Movement function playground</span>
+            <button disabled={code === EXAMPLE_CODE} onClick={handleResetCode}>
+              Reset code to example
+            </button>
+          </div>
+          <Editor
+            onMount={handleEditorDidMount}
+            height="40vh"
+            defaultLanguage="javascript"
+            value={code}
+            onChange={handleEditorChange}
+          />
+        </div>
       </div>
     </div>
   );
