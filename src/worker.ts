@@ -1,9 +1,5 @@
 import {Particle, StartPositionType} from './interfaces';
-import {
-  getRandomInt,
-  getStartCoordinatesConfig,
-  getValidImageBlocks,
-} from './utils';
+import {getStartCoordinatesConfig, getValidImageBlocks} from './utils';
 
 let workerParticles: Particle[] = [];
 let imageBitmap: ImageBitmap;
