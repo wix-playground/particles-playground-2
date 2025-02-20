@@ -3,7 +3,8 @@ import {StartPositionType} from './interfaces';
 export const DEFAULT_PARTICLE_RADIUS = 2;
 export const DEFAULT_START_POSITION: StartPositionType = 'random';
 
-export const DEV_EXAMPLE_CODE = `return (particle, animationStartTime, currentTime) => {
+export const DEV_EXAMPLE_CODE = `// This function will be called twice for each particle, because all particles reach the target in two frames.
+return (particle, animationStartTime, currentTime) => {
     if (particle.x === 0 && particle.y === 0) {
         particle.x = particle.targetX;
         particle.y = particle.targetY;

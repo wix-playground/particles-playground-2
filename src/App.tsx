@@ -65,19 +65,25 @@ function App() {
 
   const handleEditorChange = useCallback(
     (value: string | undefined) => {
-      if (
-        Object.entries(predefinedMovementFunctions).some((entry) => {
-          const [key, code] = entry;
-          if (code === value) {
-            setSelectedMovementFunction(key);
-          }
-        })
-      )
-        if (value) {
-          setCode(value);
-        } else {
-          setCode('');
-        }
+      const movementFunctionEntries = Object.entries(
+        predefinedMovementFunctions
+      );
+
+      const predefinedFunctionEntry = movementFunctionEntries.find((entry) => {
+        const [, code] = entry;
+        return code === value;
+      });
+
+      if (predefinedFunctionEntry) {
+        const [key] = predefinedFunctionEntry;
+        setSelectedMovementFunction(key);
+      }
+
+      if (value) {
+        setCode(value);
+      } else {
+        setCode('');
+      }
     },
     [predefinedMovementFunctions]
   );
