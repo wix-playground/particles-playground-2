@@ -1,5 +1,9 @@
-import {Particle} from './interfaces';
-import {getRandomInt, getValidImageBlocks} from './utils';
+import {Particle, StartPositionType} from './interfaces';
+import {
+  getRandomInt,
+  getStartCoordinatesConfig,
+  getValidImageBlocks,
+} from './utils';
 
 let workerParticles: Particle[] = [];
 let imageBitmap: ImageBitmap;
@@ -14,7 +18,15 @@ let mainContext: ImageBitmapRenderingContext;
 
 let particleRadius: number;
 
+let validBlocks: Uint8Array<ArrayBuffer>;
+let blockHeight: number;
+let blockWidth: number;
+
+let startPosition: StartPositionType;
+
 let customMovementFunction: (particle: Particle) => void;
+
+let startCoordinatesConfig: ReturnType<typeof getStartCoordinatesConfig>;
 
 const initializeCanvas = async (canvas: OffscreenCanvas) => {
   mainCanvas = canvas;
@@ -37,18 +49,29 @@ const initialize = async (data: any) => {
   } = data;
   imageBitmap = _imageBitmap;
   particleRadius = _particleRadius;
+  startPosition = data.startPosition;
   initializeCanvas(canvas);
   frameContext.drawImage(imageBitmap, 0, 0);
-  const {validBlocks, blockHeight, blockWidth} = getValidImageBlocks(
+  const {
+    validBlocks: _validBlocks,
+    blockHeight: _blockHeight,
+    blockWidth: _blockWidth,
+  } = getValidImageBlocks(
     frameContext.getImageData(0, 0, mainCanvas.width, mainCanvas.height),
     particleRadius
   );
+
+  validBlocks = _validBlocks;
+  blockHeight = _blockHeight;
+  blockWidth = _blockWidth;
+  startCoordinatesConfig = getStartCoordinatesConfig({dimensions});
+
   workerParticles = generateParticles({
     validBlocks,
-    dimensions,
     radius: particleRadius,
     blockHeight,
     blockWidth,
+    startPosition,
   });
 };
 
@@ -103,17 +126,25 @@ self.onmessage = (event) => {
     case 'resizeParticleRadius': {
       particleRadius = data.particleRadius;
       frameContext.drawImage(imageBitmap, 0, 0);
-      const {validBlocks, blockHeight, blockWidth} = getValidImageBlocks(
+      const {
+        validBlocks: _validBlocks,
+        blockHeight: _blockHeight,
+        blockWidth: _blockWidth,
+      } = getValidImageBlocks(
         frameContext.getImageData(0, 0, mainCanvas.width, mainCanvas.height),
         particleRadius
       );
 
+      validBlocks = _validBlocks;
+      blockHeight = _blockHeight;
+      blockWidth = _blockWidth;
+
       workerParticles = generateParticles({
         validBlocks,
-        dimensions: {width: mainCanvas.width, height: mainCanvas.height},
         radius: particleRadius,
         blockHeight,
         blockWidth,
+        startPosition,
       });
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
@@ -126,10 +157,37 @@ self.onmessage = (event) => {
       renderParticles();
       break;
     }
+    case 'updateStartPosition': {
+      startPosition = data.startPosition;
+
+      if (workerParticles.length) {
+        workerParticles.forEach((particle) => {
+          const initialCoordinates =
+            startCoordinatesConfig[data.startPosition as StartPositionType]();
+          particle.x = initialCoordinates.x;
+          particle.y = initialCoordinates.y;
+        });
+
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          renderParticles();
+        }
+      } else {
+        console.error(
+          'updateStartPosition failed, particles were not initialized',
+          {
+            workerParticles,
+          }
+        );
+      }
+      break;
+    }
     case 'reset': {
       workerParticles.forEach((particle) => {
-        particle.x = getRandomInt(0, mainCanvas.width);
-        particle.y = getRandomInt(0, mainCanvas.height);
+        const initialCoordinates =
+          startCoordinatesConfig[startPosition as StartPositionType]();
+        particle.x = initialCoordinates.x;
+        particle.y = initialCoordinates.y;
       });
 
       frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
@@ -148,19 +206,18 @@ self.onmessage = (event) => {
 
 const generateParticles = ({
   validBlocks,
-  dimensions,
   radius,
   blockHeight,
   blockWidth,
+  startPosition,
 }: {
   validBlocks: Uint8Array<ArrayBuffer>;
-  dimensions: {width: number; height: number};
   radius: number;
   blockHeight: number;
   blockWidth: number;
+  startPosition: StartPositionType;
 }) => {
   const particles: Array<Particle> = [];
-  const {width, height} = dimensions;
 
   for (let blockY = 0; blockY < blockHeight; blockY++) {
     for (let blockX = 0; blockX < blockWidth; blockX++) {
@@ -169,8 +226,8 @@ const generateParticles = ({
         const x = blockX * radius;
         const y = blockY * radius;
 
-        const initialX = getRandomInt(0, width);
-        const initialY = getRandomInt(0, height);
+        const {x: initialX, y: initialY} =
+          startCoordinatesConfig[startPosition as StartPositionType]();
         particles.push({
           targetX: x,
           targetY: y,

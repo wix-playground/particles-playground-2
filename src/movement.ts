@@ -116,7 +116,7 @@ const bezierMovementFunctionString = `return (particle) => {
 };`;
 
 export const getPredefinedMovementOptions: () => {
-  [movementFunction: string]: string;
+  [functionName: string]: string;
 } = () => ({
   linear: linearMovementFunctionString,
   bezier: bezierMovementFunctionString,

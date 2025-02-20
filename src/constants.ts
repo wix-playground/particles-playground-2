@@ -1,4 +1,7 @@
+import {StartPositionType} from './interfaces';
+
 export const DEFAULT_PARTICLE_RADIUS = 2;
+export const DEFAULT_START_POSITION: StartPositionType = 'random';
 
 export const EXAMPLE_CODE = `return (particle) => {
     /**

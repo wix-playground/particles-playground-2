@@ -1,6 +1,7 @@
 import {editor} from 'monaco-editor';
 import {useState, useCallback, useMemo} from 'react';
 import {getPredefinedMovementOptions} from '../movement';
+import {StartPosition} from './StartPosition';
 
 export const Settings = ({
   workerRef,
@@ -55,7 +56,7 @@ export const Settings = ({
   }, [predefinedMovementOptions]);
 
   return (
-    <div className="card" style={{width: '30%'}}>
+    <div className="layout card" style={{width: '30%'}}>
       <span className="cardTitle">Settings</span>
       <div style={{display: 'flex', gap: '4px'}}>
         <button onClick={play}>Play animation</button>
@@ -75,11 +76,12 @@ export const Settings = ({
           }}
         />
       </div>
-      <div>Start position: TBD</div>
+      <StartPosition workerRef={workerRef} />
       <div>Text: TBD</div>
+      <div>Text size???: TBD</div>
       <div>Text color: TBD</div>
       <div className="card">
-        Predefined movement functions:
+        <span className="innerTitle">Predefined movement functions:</span>
         {movementOptionKeys.map((option) => (
           <button
             className={

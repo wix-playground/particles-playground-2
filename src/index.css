@@ -64,7 +64,7 @@ div.card {
   gap: 4px;
   background-color: #323232;
   border-radius: 8px;
-  border: 1px solid #3f3f3f;
+  border: 1px solid #4f4f4f;
   padding: 1em;
   align-items: start;
 }
@@ -83,10 +83,26 @@ div.editorContainer > section {
   min-width: 70vw;
 }
 
-span.cardTitle {
+div.card span.cardTitle {
   font-weight: bold;
   font-size: 1.5em;
   padding-bottom: 8px;
+}
+
+div.card span.innerTitle {
+  font-weight: bold;
+  font-size: 1em;
+  padding-bottom: 4px;
+}
+
+button.iconButton {
+  padding: 4px;
+  width: 30px;
+  height: 30px;
+}
+
+button.iconButton.selected {
+  border: 1px solid #646cff;
 }
 
 @media (prefers-color-scheme: light) {
@@ -103,6 +119,10 @@ span.cardTitle {
 
   button.selected {
     border: 2px solid #747bff;
+  }
+
+  button.iconButton.selected {
+    border: 1px solid #747bff;
   }
 
   div.card {

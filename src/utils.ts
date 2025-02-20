@@ -1,4 +1,4 @@
-import {Coordinates} from './interfaces';
+import {Coordinates, Dimensions, StartPositionType} from './interfaces';
 
 export const getValidImageBlocks = (
   imageData: ImageData,
@@ -48,4 +48,51 @@ export const getRandomInt = (min: number, max: number) => {
   const minCeiled = Math.ceil(min);
   const maxFloored = Math.floor(max);
   return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+};
+
+export const getStartCoordinatesConfig = ({
+  dimensions: {width, height},
+}: {
+  dimensions: Dimensions;
+}): Record<StartPositionType, () => Coordinates> => {
+  const config: Record<StartPositionType, () => Coordinates> = {
+    top: () => ({
+      x: Math.random() * width,
+      y: 0,
+    }),
+    center: () => ({
+      x: Math.round(width / 2),
+      y: Math.round(height / 2),
+    }),
+    bottom: () => ({
+      x: Math.random() * width,
+      y: height,
+    }),
+    random: () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+    }),
+    left: () => ({
+      x: 0,
+      y: Math.random() * height,
+    }),
+    right: () => ({
+      x: width,
+      y: Math.random() * height,
+    }),
+    'top-left': () => ({
+      x: Math.random() * (width / 5),
+      y: Math.random() * (height / 5),
+    }),
+    'top-right': () => ({x: width, y: Math.random() * (height / 5)}),
+    'bottom-left': () => ({
+      x: Math.random() * (width / 5),
+      y: height - Math.random() * (height / 5),
+    }),
+    'bottom-right': () => ({
+      x: width - Math.random() * (width / 5),
+      y: height - Math.random() * (height / 5),
+    }),
+  };
+  return config;
 };

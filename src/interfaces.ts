@@ -3,6 +3,11 @@ export interface Coordinates {
   y: number;
 }
 
+export interface Dimensions {
+  width: number;
+  height: number;
+}
+
 export interface Particle extends Coordinates {
   targetX: number;
   targetY: number;
@@ -12,3 +17,15 @@ export interface Particle extends Coordinates {
   controlX?: number;
   controlY?: number;
 }
+
+export type StartPositionType =
+  | 'top-left'
+  | 'top-right'
+  | 'top'
+  | 'center'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'random';

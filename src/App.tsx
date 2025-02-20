@@ -1,9 +1,14 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import './App.css';
 import Editor from '@monaco-editor/react';
-import {DEFAULT_PARTICLE_RADIUS, EXAMPLE_CODE} from './constants';
+import {
+  DEFAULT_PARTICLE_RADIUS,
+  DEFAULT_START_POSITION,
+  EXAMPLE_CODE,
+} from './constants';
 import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings';
+import {getPredefinedMovementOptions} from './movement';
 
 function App() {
   const imageRef = useRef<HTMLImageElement>(null);
@@ -45,6 +50,7 @@ function App() {
       canvasInitialized.current = false;
     };
   }, []);
+
   useEffect(() => {
     offscreenCanvasRef.current = new OffscreenCanvas(300, 150);
     offscreenContextRef.current = offscreenCanvasRef.current.getContext('2d', {
@@ -52,18 +58,32 @@ function App() {
     });
   }, []);
 
-  const handleEditorChange = (value: string | undefined) => {
-    setSelectedMovementFunction(null);
-    if (value) {
-      setCode(value);
-    } else {
-      setCode('');
-    }
-  };
+  const predefinedMovementFunctions = useMemo(
+    () => getPredefinedMovementOptions(),
+    []
+  );
+
+  const handleEditorChange = useCallback(
+    (value: string | undefined) => {
+      if (
+        Object.entries(predefinedMovementFunctions).some((entry) => {
+          const [key, code] = entry;
+          if (code === value) {
+            setSelectedMovementFunction(key);
+          }
+        })
+      )
+        if (value) {
+          setCode(value);
+        } else {
+          setCode('');
+        }
+    },
+    [predefinedMovementFunctions]
+  );
 
   const handleEditorDidMount = async (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
-
     const canvas = canvasRef.current;
 
     offscreenContextRef.current!.drawImage(
@@ -101,6 +121,7 @@ function App() {
             dimensions: {width: canvas.width, height: canvas.height},
             imageBitmap: imageBitmap.current,
             particleRadius: DEFAULT_PARTICLE_RADIUS,
+            startPosition: DEFAULT_START_POSITION,
           },
         },
         [transferrableCanvas, imageBitmap.current!]
