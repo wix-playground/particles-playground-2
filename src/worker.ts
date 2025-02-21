@@ -132,15 +132,17 @@ self.onmessage = (event) => {
       initialize(data);
       self.postMessage({type: 'initialized'});
     },
-    [Action.PLAY]: (data: any, ...rest: any[]) => {
+    [Action.PLAY]: (data: any) => {
       customMovementFunction = new Function(data.code)();
       const startTime = performance.now();
       renderParticles(startTime, startTime);
     },
-    [Action.RESET]: (data: any, ...rest: any[]) => {
+    [Action.RESET]: () => {
       workerParticles.forEach((particle) => {
         const initialCoordinates =
           startCoordinatesConfig[startPosition as StartPositionType]();
+        particle.initialX = initialCoordinates.x;
+        particle.initialY = initialCoordinates.y;
         particle.x = initialCoordinates.x;
         particle.y = initialCoordinates.y;
       });
@@ -153,7 +155,7 @@ self.onmessage = (event) => {
         cancelAnimationFrame(animationFrameId);
       }
     },
-    [Action.RESIZE_PARTICLE_RADIUS]: (data: any, ...rest: any[]) => {
+    [Action.RESIZE_PARTICLE_RADIUS]: (data: any) => {
       particleRadius = data.particleRadius;
       frameContext.drawImage(imageBitmap, 0, 0);
       const {
@@ -182,7 +184,7 @@ self.onmessage = (event) => {
         renderParticles(startTime, startTime);
       }
     },
-    [Action.UPDATE_START_POSITION]: (data: any, ...rest: any[]) => {
+    [Action.UPDATE_START_POSITION]: (data: any) => {
       // TODO: fix start position for easing ??
       startPosition = data.startPosition;
 
@@ -190,6 +192,8 @@ self.onmessage = (event) => {
         workerParticles.forEach((particle) => {
           const initialCoordinates =
             startCoordinatesConfig[data.startPosition as StartPositionType]();
+          particle.initialX = initialCoordinates.x;
+          particle.initialY = initialCoordinates.y;
           particle.x = initialCoordinates.x;
           particle.y = initialCoordinates.y;
         });
