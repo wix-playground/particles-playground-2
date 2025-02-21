@@ -13,7 +13,7 @@ import {Settings} from './components/Settings';
 import {getPredefinedMovementOptions} from './movement';
 import {Action} from './interfaces';
 import {CopyPromptButton} from './components/CopyPromptButton';
-import {useImageLoader} from './useImageLoader';
+import {useImageLoader} from './hooks/useImageLoader';
 
 // TODO: architecture overhaul where app receives state from worker and all messages are send and handled in a redux store like way.
 // TODO: Maybe some tests too, even if it's just a playground.

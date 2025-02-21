@@ -3,7 +3,8 @@ import {Dimensions, StartPositionType} from './interfaces';
 export const DEFAULT_PARTICLE_RADIUS = 2;
 export const DEFAULT_START_POSITION: StartPositionType = 'random';
 export const DEFAULT_MOVEMENT_FUNCTION_KEY = 'DEV_EXAMPLE';
-export const DEFAULT_COLOR = '#FFFFFF';
+export const DEFAULT_DARK_THEME_COLOR = '#FFFFFF';
+export const DEFAULT_LIGHT_THEME_COLOR = '#213547';
 
 export const CANVAS_DIMENSIONS: Dimensions = {width: 600, height: 300};
 

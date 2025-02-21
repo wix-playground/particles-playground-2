@@ -1,6 +1,9 @@
 import {useMemo} from 'react';
-import {Dimensions} from './interfaces';
-import {DEFAULT_COLOR} from './constants';
+import {Dimensions} from '../interfaces';
+import {
+  DEFAULT_DARK_THEME_COLOR,
+  DEFAULT_LIGHT_THEME_COLOR,
+} from '../constants';
 
 export const useImageLoader = ({
   dimensions,
@@ -27,7 +30,11 @@ export const useImageLoader = ({
 
     analysisContext.textAlign = 'center';
     analysisContext.textBaseline = 'middle';
-    analysisContext.fillStyle = DEFAULT_COLOR;
+    analysisContext.fillStyle =
+      window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? DEFAULT_DARK_THEME_COLOR
+        : DEFAULT_LIGHT_THEME_COLOR;
     analysisContext.font = 'bold 90pt sans-serif';
     analysisContext.fillText(text, width / 2, height / 2);
 
