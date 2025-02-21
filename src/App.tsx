@@ -179,7 +179,7 @@ function App() {
         className="layout"
         style={{display: 'flex', flexDirection: 'column'}}
       >
-        <h1>Particles playground v0.1</h1>
+        <h1>Particles playground v0.2</h1>
         {/* We need an image source for creating ImageBitmap, this hidden image is for that. */}
         <img
           style={{display: 'none'}}
