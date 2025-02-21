@@ -107,6 +107,11 @@ button.iconButton.selected {
   border: 1px solid #646cff;
 }
 
+.userInput {
+  padding: 4px;
+  font-size: 1em;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

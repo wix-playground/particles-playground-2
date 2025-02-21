@@ -2,6 +2,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import './App.css';
 import Editor from '@monaco-editor/react';
 import {
+  DEFAULT_MOVEMENT_FUNCTION_KEY,
   DEFAULT_PARTICLE_RADIUS,
   DEFAULT_START_POSITION,
   EXAMPLE_CODE,
@@ -10,6 +11,8 @@ import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings';
 import {getPredefinedMovementOptions} from './movement';
 
+// TODO: architecture overhaul where app receives state from worker and all messages are send and handled in a redux store like way.
+// TODO: Maybe some tests too, even if it's just a playground.
 function App() {
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,9 +27,8 @@ function App() {
   const [code, setCode] = useState<string>(EXAMPLE_CODE);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [loadError, setLoadError] = useState(false);
-  const [selectedMovementFunction, setSelectedMovementFunction] = useState<
-    string | null
-  >(null);
+  const [selectedMovementFunction, setSelectedMovementFunction] =
+    useState<string>(DEFAULT_MOVEMENT_FUNCTION_KEY);
 
   useEffect(() => {
     // Create the Web Worker
@@ -154,7 +156,7 @@ function App() {
   }, []);
 
   const handleResetCode = () => {
-    setSelectedMovementFunction(null);
+    setSelectedMovementFunction(DEFAULT_MOVEMENT_FUNCTION_KEY);
     setCode(EXAMPLE_CODE);
   };
 

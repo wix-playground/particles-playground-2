@@ -1,4 +1,8 @@
-import {DEV_EXAMPLE_CODE} from './constants';
+import {
+  DEFAULT_MOVEMENT_FUNCTION_KEY,
+  DEV_EXAMPLE_CODE,
+  EXAMPLE_CODE,
+} from './constants';
 
 const linearMovementFunctionString = `return (particle, animationStartTime, currentTime) => {
     const calculateDistance = (point1, point2) => {
@@ -90,6 +94,7 @@ const easingBackInFunctionString = `return (particle, animationStartTime, curren
 export const getPredefinedMovementOptions: () => {
   [functionName: string]: string;
 } = () => ({
+  [DEFAULT_MOVEMENT_FUNCTION_KEY]: EXAMPLE_CODE,
   linear: linearMovementFunctionString,
   bezier: bezierMovementFunctionString,
   easingBackIn: easingBackInFunctionString,
