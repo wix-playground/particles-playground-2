@@ -20,6 +20,8 @@ export const EXAMPLE_CODE = `/**
  * @param {Object} particle - The particle object to be animated.
  * @param {number} particle.x - The current x-coordinate of the particle.
  * @param {number} particle.y - The current y-coordinate of the particle.
+ * @param {number} particle.initialX - The initial x-coordinate for the particle.
+ * @param {number} particle.initialY - The initial y-coordinate for the particle.
  * @param {number} particle.targetX - The target x-coordinate for the particle.
  * @param {number} particle.targetY - The target y-coordinate for the particle.
  * @param {number} animationStartTime - The timestamp when the animation started.
@@ -32,10 +34,7 @@ return (particle, animationStartTime, currentTime) => {
     * The particle is mutable here so you can add whatever properties you need to achieve your animation.
     */
 
-    // The amount to be moved by a single frame.
-    const DELTA = 1
-
-    // To keep the example simple, particle coordinates are updated by DELTA until target coordinates are reached.
+    // To keep the example simple, particle coordinates are updated by delta until target coordinates are reached.
     const getUpdatedPosition = (currentPosition, targetPosition, delta) => {
         const distance = Math.abs(currentPosition - targetPosition)
         if (distance <= delta) {
@@ -45,6 +44,14 @@ return (particle, animationStartTime, currentTime) => {
         }
     }
 
-    particle.x = getUpdatedPosition(particle.x, particle.targetX, DELTA)
-    particle.y = getUpdatedPosition(particle.y, particle.targetY, DELTA)
+
+    // Elapsed time since the start of the animation.
+    const totalElapsedTime = currentTime - animationStartTime
+
+    const initialDelta = 1
+    // After 1 second, the particles will move twice as fast.
+    const delta = totalElapsedTime < 1000 ? initialDelta : initialDelta * 2
+
+    particle.x = getUpdatedPosition(particle.x, particle.targetX, delta)
+    particle.y = getUpdatedPosition(particle.y, particle.targetY, delta)
 }`;
