@@ -10,7 +10,7 @@ export const StartPosition = ({
   workerRef: React.RefObject<Worker | null>;
 }) => {
   const [selectedStartPosition, setSelectedStartPosition] =
-    useState<StartPositionType | null>(DEFAULT_START_POSITION);
+    useState<StartPositionType>(DEFAULT_START_POSITION);
 
   const handleSelect = useCallback((id: StartPositionType) => {
     setSelectedStartPosition(id);

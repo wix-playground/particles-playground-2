@@ -4,35 +4,251 @@ import {
   EXAMPLE_CODE,
 } from './constants';
 
-const linearMovementFunctionString = `return (particle, animationStartTime, currentTime) => {
-    const calculateDistance = (point1, point2) => {
-        const dx = point2.x - point1.x;
-        const dy = point2.y - point1.y;
-        return Math.sqrt(dx * dx + dy * dy);
-    };
-
-    const lerp = (start, end, t) =>
-        start + t * (end - start);
-
-    const targetCoordinates = { x: particle.targetX, y: particle.targetY };
-    const distance = calculateDistance(
-        { x: particle.x, y: particle.y },
-        targetCoordinates
-    );
-
-    if (distance > 1) {
-        // Use lerp for smooth movement
-        const t = 0.05;
-        particle.x = lerp(particle.x, targetCoordinates.x, t);
-        particle.y = lerp(particle.y, targetCoordinates.y, t);
-    } else {
-        // Snap to target if very close
-        particle.x = targetCoordinates.x;
-        particle.y = targetCoordinates.y;
-    }
-};
-`;
-
+const easingFunctions: {name: string; definition: string; comment: string}[] = [
+  {
+    name: 'linear',
+    definition: 'const linear = (t) => t;',
+    comment: `/**
+    * Linear easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'sineIn',
+    definition: 'const sineIn = (t) => 1 - Math.cos((t * Math.PI) / 2);',
+    comment: `/**
+    * Sine-in easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'sineOut',
+    definition: 'const sineOut = (t) => Math.sin((t * Math.PI) / 2);',
+    comment: `/**
+    * Sine-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'sineInOut',
+    definition: 'const sineInOut = (t) => -(Math.cos(Math.PI * t) - 1) / 2;',
+    comment: `/**
+    * Sine-in-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'quadIn',
+    definition: 'const quadIn = (t) => t ** 2;',
+    comment: `/**
+    * Quadratic-in easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'quadOut',
+    definition: 'const quadOut = (t) => 1 - (1 - t) ** 2;',
+    comment: `/**
+    * Quadratic-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'quadInOut',
+    definition:
+      'const quadInOut = (t) => t < 0.5 ? 2 * t ** 2 : 1 - (-2 * t + 2) ** 2 / 2;',
+    comment: `/**
+    * Quadratic-in-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'cubicIn',
+    definition: 'const cubicIn = t => t ** 3;',
+    comment: `/**
+    * Cubic-in easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'cubicOut',
+    definition: 'const cubicOut = t => 1 - (1 - t) ** 3;',
+    comment: `/**
+    * Cubic-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'cubicInOut',
+    definition: `const cubicInOut = t => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);`,
+    comment: `/**
+    * Cubic-in-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'quartIn',
+    definition: 'const quartIn = t => t ** 4;',
+    comment: `/**
+    * Quartic-in easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'quartOut',
+    definition: 'const quartOut = t => 1 - (1 - t) ** 4;',
+    comment: `/**
+    * Quartic-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'quartInOut',
+    definition:
+      'const quartInOut = t => (t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2);',
+    comment: `/**
+    * Quartic-in-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'quintIn',
+    definition: 'const quintIn = t => t ** 5;',
+    comment: `/**
+    * Quintic-in easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'quintOut',
+    definition: 'const quintOut = t => 1 - (1 - t) ** 5;',
+    comment: `/**
+    * Quintic-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'quintInOut',
+    definition:
+      'const quintInOut = t => (t < 0.5 ? 16 * t ** 5 : 1 - (-2 * t + 2) ** 5 / 2);',
+    comment: `/**
+    * Quintic-in-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'expoIn',
+    definition: 'const expoIn = t => (t === 0 ? 0 : 2 ** (10 * t - 10));',
+    comment: `/**
+    * Exponential-in easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'expoOut',
+    definition: `const expoOut = t => (t === 1 ? 1 : 1 - 2 ** (-10 * t));`,
+    comment: `/**
+    * Exponential-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'expoInOut',
+    definition: `const expoInOut = t =>
+  t === 0
+    ? 0
+    : t === 1
+    ? 1
+    : t < 0.5
+    ? 2 ** (20 * t - 10) / 2
+    : (2 - 2 ** (-20 * t + 10)) / 2;`,
+    comment: `/**
+    * Exponential-in-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'circIn',
+    definition: 'const circIn = t => 1 - Math.sqrt(1 - t ** 2);',
+    comment: `/**
+    * Circular-in easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'circOut',
+    definition: 'const circOut = t => Math.sqrt(1 - (t - 1) ** 2);',
+    comment: `/**
+    * Circular-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'circInOut',
+    definition: `const circInOut = t =>
+  t < 0.5
+    ? (1 - Math.sqrt(1 - 4 * t ** 2)) / 2
+    : (Math.sqrt(-(2 * t - 3) * (2 * t - 1)) + 1) / 2;`,
+    comment: `/**
+    * Circular-in-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'backIn',
+    definition: 'const backIn = t => 2.70158 * t ** 3 - 1.70158 * t ** 2;',
+    comment: `/**
+    * Back-in easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'backOut',
+    definition:
+      'const backOut = t => 1 + 2.70158 * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2;',
+    comment: `/**
+    * Back-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @returns The eased value.
+    */`,
+  },
+  {
+    name: 'backInOut',
+    definition: `const backInOut = (t, k = 1.70158 * 1.525) =>
+      t < 0.5
+        ? ((2 * t) ** 2 * ((k + 1) * 2 * t - k)) / 2
+        : ((2 * t - 2) ** 2 * ((k + 1) * (t * 2 - 2) + k) + 2) / 2;`,
+    comment: `/**
+    * Back-in-out easing function.
+    * @param t - The time value (between 0 and 1).
+    * @param k - The back factor (optional, default is 1.70158 * 1.525).
+    * @returns The eased value.
+    */`,
+  },
+];
 const bezierMovementFunctionString = `return (particle, animationStartTime, currentTime) => {
     const targetCoordinates = { x: particle.targetX, y: particle.targetY };
 
@@ -65,38 +281,38 @@ const bezierMovementFunctionString = `return (particle, animationStartTime, curr
     }
 };`;
 
-const easingBackInFunctionString = `return (particle, animationStartTime, currentTime) => {
+export const getPredefinedMovementOptions: () => {
+  [functionName: string]: string;
+} = () =>
+  Object.assign(
+    {},
+    {
+      [DEFAULT_MOVEMENT_FUNCTION_KEY]: EXAMPLE_CODE,
+      DEV_TWO_FRAMES: DEV_EXAMPLE_CODE,
+      bezier: bezierMovementFunctionString,
+    },
+    ...easingFunctions.map(({name, comment, definition}) => ({
+      [name]: `return (particle, animationStartTime, currentTime) => {
     const animationDuration = 2000;
     // This is obviously inefficient because the same constant will be recalculated for every particle, but this is a playground and its not that expensive.
-    /**
-     * Back-in easing function.
-     * @param {number} t - The time value (between 0 and 1).
-     * @returns The eased value.
-     */
-    const backIn = (t) => 2.70158 * t ** 3 - 1.70158 * t ** 2;
+    ${comment}
+    ${definition}
     const lerp = (start, end, t) => start + t * (end - start);
 
     const totalElapsedTime = currentTime - animationStartTime;
     const progress = Math.min(totalElapsedTime / animationDuration, 1);
-    const easedProgress = backIn(progress);
+    const easedProgress = ${name}(progress);
+
     particle.x = lerp(particle.initialX, particle.targetX, easedProgress);
     particle.y = lerp(particle.initialY, particle.targetY, easedProgress);
 
     if (
-        Math.abs(particle.x - particle.targetX) < 0.8 &&
-        Math.abs(particle.y - particle.targetY) < 0.8
+        Math.abs(particle.x - particle.targetX) < 1 &&
+        Math.abs(particle.y - particle.targetY) < 1
     ) {
         particle.x = particle.targetX;
         particle.y = particle.targetY;
     }
-};`;
-
-export const getPredefinedMovementOptions: () => {
-  [functionName: string]: string;
-} = () => ({
-  [DEFAULT_MOVEMENT_FUNCTION_KEY]: EXAMPLE_CODE,
-  linear: linearMovementFunctionString,
-  bezier: bezierMovementFunctionString,
-  easingBackIn: easingBackInFunctionString,
-  DEV_TWO_FRAMES: DEV_EXAMPLE_CODE,
-});
+};`,
+    }))
+  );
