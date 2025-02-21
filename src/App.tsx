@@ -11,6 +11,7 @@ import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings';
 import {getPredefinedMovementOptions} from './movement';
 import {Action} from './interfaces';
+import {CopyPromptButton} from './components/CopyPromptButton';
 
 // TODO: architecture overhaul where app receives state from worker and all messages are send and handled in a redux store like way.
 // TODO: Maybe some tests too, even if it's just a playground.
@@ -246,9 +247,15 @@ function App() {
             }}
           >
             <span className="cardTitle">Movement function editor</span>
-            <button disabled={code === EXAMPLE_CODE} onClick={handleResetCode}>
-              Reset code to example
-            </button>
+            <div style={{display: 'flex', gap: '4px'}}>
+              <CopyPromptButton />
+              <button
+                disabled={code === EXAMPLE_CODE}
+                onClick={handleResetCode}
+              >
+                Reset code to example
+              </button>
+            </div>
           </div>
           <Editor
             onMount={handleEditorDidMount}

@@ -56,3 +56,6 @@ return (particle, animationStartTime, currentTime) => {
     particle.x = getUpdatedPosition(particle.x, particle.targetX, delta)
     particle.y = getUpdatedPosition(particle.y, particle.targetY, delta)
 }`;
+
+export const EXAMPLE_AI_PROMPT = `Write another function using the contract like this one with interesting animation:
+${EXAMPLE_CODE}`;
