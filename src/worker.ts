@@ -26,6 +26,40 @@ let customMovementFunction: (
   requestAnimationFrameTime: number
 ) => void;
 
+// TODO:
+// const workerState: {
+//   workerParticles: Particle[];
+//   imageBitmap: ImageBitmap | null;
+//   animationFrameId: number;
+//   frameCanvas: OffscreenCanvas | null;
+//   frameContext: OffscreenCanvasRenderingContext2D | null;
+//   mainCanvas: OffscreenCanvas | null;
+//   mainContext: ImageBitmapRenderingContext | null;
+//   particleRadius: number;
+//   validBlocks: Uint8Array<ArrayBuffer> | null;
+//   blockHeight: number;
+//   blockWidth: number;
+//   startPosition: StartPositionType;
+//   movementFunctionCode: string;
+//   selectedMovementFunction: string;
+// } = {
+//   workerParticles: [],
+//   imageBitmap: null,
+//   animationFrameId: 0,
+//   frameCanvas: null,
+//   frameContext: null,
+//   mainCanvas: null,
+//   mainContext: null,
+//   particleRadius: DEFAULT_PARTICLE_RADIUS,
+//   validBlocks: null,
+//   blockHeight: 0,
+//   blockWidth: 0,
+//   startPosition: DEFAULT_START_POSITION,
+//   selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
+//   movementFunctionCode:
+//     getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY],
+// };
+
 let startCoordinatesConfig: ReturnType<typeof getStartCoordinatesConfig>;
 
 const initializeCanvas = async (canvas: OffscreenCanvas) => {

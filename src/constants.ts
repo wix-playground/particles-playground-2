@@ -1,8 +1,11 @@
-import {StartPositionType} from './interfaces';
+import {Dimensions, StartPositionType} from './interfaces';
 
 export const DEFAULT_PARTICLE_RADIUS = 2;
 export const DEFAULT_START_POSITION: StartPositionType = 'random';
 export const DEFAULT_MOVEMENT_FUNCTION_KEY = 'DEV_EXAMPLE';
+export const DEFAULT_COLOR = '#FFFFFF';
+
+export const CANVAS_DIMENSIONS: Dimensions = {width: 600, height: 300};
 
 export const DEV_EXAMPLE_CODE = `// This function will be called twice for each particle, because all particles reach the target in two frames.
 return (particle, animationStartTime, currentTime) => {

@@ -2,6 +2,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import './App.css';
 import Editor from '@monaco-editor/react';
 import {
+  CANVAS_DIMENSIONS,
   DEFAULT_MOVEMENT_FUNCTION_KEY,
   DEFAULT_PARTICLE_RADIUS,
   DEFAULT_START_POSITION,
@@ -12,17 +13,16 @@ import {Settings} from './components/Settings';
 import {getPredefinedMovementOptions} from './movement';
 import {Action} from './interfaces';
 import {CopyPromptButton} from './components/CopyPromptButton';
+import {useImageLoader} from './useImageLoader';
 
 // TODO: architecture overhaul where app receives state from worker and all messages are send and handled in a redux store like way.
 // TODO: Maybe some tests too, even if it's just a playground.
 function App() {
-  const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const offscreenCanvasRef = useRef<OffscreenCanvas | null>(null);
   const offscreenContextRef = useRef<OffscreenCanvasRenderingContext2D | null>(
     null
   );
-  const imageBitmap = useRef<ImageBitmap | null>(null);
   const workerRef = useRef<Worker | null>(null);
   const canvasInitialized = useRef<boolean>(false);
   const particlesReachedTarget = useRef<boolean>(false);
@@ -31,6 +31,11 @@ function App() {
   const [loadError, setLoadError] = useState(false);
   const [selectedMovementFunction, setSelectedMovementFunction] =
     useState<string>(DEFAULT_MOVEMENT_FUNCTION_KEY);
+
+  const bitmap = useImageLoader({
+    dimensions: CANVAS_DIMENSIONS,
+    text: 'WIX',
+  });
 
   useEffect(() => {
     // Create the Web Worker
@@ -56,7 +61,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    offscreenCanvasRef.current = new OffscreenCanvas(300, 150);
+    offscreenCanvasRef.current = new OffscreenCanvas(
+      CANVAS_DIMENSIONS.width,
+      CANVAS_DIMENSIONS.height
+    );
     offscreenContextRef.current = offscreenCanvasRef.current.getContext('2d', {
       willReadFrequently: true,
     });
@@ -96,31 +104,12 @@ function App() {
     editorRef.current = editor;
     const canvas = canvasRef.current;
 
-    offscreenContextRef.current!.drawImage(
-      imageRef.current!,
-      0,
-      0,
-      imageRef.current!.width,
-      imageRef.current!.height
-    );
-
-    // TODO: hack-ish, do proper image loading for next stage
-    await createImageBitmap(
-      offscreenContextRef.current!.getImageData(
-        0,
-        0,
-        imageRef.current!.width,
-        imageRef.current!.height
-      )
-    ).then((bitmap) => {
-      imageBitmap.current = bitmap;
-    });
-
-    if (!canvas || !imageBitmap.current) {
+    if (!canvas || !bitmap) {
       console.error('Animation components not fully initialized');
       setLoadError(true);
       return;
     }
+
     if (!canvasInitialized.current) {
       const transferrableCanvas = canvas.transferControlToOffscreen();
       workerRef.current?.postMessage(
@@ -129,14 +118,13 @@ function App() {
           data: {
             canvas: transferrableCanvas,
             dimensions: {width: canvas.width, height: canvas.height},
-            imageBitmap: imageBitmap.current,
+            imageBitmap: bitmap!,
             particleRadius: DEFAULT_PARTICLE_RADIUS,
             startPosition: DEFAULT_START_POSITION,
           },
         },
-        [transferrableCanvas, imageBitmap.current!]
+        [transferrableCanvas, bitmap!]
       );
-      imageBitmap.current.close();
     }
   };
 
@@ -184,19 +172,6 @@ function App() {
         style={{display: 'flex', flexDirection: 'column'}}
       >
         <h1>Particles playground v0.2</h1>
-        {/* We need an image source for creating ImageBitmap, this hidden image is for that. */}
-        <img
-          style={{display: 'none'}}
-          ref={imageRef}
-          crossOrigin="anonymous"
-          src={
-            'https://upload.wikimedia.org/wikipedia/commons/f/f1/Vitejs-logo.svg'
-          }
-          className="logo"
-          alt="Vite logo"
-          height="100px"
-          width="100px"
-        />
         <div
           style={{display: 'flex', justifyContent: 'space-between', gap: '8px'}}
         >
@@ -225,9 +200,8 @@ function App() {
             <div className="card noPadding">
               <canvas
                 ref={canvasRef}
-                width={300}
-                height={150}
-                style={{width: '300px', height: '150px'}}
+                width={CANVAS_DIMENSIONS.width}
+                height={CANVAS_DIMENSIONS.height}
               />
             </div>
           </div>
