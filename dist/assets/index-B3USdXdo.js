@@ -85,7 +85,7 @@ return (particle, animationStartTime, currentTime) => {
     * The particle is mutable here so you can add whatever properties you need to achieve your animation.
     */
 
-    // To keep the example simple, particle coordinates are updated by delta until target coordinates are reached.
+    // Helper function for getting new position value.
     const getUpdatedPosition = (currentPosition, targetPosition, delta) => {
         const distance = Math.abs(currentPosition - targetPosition)
         if (distance <= delta) {
@@ -95,7 +95,6 @@ return (particle, animationStartTime, currentTime) => {
         }
     }
 
-
     // Elapsed time since the start of the animation.
     const totalElapsedTime = currentTime - animationStartTime
 
@@ -103,6 +102,7 @@ return (particle, animationStartTime, currentTime) => {
     // After 1 second, the particles will move twice as fast.
     const delta = totalElapsedTime < 1000 ? initialDelta : initialDelta * 2
 
+    // To keep the example simple, particle coordinates are updated by delta until target coordinates are reached.
     particle.x = getUpdatedPosition(particle.x, particle.targetX, delta)
     particle.y = getUpdatedPosition(particle.y, particle.targetY, delta)
 }`,vy=`return (particle, animationStartTime, currentTime) => {
