@@ -62,9 +62,6 @@ export const Settings = ({
         />
       </div>
       <StartPosition workerRef={workerRef} />
-      <div>Text: TBD</div>
-      <div>Text size???: TBD</div>
-      <div>Text color: TBD</div>
       <div className="card">
         <span className="innerTitle">Predefined movement functions</span>
         <select

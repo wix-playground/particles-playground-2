@@ -10,15 +10,18 @@ export const CopyPromptButton = () => {
       onClick={() => {
         navigator.clipboard.writeText(EXAMPLE_AI_PROMPT).then(
           () => {
+            /* clipboard successfully set */
             setButtonText('Copied!');
             setTimeout(() => {
               setButtonText(DEFAULT_TEXT);
             }, 2000);
-            /* clipboard successfully set */
           },
           () => {
-            setButtonText('Copy error, try again');
             /* clipboard write failed */
+            setButtonText('Copy error, try again');
+            setTimeout(() => {
+              setButtonText(DEFAULT_TEXT);
+            }, 2000);
           }
         );
       }}
