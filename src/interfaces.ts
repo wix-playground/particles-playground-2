@@ -26,3 +26,11 @@ export type StartPositionType =
   | 'left'
   | 'right'
   | 'random';
+
+export enum Action {
+  INITIALIZE = 'INITIALIZE',
+  PLAY = 'PLAY',
+  RESET = 'RESET',
+  RESIZE_PARTICLE_RADIUS = 'RESIZE_PARTICLE_RADIUS',
+  UPDATE_START_POSITION = 'UPDATE_START_POSITION',
+}

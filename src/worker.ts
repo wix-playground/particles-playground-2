@@ -1,4 +1,4 @@
-import {Particle, StartPositionType} from './interfaces';
+import {Particle, StartPositionType, Action} from './interfaces';
 import {getStartCoordinatesConfig, getValidImageBlocks} from './utils';
 
 let workerParticles: Particle[] = [];
@@ -125,14 +125,35 @@ const renderParticles = (
 };
 
 self.onmessage = (event) => {
-  const {data, type} = event.data;
-  switch (type) {
-    case 'initialize': {
+  // TODO: move to reducer.ts, create a state
+  // TODO: do type magic
+  const reducerConfig: Record<Action, (data: any, ...rest: any[]) => void> = {
+    [Action.INITIALIZE]: (data: any) => {
       initialize(data);
       self.postMessage({type: 'initialized'});
-      break;
-    }
-    case 'resizeParticleRadius': {
+    },
+    [Action.PLAY]: (data: any, ...rest: any[]) => {
+      customMovementFunction = new Function(data.code)();
+      const startTime = performance.now();
+      renderParticles(startTime, startTime);
+    },
+    [Action.RESET]: (data: any, ...rest: any[]) => {
+      workerParticles.forEach((particle) => {
+        const initialCoordinates =
+          startCoordinatesConfig[startPosition as StartPositionType]();
+        particle.x = initialCoordinates.x;
+        particle.y = initialCoordinates.y;
+      });
+
+      frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
+      const frameBitmap = frameCanvas.transferToImageBitmap();
+      mainContext.transferFromImageBitmap(frameBitmap);
+
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    },
+    [Action.RESIZE_PARTICLE_RADIUS]: (data: any, ...rest: any[]) => {
       particleRadius = data.particleRadius;
       frameContext.drawImage(imageBitmap, 0, 0);
       const {
@@ -160,15 +181,8 @@ self.onmessage = (event) => {
         const startTime = performance.now();
         renderParticles(startTime, startTime);
       }
-      break;
-    }
-    case 'play': {
-      customMovementFunction = new Function(data.code)();
-      const startTime = performance.now();
-      renderParticles(startTime, startTime);
-      break;
-    }
-    case 'updateStartPosition': {
+    },
+    [Action.UPDATE_START_POSITION]: (data: any, ...rest: any[]) => {
       // TODO: fix start position for easing ??
       startPosition = data.startPosition;
 
@@ -193,28 +207,11 @@ self.onmessage = (event) => {
           }
         );
       }
-      break;
-    }
-    case 'reset': {
-      workerParticles.forEach((particle) => {
-        const initialCoordinates =
-          startCoordinatesConfig[startPosition as StartPositionType]();
-        particle.x = initialCoordinates.x;
-        particle.y = initialCoordinates.y;
-      });
+    },
+  };
 
-      frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
-      const frameBitmap = frameCanvas.transferToImageBitmap();
-      mainContext.transferFromImageBitmap(frameBitmap);
-
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-      break;
-    }
-    default:
-      break;
-  }
+  const {data, type} = event.data;
+  reducerConfig[type as Action](data);
 };
 
 const generateParticles = ({

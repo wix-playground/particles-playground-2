@@ -2,6 +2,7 @@ import {editor} from 'monaco-editor';
 import {useState, useCallback, useMemo, useRef} from 'react';
 import {getPredefinedMovementOptions} from '../movement';
 import {StartPosition} from './StartPosition';
+import {Action} from '../interfaces';
 
 export const Settings = ({
   workerRef,
@@ -18,7 +19,7 @@ export const Settings = ({
   const selectRef = useRef<HTMLSelectElement | null>(null);
   const resizeParticleRadius = useCallback((radius: number) => {
     workerRef.current?.postMessage({
-      type: 'resizeParticleRadius',
+      type: Action.RESIZE_PARTICLE_RADIUS,
       data: {particleRadius: radius},
     });
   }, []);

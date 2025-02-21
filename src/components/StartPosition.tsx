@@ -1,7 +1,7 @@
 import {useCallback, useState} from 'react';
 import {Arrow} from '../assets/Arrow';
 import {CenterFilled} from '../assets/CenterFilled';
-import {StartPositionType} from '../interfaces';
+import {Action, StartPositionType} from '../interfaces';
 import {DEFAULT_START_POSITION} from '../constants';
 
 export const StartPosition = ({
@@ -16,7 +16,7 @@ export const StartPosition = ({
     setSelectedStartPosition(id);
 
     workerRef.current?.postMessage({
-      type: 'updateStartPosition',
+      type: Action.UPDATE_START_POSITION,
       data: {startPosition: id},
     });
   }, []);

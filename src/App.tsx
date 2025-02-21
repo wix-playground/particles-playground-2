@@ -10,6 +10,7 @@ import {
 import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings';
 import {getPredefinedMovementOptions} from './movement';
+import {Action} from './interfaces';
 
 // TODO: architecture overhaul where app receives state from worker and all messages are send and handled in a redux store like way.
 // TODO: Maybe some tests too, even if it's just a playground.
@@ -123,7 +124,7 @@ function App() {
       const transferrableCanvas = canvas.transferControlToOffscreen();
       workerRef.current?.postMessage(
         {
-          type: 'initialize',
+          type: Action.INITIALIZE,
           data: {
             canvas: transferrableCanvas,
             dimensions: {width: canvas.width, height: canvas.height},
@@ -144,7 +145,7 @@ function App() {
     }
 
     workerRef.current?.postMessage({
-      type: 'play',
+      type: Action.PLAY,
       data: {
         code: editorRef.current?.getValue(),
       },
@@ -152,7 +153,7 @@ function App() {
   }, []);
 
   const reset = useCallback(() => {
-    workerRef.current?.postMessage({type: 'reset'});
+    workerRef.current?.postMessage({type: Action.RESET});
   }, []);
 
   const handleResetCode = () => {
