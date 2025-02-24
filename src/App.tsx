@@ -1,24 +1,20 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import './App.css';
-import Editor from '@monaco-editor/react';
 import {
   CANVAS_DIMENSIONS,
-  DEFAULT_MOVEMENT_FUNCTION_KEY,
   DEFAULT_PARTICLE_RADIUS,
   DEFAULT_START_POSITION,
-  EXAMPLE_CODE,
 } from './constants';
 import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings';
-import {getPredefinedMovementOptions} from './movement';
 import {Action, AppProps, WorkerAction} from './interfaces';
-import {CopyPromptButton} from './components/CopyPromptButton';
 import {useImageLoader} from './hooks/useImageLoader';
 import {AppContext} from './contexts/AppContext';
 import {WorkerContext} from './contexts/WorkerContext';
+import {Editor} from './components/Editor/Editor';
 
 // TODO: Maybe some tests too, even if it's just a playground.
-function App() {
+const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const offscreenCanvasRef = useRef<OffscreenCanvas | null>(null);
   const offscreenContextRef = useRef<OffscreenCanvasRenderingContext2D | null>(
@@ -74,38 +70,6 @@ function App() {
     });
   }, []);
 
-  const predefinedMovementFunctions = useMemo(
-    () => getPredefinedMovementOptions(),
-    []
-  );
-
-  const handleEditorChange = useCallback(
-    (value: string | undefined) => {
-      const movementFunctionEntries = Object.entries(
-        predefinedMovementFunctions
-      );
-
-      const predefinedFunctionEntry = movementFunctionEntries.find((entry) => {
-        const [, code] = entry;
-        return code === value;
-      });
-
-      if (predefinedFunctionEntry) {
-        const [key, code] = predefinedFunctionEntry;
-        workerRef?.current?.postMessage({
-          type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-          data: {key, movementFunctionCode: code},
-        });
-      } else {
-        workerRef?.current?.postMessage({
-          type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-          data: {movementFunctionCode: value ?? ''},
-        });
-      }
-    },
-    [predefinedMovementFunctions]
-  );
-
   const handleEditorDidMount = async (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
     const canvas = canvasRef.current;
@@ -148,43 +112,12 @@ function App() {
     workerRef.current?.postMessage({type: Action.RESET});
   }, []);
 
-  const handleResetCode = () => {
-    workerRef?.current?.postMessage({
-      type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-      data: {
-        key: DEFAULT_MOVEMENT_FUNCTION_KEY,
-        movementFunctionCode: EXAMPLE_CODE,
-      },
-    });
-  };
-
   return (
     <AppContext.Provider value={appProps}>
       <WorkerContext.Provider value={workerRef.current}>
         {!appProps ? (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              maxWidth: '1280px',
-              position: 'absolute',
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              zIndex: 10000,
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                height: '100%',
-                fontSize: '2em',
-              }}
-            >
-              Loading...
-            </div>
+          <div className="loadingContainer">
+            <span>Loading...</span>
           </div>
         ) : null}
         <div style={{display: 'flex', gap: '24px', flexDirection: 'column'}}>
@@ -241,44 +174,12 @@ function App() {
                 </div>
               </div>
             </div>
-            <div
-              className="card layout editorContainer"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                }}
-              >
-                <span className="cardTitle">Movement function editor</span>
-                <div style={{display: 'flex', gap: '4px'}}>
-                  <CopyPromptButton />
-                  <button
-                    disabled={appProps?.movementFunctionCode === EXAMPLE_CODE}
-                    onClick={handleResetCode}
-                  >
-                    Reset code to example
-                  </button>
-                </div>
-              </div>
-              <Editor
-                onMount={handleEditorDidMount}
-                height="40vh"
-                defaultLanguage="javascript"
-                value={appProps?.movementFunctionCode}
-                onChange={handleEditorChange}
-              />
-            </div>
+            <Editor handleEditorDidMount={handleEditorDidMount} />
           </div>
         </div>
       </WorkerContext.Provider>
     </AppContext.Provider>
   );
-}
+};
 
 export default App;

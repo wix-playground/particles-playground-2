@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {EXAMPLE_AI_PROMPT} from '../constants';
+import {EXAMPLE_AI_PROMPT} from '../../constants';
 
 export const CopyPromptButton = () => {
   const DEFAULT_TEXT = 'Copy AI prompt';
