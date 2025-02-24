@@ -12,6 +12,7 @@ import {useImageLoader} from './hooks/useImageLoader';
 import {AppContext} from './contexts/AppContext';
 import {WorkerContext} from './contexts/WorkerContext';
 import {Editor} from './components/Editor/Editor';
+import {loadJsonFromSnippet} from './snippet';
 
 // TODO: Maybe some tests too, even if it's just a playground.
 const App = () => {
@@ -48,7 +49,7 @@ const App = () => {
         setAppProps(data.data);
       }
       if (data.type === WorkerAction.INITIALIZED) {
-        // console.log('INITIALIZED');
+        // console.log('INITIALIZED', data.data);
         setAppProps(data.data);
       }
     });
@@ -82,6 +83,13 @@ const App = () => {
 
     if (!canvasInitialized.current) {
       const transferrableCanvas = canvas.transferControlToOffscreen();
+      const urlParams = new URLSearchParams(window.location.search);
+      const snippetId = urlParams.get('snippet');
+      let snippetData: AppProps | null = null;
+      if (snippetId) {
+        snippetData = await loadJsonFromSnippet();
+      }
+
       workerRef.current?.postMessage(
         {
           type: Action.INITIALIZE,
@@ -91,6 +99,7 @@ const App = () => {
             imageBitmap: bitmap!,
             particleRadius: DEFAULT_PARTICLE_RADIUS,
             startPosition: DEFAULT_START_POSITION,
+            ...(snippetData ? snippetData : {}),
           },
         },
         [transferrableCanvas, bitmap!]
@@ -174,7 +183,7 @@ const App = () => {
                 </div>
               </div>
             </div>
-            <Editor handleEditorDidMount={handleEditorDidMount} />
+            <Editor onMount={handleEditorDidMount} />
           </div>
         </div>
       </WorkerContext.Provider>

@@ -6,6 +6,15 @@ export const DEFAULT_MOVEMENT_FUNCTION_KEY = 'DEV_EXAMPLE';
 export const DEFAULT_DARK_THEME_COLOR = '#FFFFFF';
 export const DEFAULT_LIGHT_THEME_COLOR = '#213547';
 
+export const COPY_AI_PROMPT_TEXT = 'Copy AI prompt';
+export const AI_PROMPT_TOOLTIP_TEXT =
+  'Copy an AI friendly prompt to your clipboard and run it on a LLM to receive an AI generated movement function.';
+export const COPIED_TEXT = 'Copied!';
+export const COPY_ERROR_TEXT = 'Copy error, try again';
+
+export const COPY_SHAREABLE_LINK_TEXT = 'Copy shareable link';
+export const GENERATING_LINK_TEXT = 'Generating link...';
+
 export const CANVAS_DIMENSIONS: Dimensions = {width: 600, height: 300};
 
 export const DEV_EXAMPLE_CODE = `// This function will be called twice for each particle, because all particles reach the target in two frames.

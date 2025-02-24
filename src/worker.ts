@@ -76,10 +76,18 @@ const initialize = async (data: any) => {
     canvas,
     dimensions,
     particleRadius: _particleRadius,
+    movementFunctionCode,
+    selectedMovementFunction,
   } = data;
   workerState.imageBitmap = _imageBitmap;
   workerState.appProps.particleRadius = _particleRadius;
   workerState.appProps.startPosition = data.startPosition;
+
+  if (movementFunctionCode && selectedMovementFunction) {
+    workerState.appProps.movementFunctionCode = movementFunctionCode;
+    workerState.appProps.selectedMovementFunction = selectedMovementFunction;
+  }
+
   initializeCanvas(canvas);
   workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
   const {
@@ -176,7 +184,7 @@ self.onmessage = (event) => {
         data: workerState.appProps,
       });
     },
-    [Action.PLAY]: (data: any) => {
+    [Action.PLAY]: () => {
       customMovementFunction = new Function(
         workerState.appProps.movementFunctionCode
       )();

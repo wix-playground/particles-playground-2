@@ -1,26 +1,31 @@
 import {useState} from 'react';
-import {EXAMPLE_AI_PROMPT} from '../../constants';
+import {
+  AI_PROMPT_TOOLTIP_TEXT,
+  COPIED_TEXT,
+  COPY_AI_PROMPT_TEXT,
+  COPY_ERROR_TEXT,
+  EXAMPLE_AI_PROMPT,
+} from '../../constants';
 
 export const CopyPromptButton = () => {
-  const DEFAULT_TEXT = 'Copy AI prompt';
-  const [buttonText, setButtonText] = useState('Copy AI prompt');
+  const [buttonText, setButtonText] = useState(COPY_AI_PROMPT_TEXT);
   return (
     <button
-      title="Copy an AI friendly prompt to your clipboard and run it on a LLM to receive an AI generated movement function."
+      title={AI_PROMPT_TOOLTIP_TEXT}
       onClick={() => {
         navigator.clipboard.writeText(EXAMPLE_AI_PROMPT).then(
           () => {
             /* clipboard successfully set */
-            setButtonText('Copied!');
+            setButtonText(COPIED_TEXT);
             setTimeout(() => {
-              setButtonText(DEFAULT_TEXT);
+              setButtonText(COPY_AI_PROMPT_TEXT);
             }, 2000);
           },
           () => {
             /* clipboard write failed */
-            setButtonText('Copy error, try again');
+            setButtonText(COPY_ERROR_TEXT);
             setTimeout(() => {
-              setButtonText(DEFAULT_TEXT);
+              setButtonText(COPY_AI_PROMPT_TEXT);
             }, 2000);
           }
         );
