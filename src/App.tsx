@@ -1,10 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import './App.css';
-import {
-  CANVAS_DIMENSIONS,
-  DEFAULT_PARTICLE_RADIUS,
-  DEFAULT_START_POSITION,
-} from './constants';
+import {CANVAS_DIMENSIONS, SNIPPET_QUERY_PARAM} from './constants';
 import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings';
 import {Action, AppProps, WorkerAction} from './interfaces';
@@ -23,7 +19,6 @@ const App = () => {
   );
   const workerRef = useRef<Worker | null>(null);
   const canvasInitialized = useRef<boolean>(false);
-  const particlesReachedTarget = useRef<boolean>(false);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [appProps, setAppProps] = useState<AppProps | null>(null);
@@ -40,10 +35,6 @@ const App = () => {
     });
 
     workerRef.current.addEventListener('message', ({data}) => {
-      if (data.type === 'particlesReachedTarget') {
-        particlesReachedTarget.current = true;
-      }
-
       if (data.type === WorkerAction.UPDATE_APP_PROPS) {
         // console.log('UPDATE_APP_PROPS', data.data);
         setAppProps(data.data);
@@ -84,8 +75,9 @@ const App = () => {
     if (!canvasInitialized.current) {
       const transferrableCanvas = canvas.transferControlToOffscreen();
       const urlParams = new URLSearchParams(window.location.search);
-      const snippetId = urlParams.get('snippet');
+      const snippetId = urlParams.get(SNIPPET_QUERY_PARAM);
       let snippetData: AppProps | null = null;
+
       if (snippetId) {
         snippetData = await loadJsonFromSnippet();
       }
@@ -97,8 +89,6 @@ const App = () => {
             canvas: transferrableCanvas,
             dimensions: {width: canvas.width, height: canvas.height},
             imageBitmap: bitmap!,
-            particleRadius: DEFAULT_PARTICLE_RADIUS,
-            startPosition: DEFAULT_START_POSITION,
             ...(snippetData ? snippetData : {}),
           },
         },

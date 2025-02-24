@@ -75,17 +75,23 @@ const initialize = async (data: any) => {
     imageBitmap: _imageBitmap,
     canvas,
     dimensions,
-    particleRadius: _particleRadius,
+    particleRadius,
     movementFunctionCode,
     selectedMovementFunction,
+    startPosition,
   } = data;
   workerState.imageBitmap = _imageBitmap;
-  workerState.appProps.particleRadius = _particleRadius;
-  workerState.appProps.startPosition = data.startPosition;
 
-  if (movementFunctionCode && selectedMovementFunction) {
+  if (
+    movementFunctionCode &&
+    selectedMovementFunction &&
+    particleRadius &&
+    startPosition
+  ) {
     workerState.appProps.movementFunctionCode = movementFunctionCode;
     workerState.appProps.selectedMovementFunction = selectedMovementFunction;
+    workerState.appProps.particleRadius = particleRadius;
+    workerState.appProps.startPosition = startPosition;
   }
 
   initializeCanvas(canvas);

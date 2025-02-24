@@ -15,6 +15,8 @@ export const COPY_ERROR_TEXT = 'Copy error, try again';
 export const COPY_SHAREABLE_LINK_TEXT = 'Copy shareable link';
 export const GENERATING_LINK_TEXT = 'Generating link...';
 
+export const SNIPPET_QUERY_PARAM = 'snippet';
+
 export const CANVAS_DIMENSIONS: Dimensions = {width: 600, height: 300};
 
 export const DEV_EXAMPLE_CODE = `// This function will be called twice for each particle, because all particles reach the target in two frames.

@@ -1,3 +1,5 @@
+import {SNIPPET_QUERY_PARAM} from './constants';
+
 const isSnippet = (x: unknown): x is {code: string} =>
   x !== null &&
   typeof x === 'object' &&
@@ -7,7 +9,7 @@ const isSnippet = (x: unknown): x is {code: string} =>
 
 export const loadJsonFromSnippet = async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const snippet = urlParams.get('snippet');
+  const snippet = urlParams.get(SNIPPET_QUERY_PARAM);
   if (snippet) {
     try {
       const response = await fetch(
@@ -48,6 +50,6 @@ export const saveJsonToSnippet = async (json: object): Promise<string> => {
 
 export const copySnippetUrlToClipboard = async (snippetId: string) => {
   const url = new URL(window.location.href);
-  url.searchParams.set('snippet', snippetId);
+  url.searchParams.set(SNIPPET_QUERY_PARAM, snippetId);
   return navigator.clipboard.writeText(url.toString());
 };
