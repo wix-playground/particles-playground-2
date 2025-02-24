@@ -33,4 +33,17 @@ export enum Action {
   RESET = 'RESET',
   RESIZE_PARTICLE_RADIUS = 'RESIZE_PARTICLE_RADIUS',
   UPDATE_START_POSITION = 'UPDATE_START_POSITION',
+  UPDATE_SELECTED_MOVEMENT_FUNCTION = 'UPDATE_SELECTED_MOVEMENT_FUNCTION',
+}
+
+export enum WorkerAction {
+  INITIALIZED = 'INITIALIZED',
+  UPDATE_APP_PROPS = 'UPDATE_APP_PROPS',
+}
+
+export interface AppProps {
+  startPosition: StartPositionType;
+  movementFunctionCode: string;
+  selectedMovementFunction: string;
+  particleRadius: number;
 }

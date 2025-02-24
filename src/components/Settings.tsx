@@ -1,28 +1,24 @@
-import {editor} from 'monaco-editor';
-import {useState, useCallback, useMemo, useRef} from 'react';
+import {useCallback, useMemo, useRef, useContext} from 'react';
 import {getPredefinedMovementOptions} from '../movement';
 import {StartPosition} from './StartPosition';
 import {Action} from '../interfaces';
+import {AppContext} from '../contexts/AppContext';
+import {WorkerContext} from '../contexts/WorkerContext';
 
-export const Settings = ({
-  workerRef,
-  editorRef,
-  setSelectedMovementFunction,
-  selectedMovementFunction,
-}: {
-  workerRef: React.RefObject<Worker | null>;
-  editorRef: React.RefObject<editor.IStandaloneCodeEditor | null>;
-  selectedMovementFunction: string;
-  setSelectedMovementFunction: React.Dispatch<React.SetStateAction<string>>;
-}) => {
-  const [particleRadius, setParticleRadius] = useState<number>(2);
+export const Settings = () => {
+  const worker = useContext(WorkerContext);
   const selectRef = useRef<HTMLSelectElement | null>(null);
-  const resizeParticleRadius = useCallback((radius: number) => {
-    workerRef.current?.postMessage({
-      type: Action.RESIZE_PARTICLE_RADIUS,
-      data: {particleRadius: radius},
-    });
-  }, []);
+  const appProps = useContext(AppContext);
+  const handleResizeParticleRadius = useCallback(
+    (radius: number) => {
+      if (worker)
+        worker.postMessage({
+          type: Action.RESIZE_PARTICLE_RADIUS,
+          data: {particleRadius: radius},
+        });
+    },
+    [worker]
+  );
 
   const predefinedMovementOptions = useMemo(
     () => getPredefinedMovementOptions(),
@@ -34,13 +30,23 @@ export const Settings = ({
     [predefinedMovementOptions]
   );
 
-  const handleFunctionSelect = () => {
-    if (selectRef.current) {
-      const option = selectRef.current.value;
-      setSelectedMovementFunction(option);
-      editorRef.current?.setValue(predefinedMovementOptions[option]);
-    }
-  };
+  const handleFunctionSelect = useCallback(() => {
+    if (worker)
+      if (selectRef.current) {
+        const option = selectRef.current.value;
+        worker.postMessage({
+          type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
+          data: {
+            key: option,
+            movementFunctionCode: predefinedMovementOptions[option],
+          },
+        });
+      }
+  }, [worker]);
+
+  if (!appProps) {
+    return;
+  }
 
   return (
     <div className="layout card" style={{width: '30%'}}>
@@ -50,25 +56,24 @@ export const Settings = ({
         <input
           className="userInput"
           style={{maxWidth: '60px'}}
-          value={particleRadius}
+          value={appProps.particleRadius}
           type="number"
           onChange={(e) => {
             const numberValue = Number(e.target.value);
             if (!Number.isNaN(numberValue) && numberValue > 0) {
-              setParticleRadius(numberValue);
-              resizeParticleRadius(numberValue);
+              handleResizeParticleRadius(numberValue);
             }
           }}
         />
       </div>
-      <StartPosition workerRef={workerRef} />
+      <StartPosition />
       <div className="card">
         <span className="innerTitle">Predefined movement functions</span>
         <select
           id="predefined-function-select"
           ref={selectRef}
           onChange={handleFunctionSelect}
-          value={selectedMovementFunction}
+          value={appProps.selectedMovementFunction}
           className="userInput"
         >
           {movementOptionKeys.map((option) => (

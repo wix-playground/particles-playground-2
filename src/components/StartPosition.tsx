@@ -1,25 +1,23 @@
-import {useCallback, useState} from 'react';
+import {useCallback, useContext} from 'react';
 import {Arrow} from '../assets/Arrow';
 import {CenterFilled} from '../assets/CenterFilled';
 import {Action, StartPositionType} from '../interfaces';
-import {DEFAULT_START_POSITION} from '../constants';
+import {AppContext} from '../contexts/AppContext';
+import {WorkerContext} from '../contexts/WorkerContext';
 
-export const StartPosition = ({
-  workerRef,
-}: {
-  workerRef: React.RefObject<Worker | null>;
-}) => {
-  const [selectedStartPosition, setSelectedStartPosition] =
-    useState<StartPositionType>(DEFAULT_START_POSITION);
+export const StartPosition = () => {
+  const appProps = useContext(AppContext);
+  const worker = useContext(WorkerContext);
 
-  const handleSelect = useCallback((id: StartPositionType) => {
-    setSelectedStartPosition(id);
-
-    workerRef.current?.postMessage({
-      type: Action.UPDATE_START_POSITION,
-      data: {startPosition: id},
-    });
-  }, []);
+  const handleSelect = useCallback(
+    (id: StartPositionType) => {
+      worker?.postMessage({
+        type: Action.UPDATE_START_POSITION,
+        data: {startPosition: id},
+      });
+    },
+    [worker]
+  );
 
   const config: {id: Omit<StartPositionType, 'random'>; transform: string}[][] =
     [
@@ -64,6 +62,10 @@ export const StartPosition = ({
       ],
     ];
 
+  if (!appProps) {
+    return;
+  }
+
   return (
     <div className="card">
       <span className="innerTitle">Particles start position</span>
@@ -75,9 +77,9 @@ export const StartPosition = ({
           type="checkbox"
           id="random-position-toggle"
           style={{width: '16px', height: '16px'}}
-          checked={selectedStartPosition === 'random'}
+          checked={appProps.startPosition === 'random'}
           onChange={() => {
-            if (selectedStartPosition !== 'random') {
+            if (appProps.startPosition !== 'random') {
               handleSelect('random');
             }
           }}
@@ -94,7 +96,7 @@ export const StartPosition = ({
                 key={id as string}
                 id={id as string}
                 className={`iconButton ${
-                  selectedStartPosition === id ? 'selected' : ''
+                  appProps?.startPosition === id ? 'selected' : ''
                 }`}
                 onClick={() => handleSelect(id as StartPositionType)}
               >

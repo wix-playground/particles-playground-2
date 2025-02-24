@@ -11,11 +11,12 @@ import {
 import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings';
 import {getPredefinedMovementOptions} from './movement';
-import {Action} from './interfaces';
+import {Action, AppProps, WorkerAction} from './interfaces';
 import {CopyPromptButton} from './components/CopyPromptButton';
 import {useImageLoader} from './hooks/useImageLoader';
+import {AppContext} from './contexts/AppContext';
+import {WorkerContext} from './contexts/WorkerContext';
 
-// TODO: architecture overhaul where app receives state from worker and all messages are send and handled in a redux store like way.
 // TODO: Maybe some tests too, even if it's just a playground.
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,11 +27,9 @@ function App() {
   const workerRef = useRef<Worker | null>(null);
   const canvasInitialized = useRef<boolean>(false);
   const particlesReachedTarget = useRef<boolean>(false);
-  const [code, setCode] = useState<string>(EXAMPLE_CODE);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [loadError, setLoadError] = useState(false);
-  const [selectedMovementFunction, setSelectedMovementFunction] =
-    useState<string>(DEFAULT_MOVEMENT_FUNCTION_KEY);
+  const [appProps, setAppProps] = useState<AppProps | null>(null);
 
   const bitmap = useImageLoader({
     dimensions: CANVAS_DIMENSIONS,
@@ -48,8 +47,13 @@ function App() {
         particlesReachedTarget.current = true;
       }
 
-      if (data.type === 'initialized') {
-        canvasInitialized.current = true;
+      if (data.type === WorkerAction.UPDATE_APP_PROPS) {
+        // console.log('UPDATE_APP_PROPS', data.data);
+        setAppProps(data.data);
+      }
+      if (data.type === WorkerAction.INITIALIZED) {
+        // console.log('INITIALIZED');
+        setAppProps(data.data);
       }
     });
 
@@ -87,14 +91,16 @@ function App() {
       });
 
       if (predefinedFunctionEntry) {
-        const [key] = predefinedFunctionEntry;
-        setSelectedMovementFunction(key);
-      }
-
-      if (value) {
-        setCode(value);
+        const [key, code] = predefinedFunctionEntry;
+        workerRef?.current?.postMessage({
+          type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
+          data: {key, movementFunctionCode: code},
+        });
       } else {
-        setCode('');
+        workerRef?.current?.postMessage({
+          type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
+          data: {movementFunctionCode: value ?? ''},
+        });
       }
     },
     [predefinedMovementFunctions]
@@ -135,9 +141,6 @@ function App() {
 
     workerRef.current?.postMessage({
       type: Action.PLAY,
-      data: {
-        code: editorRef.current?.getValue(),
-      },
     });
   }, []);
 
@@ -146,101 +149,135 @@ function App() {
   }, []);
 
   const handleResetCode = () => {
-    setSelectedMovementFunction(DEFAULT_MOVEMENT_FUNCTION_KEY);
-    setCode(EXAMPLE_CODE);
+    workerRef?.current?.postMessage({
+      type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
+      data: {
+        key: DEFAULT_MOVEMENT_FUNCTION_KEY,
+        movementFunctionCode: EXAMPLE_CODE,
+      },
+    });
   };
 
   return (
-    <div style={{display: 'flex', gap: '24px', flexDirection: 'column'}}>
-      {loadError && (
-        <div
-          className="card"
-          style={{backgroundColor: '#FFAAAA', color: '#4a0b0b'}}
-        >
-          Load error, refresh the page
-          <button
-            onClick={() => {
-              window.location.reload();
+    <AppContext.Provider value={appProps}>
+      <WorkerContext.Provider value={workerRef.current}>
+        {!appProps ? (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              maxWidth: '1280px',
+              position: 'absolute',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              zIndex: 10000,
             }}
           >
-            Refresh
-          </button>
-        </div>
-      )}
-      <div
-        className="layout"
-        style={{display: 'flex', flexDirection: 'column'}}
-      >
-        <h1>Particles playground v0.2</h1>
-        <div
-          style={{display: 'flex', justifyContent: 'space-between', gap: '8px'}}
-        >
-          <Settings
-            workerRef={workerRef}
-            editorRef={editorRef}
-            setSelectedMovementFunction={setSelectedMovementFunction}
-            selectedMovementFunction={selectedMovementFunction}
-          />
-          <div className="card" style={{width: '70%'}}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                height: '100%',
+                fontSize: '2em',
+              }}
+            >
+              Loading...
+            </div>
+          </div>
+        ) : null}
+        <div style={{display: 'flex', gap: '24px', flexDirection: 'column'}}>
+          {loadError && (
+            <div
+              className="card"
+              style={{backgroundColor: '#FFAAAA', color: '#4a0b0b'}}
+            >
+              Load error, refresh the page
+              <button
+                onClick={() => {
+                  window.location.reload();
+                }}
+              >
+                Refresh
+              </button>
+            </div>
+          )}
+          <div
+            className="layout"
+            style={{display: 'flex', flexDirection: 'column'}}
+          >
+            <h1>Particles playground v0.3</h1>
             <div
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                width: '100%',
+                gap: '8px',
               }}
             >
-              <div>
-                <span className="cardTitle">Canvas</span>
-              </div>
-              <div style={{display: 'flex', gap: '4px'}}>
-                <button onClick={play}>Play animation</button>
-                <button onClick={reset}>Reset particles</button>
+              <Settings />
+              <div className="card" style={{width: '70%'}}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                  }}
+                >
+                  <div>
+                    <span className="cardTitle">Canvas</span>
+                  </div>
+                  <div style={{display: 'flex', gap: '4px'}}>
+                    <button onClick={play}>Play animation</button>
+                    <button onClick={reset}>Reset particles</button>
+                  </div>
+                </div>
+                <div className="card noPadding">
+                  <canvas
+                    ref={canvasRef}
+                    width={CANVAS_DIMENSIONS.width}
+                    height={CANVAS_DIMENSIONS.height}
+                  />
+                </div>
               </div>
             </div>
-            <div className="card noPadding">
-              <canvas
-                ref={canvasRef}
-                width={CANVAS_DIMENSIONS.width}
-                height={CANVAS_DIMENSIONS.height}
+            <div
+              className="card layout editorContainer"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                }}
+              >
+                <span className="cardTitle">Movement function editor</span>
+                <div style={{display: 'flex', gap: '4px'}}>
+                  <CopyPromptButton />
+                  <button
+                    disabled={appProps?.movementFunctionCode === EXAMPLE_CODE}
+                    onClick={handleResetCode}
+                  >
+                    Reset code to example
+                  </button>
+                </div>
+              </div>
+              <Editor
+                onMount={handleEditorDidMount}
+                height="40vh"
+                defaultLanguage="javascript"
+                value={appProps?.movementFunctionCode}
+                onChange={handleEditorChange}
               />
             </div>
           </div>
         </div>
-        <div
-          className="card layout editorContainer"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              width: '100%',
-            }}
-          >
-            <span className="cardTitle">Movement function editor</span>
-            <div style={{display: 'flex', gap: '4px'}}>
-              <CopyPromptButton />
-              <button
-                disabled={code === EXAMPLE_CODE}
-                onClick={handleResetCode}
-              >
-                Reset code to example
-              </button>
-            </div>
-          </div>
-          <Editor
-            onMount={handleEditorDidMount}
-            height="40vh"
-            defaultLanguage="javascript"
-            value={code}
-            onChange={handleEditorChange}
-          />
-        </div>
-      </div>
-    </div>
+      </WorkerContext.Provider>
+    </AppContext.Provider>
   );
 }
 

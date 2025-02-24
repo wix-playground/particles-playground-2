@@ -1,24 +1,17 @@
-import {Particle, StartPositionType, Action} from './interfaces';
+import {
+  DEFAULT_MOVEMENT_FUNCTION_KEY,
+  DEFAULT_PARTICLE_RADIUS,
+  DEFAULT_START_POSITION,
+} from './constants';
+import {
+  Particle,
+  StartPositionType,
+  Action,
+  WorkerAction,
+  AppProps,
+} from './interfaces';
+import {getPredefinedMovementOptions} from './movement';
 import {getStartCoordinatesConfig, getValidImageBlocks} from './utils';
-
-let workerParticles: Particle[] = [];
-let imageBitmap: ImageBitmap;
-
-let animationFrameId: number;
-
-let frameCanvas: OffscreenCanvas;
-let frameContext: OffscreenCanvasRenderingContext2D;
-
-let mainCanvas: OffscreenCanvas;
-let mainContext: ImageBitmapRenderingContext;
-
-let particleRadius: number;
-
-let validBlocks: Uint8Array<ArrayBuffer>;
-let blockHeight: number;
-let blockWidth: number;
-
-let startPosition: StartPositionType;
 
 let customMovementFunction: (
   particle: Particle,
@@ -26,50 +19,53 @@ let customMovementFunction: (
   requestAnimationFrameTime: number
 ) => void;
 
-// TODO:
-// const workerState: {
-//   workerParticles: Particle[];
-//   imageBitmap: ImageBitmap | null;
-//   animationFrameId: number;
-//   frameCanvas: OffscreenCanvas | null;
-//   frameContext: OffscreenCanvasRenderingContext2D | null;
-//   mainCanvas: OffscreenCanvas | null;
-//   mainContext: ImageBitmapRenderingContext | null;
-//   particleRadius: number;
-//   validBlocks: Uint8Array<ArrayBuffer> | null;
-//   blockHeight: number;
-//   blockWidth: number;
-//   startPosition: StartPositionType;
-//   movementFunctionCode: string;
-//   selectedMovementFunction: string;
-// } = {
-//   workerParticles: [],
-//   imageBitmap: null,
-//   animationFrameId: 0,
-//   frameCanvas: null,
-//   frameContext: null,
-//   mainCanvas: null,
-//   mainContext: null,
-//   particleRadius: DEFAULT_PARTICLE_RADIUS,
-//   validBlocks: null,
-//   blockHeight: 0,
-//   blockWidth: 0,
-//   startPosition: DEFAULT_START_POSITION,
-//   selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
-//   movementFunctionCode:
-//     getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY],
-// };
+const workerState: {
+  // Internal worker state
+  workerParticles: Particle[];
+  imageBitmap: ImageBitmap | null;
+  animationFrameId: number;
+  frameCanvas: OffscreenCanvas | null;
+  frameContext: OffscreenCanvasRenderingContext2D | null;
+  mainCanvas: OffscreenCanvas | null;
+  mainContext: ImageBitmapRenderingContext | null;
+  validBlocks: Uint8Array<ArrayBuffer> | null;
+  blockHeight: number;
+  blockWidth: number;
+  // Main thread facing props
+  appProps: AppProps;
+} = {
+  workerParticles: [],
+  imageBitmap: null,
+  animationFrameId: 0,
+  frameCanvas: null,
+  frameContext: null,
+  mainCanvas: null,
+  mainContext: null,
+  validBlocks: null,
+  blockHeight: 0,
+  blockWidth: 0,
+  appProps: {
+    particleRadius: DEFAULT_PARTICLE_RADIUS,
+    startPosition: DEFAULT_START_POSITION,
+    selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
+    movementFunctionCode:
+      getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY],
+  },
+};
 
 let startCoordinatesConfig: ReturnType<typeof getStartCoordinatesConfig>;
 
 const initializeCanvas = async (canvas: OffscreenCanvas) => {
-  mainCanvas = canvas;
-  mainContext = mainCanvas.getContext(
+  workerState.mainCanvas = canvas;
+  workerState.mainContext = workerState.mainCanvas.getContext(
     'bitmaprenderer'
   ) as ImageBitmapRenderingContext;
 
-  frameCanvas = new OffscreenCanvas(mainCanvas.width, mainCanvas.height);
-  frameContext = frameCanvas.getContext('2d', {
+  workerState.frameCanvas = new OffscreenCanvas(
+    workerState.mainCanvas.width,
+    workerState.mainCanvas.height
+  );
+  workerState.frameContext = workerState.frameCanvas.getContext('2d', {
     willReadFrequently: true,
   })! as OffscreenCanvasRenderingContext2D;
 };
@@ -81,31 +77,36 @@ const initialize = async (data: any) => {
     dimensions,
     particleRadius: _particleRadius,
   } = data;
-  imageBitmap = _imageBitmap;
-  particleRadius = _particleRadius;
-  startPosition = data.startPosition;
+  workerState.imageBitmap = _imageBitmap;
+  workerState.appProps.particleRadius = _particleRadius;
+  workerState.appProps.startPosition = data.startPosition;
   initializeCanvas(canvas);
-  frameContext.drawImage(imageBitmap, 0, 0);
+  workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
   const {
     validBlocks: _validBlocks,
     blockHeight: _blockHeight,
     blockWidth: _blockWidth,
   } = getValidImageBlocks(
-    frameContext.getImageData(0, 0, mainCanvas.width, mainCanvas.height),
-    particleRadius
+    workerState.frameContext!.getImageData(
+      0,
+      0,
+      workerState.mainCanvas!.width,
+      workerState.mainCanvas!.height
+    ),
+    workerState.appProps.particleRadius
   );
 
-  validBlocks = _validBlocks;
-  blockHeight = _blockHeight;
-  blockWidth = _blockWidth;
+  workerState.validBlocks = _validBlocks;
+  workerState.blockHeight = _blockHeight;
+  workerState.blockWidth = _blockWidth;
   startCoordinatesConfig = getStartCoordinatesConfig({dimensions});
 
-  workerParticles = generateParticles({
-    validBlocks,
-    radius: particleRadius,
-    blockHeight,
-    blockWidth,
-    startPosition,
+  workerState.workerParticles = generateParticles({
+    validBlocks: workerState.validBlocks,
+    radius: workerState.appProps.particleRadius,
+    blockHeight: workerState.blockHeight,
+    blockWidth: workerState.blockWidth,
+    startPosition: workerState.appProps.startPosition,
   });
 };
 
@@ -114,9 +115,14 @@ const renderParticles = (
   requestAnimationFrameTime: number
 ) => {
   let particlesReachedTarget = true;
-  frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
+  workerState.frameContext!.clearRect(
+    0,
+    0,
+    workerState.frameCanvas!.width,
+    workerState.frameCanvas!.height
+  );
 
-  workerParticles.forEach((particle) => {
+  workerState.workerParticles.forEach((particle) => {
     // Update particles position by calling your movement function here:
     customMovementFunction(
       particle,
@@ -125,16 +131,16 @@ const renderParticles = (
     );
 
     // Draw particle on frame context
-    frameContext.drawImage(
-      imageBitmap,
+    workerState.frameContext!.drawImage(
+      workerState.imageBitmap!,
       particle.targetX,
       particle.targetY,
-      particleRadius,
-      particleRadius,
+      workerState.appProps.particleRadius,
+      workerState.appProps.particleRadius,
       Math.floor(particle.x),
       Math.floor(particle.y),
-      particleRadius,
-      particleRadius
+      workerState.appProps.particleRadius,
+      workerState.appProps.particleRadius
     );
 
     if (particle.x !== particle.targetX || particle.y !== particle.targetY) {
@@ -142,18 +148,19 @@ const renderParticles = (
     }
   });
 
-  const frameBitmap = frameCanvas.transferToImageBitmap();
-  mainContext.transferFromImageBitmap(frameBitmap);
+  const frameBitmap = workerState.frameCanvas!.transferToImageBitmap();
+  workerState.mainContext!.transferFromImageBitmap(frameBitmap);
 
   if (particlesReachedTarget) {
     self.postMessage({type: 'particlesReachedTarget'});
 
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
+    if (workerState.animationFrameId) {
+      cancelAnimationFrame(workerState.animationFrameId);
     }
   } else {
-    animationFrameId = requestAnimationFrame((requestAnimationFrameTime) =>
-      renderParticles(animationStartTime, requestAnimationFrameTime)
+    workerState.animationFrameId = requestAnimationFrame(
+      (requestAnimationFrameTime) =>
+        renderParticles(animationStartTime, requestAnimationFrameTime)
     );
   }
 };
@@ -164,76 +171,104 @@ self.onmessage = (event) => {
   const reducerConfig: Record<Action, (data: any, ...rest: any[]) => void> = {
     [Action.INITIALIZE]: (data: any) => {
       initialize(data);
-      self.postMessage({type: 'initialized'});
+      self.postMessage({
+        type: WorkerAction.INITIALIZED,
+        data: workerState.appProps,
+      });
     },
     [Action.PLAY]: (data: any) => {
-      customMovementFunction = new Function(data.code)();
+      customMovementFunction = new Function(
+        workerState.appProps.movementFunctionCode
+      )();
       const startTime = performance.now();
       renderParticles(startTime, startTime);
     },
     [Action.RESET]: () => {
-      workerParticles.forEach((particle) => {
+      workerState.workerParticles.forEach((particle) => {
         const initialCoordinates =
-          startCoordinatesConfig[startPosition as StartPositionType]();
+          startCoordinatesConfig[
+            workerState.appProps.startPosition as StartPositionType
+          ]();
         particle.initialX = initialCoordinates.x;
         particle.initialY = initialCoordinates.y;
         particle.x = initialCoordinates.x;
         particle.y = initialCoordinates.y;
       });
 
-      frameContext.clearRect(0, 0, frameCanvas.width, frameCanvas.height);
-      const frameBitmap = frameCanvas.transferToImageBitmap();
-      mainContext.transferFromImageBitmap(frameBitmap);
+      workerState.frameContext!.clearRect(
+        0,
+        0,
+        workerState.frameCanvas!.width,
+        workerState.frameCanvas!.height
+      );
+      const frameBitmap = workerState.frameCanvas!.transferToImageBitmap();
+      workerState.mainContext!.transferFromImageBitmap(frameBitmap);
 
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+      if (workerState.animationFrameId) {
+        cancelAnimationFrame(workerState.animationFrameId);
       }
     },
     [Action.RESIZE_PARTICLE_RADIUS]: (data: any) => {
-      particleRadius = data.particleRadius;
-      frameContext.drawImage(imageBitmap, 0, 0);
+      workerState.appProps.particleRadius = data.particleRadius;
+      workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
       const {
         validBlocks: _validBlocks,
         blockHeight: _blockHeight,
         blockWidth: _blockWidth,
       } = getValidImageBlocks(
-        frameContext.getImageData(0, 0, mainCanvas.width, mainCanvas.height),
-        particleRadius
+        workerState.frameContext!.getImageData(
+          0,
+          0,
+          workerState.mainCanvas!.width,
+          workerState.mainCanvas!.height
+        ),
+        workerState.appProps.particleRadius
       );
 
-      validBlocks = _validBlocks;
-      blockHeight = _blockHeight;
-      blockWidth = _blockWidth;
+      workerState.validBlocks = _validBlocks;
+      workerState.blockHeight = _blockHeight;
+      workerState.blockWidth = _blockWidth;
 
-      workerParticles = generateParticles({
-        validBlocks,
-        radius: particleRadius,
-        blockHeight,
-        blockWidth,
-        startPosition,
+      workerState.workerParticles = generateParticles({
+        validBlocks: workerState.validBlocks,
+        radius: workerState.appProps.particleRadius,
+        blockHeight: workerState.blockHeight,
+        blockWidth: workerState.blockWidth,
+        startPosition: workerState.appProps.startPosition,
       });
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+
+      if (workerState.animationFrameId) {
+        cancelAnimationFrame(workerState.animationFrameId);
         const startTime = performance.now();
         renderParticles(startTime, startTime);
       }
     },
     [Action.UPDATE_START_POSITION]: (data: any) => {
       // TODO: fix start position for easing ??
-      startPosition = data.startPosition;
+      workerState.appProps.startPosition = data.startPosition;
 
-      if (workerParticles.length) {
-        workerParticles.forEach((particle) => {
+      if (workerState.workerParticles.length) {
+        workerState.workerParticles.forEach((particle) => {
           const initialCoordinates =
-            startCoordinatesConfig[data.startPosition as StartPositionType]();
+            startCoordinatesConfig[workerState.appProps.startPosition]();
           particle.initialX = initialCoordinates.x;
           particle.initialY = initialCoordinates.y;
           particle.x = initialCoordinates.x;
           particle.y = initialCoordinates.y;
         });
 
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId);
+        self.postMessage({
+          type: WorkerAction.UPDATE_APP_PROPS,
+          data: workerState.appProps,
+        });
+
+        if (workerState.animationFrameId) {
+          cancelAnimationFrame(workerState.animationFrameId);
           const startTime = performance.now();
           renderParticles(startTime, startTime);
         }
@@ -241,10 +276,24 @@ self.onmessage = (event) => {
         console.error(
           'updateStartPosition failed, particles were not initialized',
           {
-            workerParticles,
+            workerParticles: workerState.workerParticles,
           }
         );
       }
+    },
+    [Action.UPDATE_SELECTED_MOVEMENT_FUNCTION]: (data: any) => {
+      const {key, movementFunctionCode} = data ?? {};
+      if (key) {
+        workerState.appProps.selectedMovementFunction = key;
+      }
+      if (movementFunctionCode) {
+        workerState.appProps.movementFunctionCode = movementFunctionCode;
+      }
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
     },
   };
 
