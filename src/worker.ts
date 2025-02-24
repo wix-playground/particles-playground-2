@@ -309,6 +309,49 @@ self.onmessage = (event) => {
         data: workerState.appProps,
       });
     },
+    [Action.UPDATE_BITMAP]: (data: any) => {
+      workerState.imageBitmap = data;
+      if (workerState.frameCanvas && workerState.mainCanvas) {
+        workerState.frameCanvas.width = workerState.imageBitmap!.width;
+        workerState.frameCanvas.height = workerState.imageBitmap!.height;
+        workerState.mainCanvas.width = workerState.imageBitmap!.width;
+        workerState.mainCanvas.height = workerState.imageBitmap!.height;
+
+        // TODO: duplication here, remove it later
+        workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
+        const {
+          validBlocks: _validBlocks,
+          blockHeight: _blockHeight,
+          blockWidth: _blockWidth,
+        } = getValidImageBlocks(
+          workerState.frameContext!.getImageData(
+            0,
+            0,
+            workerState.mainCanvas!.width,
+            workerState.mainCanvas!.height
+          ),
+          workerState.appProps.particleRadius
+        );
+
+        workerState.validBlocks = _validBlocks;
+        workerState.blockHeight = _blockHeight;
+        workerState.blockWidth = _blockWidth;
+        startCoordinatesConfig = getStartCoordinatesConfig({
+          dimensions: {
+            width: workerState.mainCanvas.width,
+            height: workerState.mainCanvas.height,
+          },
+        });
+
+        workerState.workerParticles = generateParticles({
+          validBlocks: workerState.validBlocks,
+          radius: workerState.appProps.particleRadius,
+          blockHeight: workerState.blockHeight,
+          blockWidth: workerState.blockWidth,
+          startPosition: workerState.appProps.startPosition,
+        });
+      }
+    },
   };
 
   const {data, type} = event.data;

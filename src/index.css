@@ -80,7 +80,6 @@ div.layout {
 }
 
 div.editorContainer > section {
-  min-width: 60vw;
   max-width: 1280px;
 }
 
