@@ -24,6 +24,10 @@ import {BackInOut} from './BackInOut';
 import {Bezier} from './Bezier';
 import {Linear} from './Linear';
 import {QuintIn} from './QuintIn';
+import {ElasticIn} from './ElasticIn';
+import {ElasticInOut} from './ElasticInOut';
+
+import {ElasticOut} from './ElasticOut';
 
 export {
   SineIn,
@@ -52,4 +56,7 @@ export {
   Bezier,
   Linear,
   QuintIn,
+  ElasticIn,
+  ElasticInOut,
+  ElasticOut,
 };

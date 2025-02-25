@@ -30,6 +30,9 @@ import {
   Bezier,
   Linear,
   QuintIn,
+  ElasticIn,
+  ElasticInOut,
+  ElasticOut,
 } from '../../assets/easings';
 import {AppContext} from '../../contexts/AppContext';
 export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
@@ -99,6 +102,9 @@ export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
       backInOut: <BackInOut />,
       bezier: <Bezier />,
       linear: <Linear />,
+      elasticIn: <ElasticIn />,
+      elasticOut: <ElasticOut />,
+      elasticInOut: <ElasticInOut />,
     }),
     []
   );
