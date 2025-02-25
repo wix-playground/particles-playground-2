@@ -3,25 +3,39 @@ import './FunctionSelectorModal.css';
 import {Action} from '../../interfaces';
 import {getPredefinedMovementOptions} from '../../movement';
 import {WorkerContext} from '../../contexts/WorkerContext';
-import {SineIn} from '../../assets/easings/SineIn';
-import {SineOut} from '../../assets/easings/SineOut';
-import {SineInOut} from '../../assets/easings/SineInOut';
-import {CubicIn} from '../../assets/easings/CubicIn';
-import {CubicOut} from '../../assets/easings/CubicOut';
-import {CubicInOut} from '../../assets/easings/CubicInOut';
-import {QuintIn} from '../../assets/easings/QuintIn';
-import {QuintOut} from '../../assets/easings/QuintOut';
-import {QuintInOut} from '../../assets/easings/QuintInOut';
-import {CircIn} from '../../assets/easings/CircIn';
-import {CircOut} from '../../assets/easings/CircOut';
-import {CircInOut} from '../../assets/easings/CircInOut';
-import {QuadIn} from '../../assets/easings/QuadIn';
-import {QuadOut} from '../../assets/easings/QuadOut';
-import {QuadInOut} from '../../assets/easings/QuadInOut';
-
-export const FunctionSelectorModal = () => {
+import {
+  SineIn,
+  SineOut,
+  SineInOut,
+  CubicIn,
+  CubicOut,
+  CubicInOut,
+  QuintOut,
+  QuintInOut,
+  CircIn,
+  CircOut,
+  CircInOut,
+  QuadIn,
+  QuadOut,
+  QuadInOut,
+  QuartIn,
+  QuartOut,
+  QuartInOut,
+  ExpoIn,
+  ExpoOut,
+  ExpoInOut,
+  BackIn,
+  BackOut,
+  BackInOut,
+  Bezier,
+  Linear,
+  QuintIn,
+} from '../../assets/easings';
+import {AppContext} from '../../contexts/AppContext';
+export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const worker = useContext(WorkerContext);
+  const appProps = useContext(AppContext);
 
   const predefinedMovementOptions = useMemo(
     () => getPredefinedMovementOptions(),
@@ -39,7 +53,7 @@ export const FunctionSelectorModal = () => {
 
   const handleFunctionSelect = useCallback(
     (option: string) => {
-      if (worker)
+      if (worker) {
         worker.postMessage({
           type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
           data: {
@@ -47,8 +61,14 @@ export const FunctionSelectorModal = () => {
             movementFunctionCode: predefinedMovementOptions[option].code,
           },
         });
+        if (dialogRef.current) {
+          dialogRef.current.close();
+        }
+      }
+      onSelect();
     },
-    [predefinedMovementOptions, worker]
+
+    [predefinedMovementOptions, worker, onSelect]
   );
 
   const illustrationConfig: Record<string, React.ReactNode> = useMemo(
@@ -68,37 +88,65 @@ export const FunctionSelectorModal = () => {
       quadIn: <QuadIn />,
       quadOut: <QuadOut />,
       quadInOut: <QuadInOut />,
+      quartIn: <QuartIn />,
+      quartOut: <QuartOut />,
+      quartInOut: <QuartInOut />,
+      expoIn: <ExpoIn />,
+      expoOut: <ExpoOut />,
+      expoInOut: <ExpoInOut />,
+      backIn: <BackIn />,
+      backOut: <BackOut />,
+      backInOut: <BackInOut />,
+      bezier: <Bezier />,
+      linear: <Linear />,
     }),
     []
   );
 
   return (
     <>
-      <dialog ref={dialogRef}>
-        <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-          <p>This modal dialog has a groovy backdrop!</p>
+      <dialog ref={dialogRef} style={{margin: '2em 15em', padding: '0 3em'}}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}
+        >
           <div className="grid-container">
-            {optionArray.map((option) => (
-              <a
-                id={option.name}
-                key={option.name}
-                href=""
-                onClick={(e) => e.preventDefault()}
-              >
-                <div
-                  id={option.name}
-                  key={option.name}
-                  className="grid-item"
-                  style={{display: 'flex', flexDirection: 'column', gap: '4px'}}
-                  onClick={() => {
-                    handleFunctionSelect(option.name);
-                  }}
-                >
-                  {illustrationConfig[option.name]}
-                  <span>{option.name}</span>
-                </div>
-              </a>
-            ))}
+            {optionArray.map(
+              (option) =>
+                !option.name.includes('DEV') && (
+                  <a
+                    className={
+                      appProps?.selectedMovementFunction === option.name
+                        ? 'selected'
+                        : undefined
+                    }
+                    id={option.name}
+                    key={option.name}
+                    href=""
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    <div
+                      id={option.name}
+                      key={option.name}
+                      className="grid-item"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                      }}
+                      onClick={() => {
+                        handleFunctionSelect(option.name);
+                      }}
+                    >
+                      {illustrationConfig[option.name]}
+                      <span>{option.name}</span>
+                    </div>
+                  </a>
+                )
+            )}
           </div>
           <button
             onClick={() => {
@@ -114,12 +162,11 @@ export const FunctionSelectorModal = () => {
       <button
         onClick={() => {
           if (dialogRef.current) {
-            console.log('show dialog!');
             dialogRef.current.showModal();
           }
         }}
       >
-        Show the dialog
+        Select predefined movement function
       </button>
     </>
   );

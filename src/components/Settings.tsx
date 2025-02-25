@@ -1,13 +1,17 @@
-import {useCallback, useMemo, useRef, useContext} from 'react';
-import {getPredefinedMovementOptions} from '../movement';
+import {useCallback, useContext} from 'react';
 import {StartPosition} from './StartPosition';
 import {Action} from '../interfaces';
 import {AppContext} from '../contexts/AppContext';
 import {WorkerContext} from '../contexts/WorkerContext';
+import {FunctionSelectorModal} from './FunctionSelectorModal/FunctionSelectorModal';
+import {editor} from 'monaco-editor';
 
-export const Settings = () => {
+export const Settings = ({
+  editorRef,
+}: {
+  editorRef: React.RefObject<editor.IStandaloneCodeEditor | null>;
+}) => {
   const worker = useContext(WorkerContext);
-  const selectRef = useRef<HTMLSelectElement | null>(null);
   const appProps = useContext(AppContext);
   const handleResizeParticleRadius = useCallback(
     (radius: number) => {
@@ -19,30 +23,6 @@ export const Settings = () => {
     },
     [worker]
   );
-
-  const predefinedMovementOptions = useMemo(
-    () => getPredefinedMovementOptions(),
-    []
-  );
-
-  const movementOptionKeys = useMemo(
-    () => Object.keys(predefinedMovementOptions),
-    [predefinedMovementOptions]
-  );
-
-  const handleFunctionSelect = useCallback(() => {
-    if (worker)
-      if (selectRef.current) {
-        const option = selectRef.current.value;
-        worker.postMessage({
-          type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-          data: {
-            key: option,
-            movementFunctionCode: predefinedMovementOptions[option],
-          },
-        });
-      }
-  }, [predefinedMovementOptions, worker]);
 
   if (!appProps) {
     return;
@@ -69,19 +49,15 @@ export const Settings = () => {
       <StartPosition />
       <div className="card">
         <span className="innerTitle">Predefined movement functions</span>
-        <select
-          id="predefined-function-select"
-          ref={selectRef}
-          onChange={handleFunctionSelect}
-          value={appProps.selectedMovementFunction}
-          className="userInput"
-        >
-          {movementOptionKeys.map((option) => (
-            <option id={option} value={option} key={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+        <FunctionSelectorModal
+          onSelect={() => {
+            if (editorRef.current) {
+              editorRef.current
+                .getAction('editor.action.formatDocument')
+                ?.run();
+            }
+          }}
+        />
       </div>
     </div>
   );

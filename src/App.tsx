@@ -9,7 +9,6 @@ import {AppContext} from './contexts/AppContext';
 import {WorkerContext} from './contexts/WorkerContext';
 import {Editor} from './components/Editor/Editor';
 import {loadJsonFromSnippet} from './snippet';
-import {FunctionSelectorModal} from './components/FunctionSelectorModal/FunctionSelectorModal';
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -153,7 +152,7 @@ const App = () => {
                 gap: '8px',
               }}
             >
-              <Settings />
+              <Settings editorRef={editorRef} />
               <div className="card" style={{width: '70%'}}>
                 <div
                   style={{
@@ -181,7 +180,6 @@ const App = () => {
             <Editor onMount={handleEditorDidMount} />
           </div>
         </div>
-        <FunctionSelectorModal />
       </WorkerContext.Provider>
     </AppContext.Provider>
   );
