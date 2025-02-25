@@ -4,7 +4,11 @@ import {
   EXAMPLE_CODE,
 } from './constants';
 
-const easingFunctions: {name: string; definition: string; comment: string}[] = [
+const easingFunctions: {
+  name: string;
+  definition: string;
+  comment: string;
+}[] = [
   {
     name: 'linear',
     definition: 'const linear = (t) => t;',
@@ -282,17 +286,18 @@ const bezierMovementFunctionString = `return (particle, animationStartTime, curr
 };`;
 
 export const getPredefinedMovementOptions: () => {
-  [functionName: string]: string;
+  [functionName: string]: {code: string; illustration?: React.ReactNode};
 } = () =>
   Object.assign(
     {},
     {
-      [DEFAULT_MOVEMENT_FUNCTION_KEY]: EXAMPLE_CODE,
-      DEV_TWO_FRAMES: DEV_EXAMPLE_CODE,
-      bezier: bezierMovementFunctionString,
+      [DEFAULT_MOVEMENT_FUNCTION_KEY]: {code: EXAMPLE_CODE},
+      DEV_TWO_FRAMES: {code: DEV_EXAMPLE_CODE},
+      bezier: {code: bezierMovementFunctionString},
     },
     ...easingFunctions.map(({name, comment, definition}) => ({
-      [name]: `return (particle, animationStartTime, currentTime) => {
+      [name]: {
+        code: `return (particle, animationStartTime, currentTime) => {
     const animationDuration = 2000;
     // This is obviously inefficient because the same constant will be recalculated for every particle, but this is a playground and its not that expensive.
     ${comment}
@@ -314,5 +319,6 @@ export const getPredefinedMovementOptions: () => {
         particle.y = particle.targetY;
     }
 };`,
+      },
     }))
   );

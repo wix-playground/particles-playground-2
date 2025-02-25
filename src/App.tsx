@@ -9,6 +9,7 @@ import {AppContext} from './contexts/AppContext';
 import {WorkerContext} from './contexts/WorkerContext';
 import {Editor} from './components/Editor/Editor';
 import {loadJsonFromSnippet} from './snippet';
+import {FunctionSelectorModal} from './components/FunctionSelectorModal/FunctionSelectorModal';
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -101,10 +102,6 @@ const App = () => {
           [transferrableCanvas, bitmap!]
         );
       } else if (bitmap && canvasInitialized) {
-        if (canvas) {
-          canvas.style.width = `${bitmap.width}px`;
-          canvas.style.height = `${bitmap.height}px`;
-        }
         workerRef.current?.postMessage(
           {type: Action.UPDATE_BITMAP, data: bitmap},
           [bitmap]
@@ -184,6 +181,7 @@ const App = () => {
             <Editor onMount={handleEditorDidMount} />
           </div>
         </div>
+        <FunctionSelectorModal />
       </WorkerContext.Provider>
     </AppContext.Provider>
   );

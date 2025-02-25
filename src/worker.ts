@@ -50,10 +50,14 @@ const workerState: {
     startPosition: DEFAULT_START_POSITION,
     selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
     movementFunctionCode:
-      getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY],
+      getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY].code,
     text: DEFAULT_PARTICLES_TEXT,
   },
 };
+console.log(
+  'here: ',
+  getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY]
+);
 
 let startCoordinatesConfig: ReturnType<typeof getStartCoordinatesConfig>;
 
@@ -188,6 +192,7 @@ const play = () => {
 };
 
 self.onmessage = (event) => {
+  console.log({workerState});
   // TODO: move to reducer.ts, create a state
   // TODO: do type magic
   const reducerConfig: Record<Action, (data: any, ...rest: any[]) => void> = {

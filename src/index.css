@@ -13,9 +13,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.easingFunctionStroke {
+  stroke: white;
+  stroke-width: 4px;
+}
+
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #ffffffde;
   text-decoration: inherit;
 }
 a:hover {
@@ -67,6 +72,15 @@ div.card {
   border: 1px solid #4f4f4f;
   padding: 1em;
   align-items: start;
+}
+
+.easingSvg {
+  width: 100%;
+  min-width: 50px;
+  height: 100%;
+  overflow: visible;
+  display: block;
+  margin: 0 auto;
 }
 
 .noPadding {
@@ -135,9 +149,17 @@ button.iconButton.selected {
     color: #213547;
     background-color: #ffffff;
   }
-  a:hover {
-    color: #747bff;
+  a {
+    color: #213547;
+    :hover {
+      color: #747bff;
+    }
   }
+
+  .easingFunctionStroke {
+    stroke: #213547;
+  }
+
   button {
     background-color: #f9f9f9;
   }
@@ -158,4 +180,15 @@ button.iconButton.selected {
   .loadingContainer {
     background-color: #ffffff;
   }
+}
+
+::backdrop {
+  background-image: linear-gradient(
+    45deg,
+    magenta,
+    rebeccapurple,
+    dodgerblue,
+    green
+  );
+  opacity: 0.75;
 }

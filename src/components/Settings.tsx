@@ -42,7 +42,7 @@ export const Settings = () => {
           },
         });
       }
-  }, [worker]);
+  }, [predefinedMovementOptions, worker]);
 
   if (!appProps) {
     return;
