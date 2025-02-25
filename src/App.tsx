@@ -10,7 +10,6 @@ import {WorkerContext} from './contexts/WorkerContext';
 import {Editor} from './components/Editor/Editor';
 import {loadJsonFromSnippet} from './snippet';
 
-// TODO: Maybe some tests too, even if it's just a playground.
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -19,10 +18,16 @@ const App = () => {
   const [appProps, setAppProps] = useState<AppProps | null>(null);
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
 
+  const bitmap = useImageLoader({
+    dimensions,
+    text: 'WIX',
+  });
+
   useEffect(() => {
     const updateDimensions = () => {
       if (canvasRef.current) {
-        const {width, height} = canvasRef.current.getBoundingClientRect();
+        const {width, height} =
+          canvasRef.current.parentElement!.getBoundingClientRect();
         setDimensions({width, height});
       }
     };
@@ -32,11 +37,6 @@ const App = () => {
 
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
-
-  const bitmap = useImageLoader({
-    dimensions: dimensions,
-    text: 'WIX',
-  });
 
   useEffect(() => {
     // Create the Web Worker
@@ -63,12 +63,22 @@ const App = () => {
     };
   }, []);
 
+  // setTimeout(
+  //   () =>
+  //     console.log(
+  //       document.querySelector('canvas')?.parentElement?.getBoundingClientRect()
+  //     ),
+  //   1000
+  // );
+
   useEffect(() => {
     const initializeWorker = async () => {
       const canvas = canvasRef.current;
       if (!canvasInitialized.current && canvas && bitmap) {
         canvas.width = bitmap.width;
         canvas.height = bitmap.height;
+        canvas.style.width = `${bitmap.width}px`;
+        canvas.style.height = `${bitmap.height}px`;
         const transferrableCanvas = canvas.transferControlToOffscreen();
         const urlParams = new URLSearchParams(window.location.search);
         const snippetId = urlParams.get(SNIPPET_QUERY_PARAM);
@@ -83,7 +93,7 @@ const App = () => {
             type: Action.INITIALIZE,
             data: {
               canvas: transferrableCanvas,
-              dimensions: {width: canvas.width, height: canvas.height},
+              dimensions: {width: bitmap.width, height: bitmap.height},
               imageBitmap: bitmap!,
               ...(snippetData ? snippetData : {}),
             },
@@ -91,6 +101,10 @@ const App = () => {
           [transferrableCanvas, bitmap!]
         );
       } else if (bitmap && canvasInitialized) {
+        if (canvas) {
+          canvas.style.width = `${bitmap.width}px`;
+          canvas.style.height = `${bitmap.height}px`;
+        }
         workerRef.current?.postMessage(
           {type: Action.UPDATE_BITMAP, data: bitmap},
           [bitmap]
@@ -134,7 +148,7 @@ const App = () => {
             className="layout"
             style={{display: 'flex', flexDirection: 'column'}}
           >
-            <h1>Particles playground v0.3</h1>
+            <h1>Particles playground</h1>
             <div
               style={{
                 display: 'flex',
@@ -163,10 +177,7 @@ const App = () => {
                   className="card noPadding"
                   style={{width: '100%', height: '100%'}}
                 >
-                  <canvas
-                    ref={canvasRef}
-                    style={{width: '100%', height: '100%'}}
-                  />
+                  <canvas ref={canvasRef} />
                 </div>
               </div>
             </div>

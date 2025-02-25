@@ -47,4 +47,5 @@ export interface AppProps {
   movementFunctionCode: string;
   selectedMovementFunction: string;
   particleRadius: number;
+  text: string;
 }

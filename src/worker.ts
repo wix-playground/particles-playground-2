@@ -1,6 +1,7 @@
 import {
   DEFAULT_MOVEMENT_FUNCTION_KEY,
   DEFAULT_PARTICLE_RADIUS,
+  DEFAULT_PARTICLES_TEXT,
   DEFAULT_START_POSITION,
 } from './constants';
 import {
@@ -50,6 +51,7 @@ const workerState: {
     selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
     movementFunctionCode:
       getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY],
+    text: DEFAULT_PARTICLES_TEXT,
   },
 };
 
@@ -166,8 +168,6 @@ const renderParticles = (
   workerState.mainContext!.transferFromImageBitmap(frameBitmap);
 
   if (particlesReachedTarget) {
-    self.postMessage({type: 'particlesReachedTarget'});
-
     if (workerState.animationFrameId) {
       cancelAnimationFrame(workerState.animationFrameId);
     }
@@ -177,6 +177,14 @@ const renderParticles = (
         renderParticles(animationStartTime, requestAnimationFrameTime)
     );
   }
+};
+
+const play = () => {
+  customMovementFunction = new Function(
+    workerState.appProps.movementFunctionCode
+  )();
+  const startTime = performance.now();
+  renderParticles(startTime, startTime);
 };
 
 self.onmessage = (event) => {
@@ -191,11 +199,7 @@ self.onmessage = (event) => {
       });
     },
     [Action.PLAY]: () => {
-      customMovementFunction = new Function(
-        workerState.appProps.movementFunctionCode
-      )();
-      const startTime = performance.now();
-      renderParticles(startTime, startTime);
+      play();
     },
     [Action.RESET]: () => {
       workerState.workerParticles.forEach((particle) => {
