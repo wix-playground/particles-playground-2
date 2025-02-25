@@ -7,6 +7,17 @@ import {SineIn} from '../../assets/easings/SineIn';
 import {SineOut} from '../../assets/easings/SineOut';
 import {SineInOut} from '../../assets/easings/SineInOut';
 import {CubicIn} from '../../assets/easings/CubicIn';
+import {CubicOut} from '../../assets/easings/CubicOut';
+import {CubicInOut} from '../../assets/easings/CubicInOut';
+import {QuintIn} from '../../assets/easings/QuintIn';
+import {QuintOut} from '../../assets/easings/QuintOut';
+import {QuintInOut} from '../../assets/easings/QuintInOut';
+import {CircIn} from '../../assets/easings/CircIn';
+import {CircOut} from '../../assets/easings/CircOut';
+import {CircInOut} from '../../assets/easings/CircInOut';
+import {QuadIn} from '../../assets/easings/QuadIn';
+import {QuadOut} from '../../assets/easings/QuadOut';
+import {QuadInOut} from '../../assets/easings/QuadInOut';
 
 export const FunctionSelectorModal = () => {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
@@ -46,6 +57,17 @@ export const FunctionSelectorModal = () => {
       sineOut: <SineOut />,
       sineInOut: <SineInOut />,
       cubicIn: <CubicIn />,
+      cubicOut: <CubicOut />,
+      cubicInOut: <CubicInOut />,
+      quintIn: <QuintIn />,
+      quintOut: <QuintOut />,
+      quintInOut: <QuintInOut />,
+      circIn: <CircIn />,
+      circOut: <CircOut />,
+      circInOut: <CircInOut />,
+      quadIn: <QuadIn />,
+      quadOut: <QuadOut />,
+      quadInOut: <QuadInOut />,
     }),
     []
   );
