@@ -39,13 +39,13 @@ export const Editor = ({
 
         const predefinedFunctionEntry = movementFunctionEntries.find(
           (entry) => {
-            const [, code] = entry;
+            const [, {code}] = entry;
             return code === value;
           }
         );
 
         if (predefinedFunctionEntry) {
-          const [key, code] = predefinedFunctionEntry;
+          const [key, {code}] = predefinedFunctionEntry;
           worker.postMessage({
             type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
             data: {key, movementFunctionCode: code},

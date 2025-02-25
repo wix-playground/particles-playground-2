@@ -50,7 +50,7 @@ const workerState: {
     startPosition: DEFAULT_START_POSITION,
     selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
     movementFunctionCode:
-      getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY],
+      getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY].code,
     text: DEFAULT_PARTICLES_TEXT,
   },
 };
@@ -307,6 +307,14 @@ self.onmessage = (event) => {
       if (movementFunctionCode) {
         workerState.appProps.movementFunctionCode = movementFunctionCode;
       }
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+    },
+    [Action.UPDATE_TEXT]: (data: any) => {
+      workerState.appProps.text = data.text;
 
       self.postMessage({
         type: WorkerAction.UPDATE_APP_PROPS,

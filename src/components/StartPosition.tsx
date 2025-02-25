@@ -70,7 +70,7 @@ export const StartPosition = () => {
     <div className="card">
       <span className="innerTitle">Particles start position</span>
       <div style={{display: 'flex'}}>
-        <label htmlFor="random-position-toggle">
+        <label htmlFor="random-position-toggle" style={{textAlign: 'start'}}>
           Use random start position:
         </label>
         <input
