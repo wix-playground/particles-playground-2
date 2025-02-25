@@ -13,12 +13,24 @@ export const Settings = ({
 }) => {
   const worker = useContext(WorkerContext);
   const appProps = useContext(AppContext);
+
   const handleResizeParticleRadius = useCallback(
     (radius: number) => {
       if (worker)
         worker.postMessage({
           type: Action.RESIZE_PARTICLE_RADIUS,
           data: {particleRadius: radius},
+        });
+    },
+    [worker]
+  );
+
+  const handleTextChange = useCallback(
+    (value: string) => {
+      if (worker)
+        worker.postMessage({
+          type: Action.UPDATE_TEXT,
+          data: {text: value ?? ''},
         });
     },
     [worker]
@@ -64,6 +76,16 @@ export const Settings = ({
                   .getAction('editor.action.formatDocument')
                   ?.run();
               }
+            }}
+          />
+        </div>
+        <div className="card">
+          <span className="innerTitle">Text</span>
+          <input
+            className="userInput"
+            value={appProps.text}
+            onChange={(e) => {
+              handleTextChange(e.target.value);
             }}
           />
         </div>

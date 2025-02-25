@@ -20,13 +20,10 @@ const App = () => {
 
   const bitmap = useImageLoader({
     dimensions,
-    text: 'WIX',
+    text: appProps?.text ?? '',
   });
 
-  console.log({dimensions});
-
   useEffect(() => {
-    console.log('mount');
     const updateDimensions = () => {
       if (canvasRef.current) {
         const {width, height} = canvasRef.current.getBoundingClientRect();
@@ -38,7 +35,6 @@ const App = () => {
     updateDimensions();
 
     return () => {
-      console.log('unmount');
       window.removeEventListener('resize', updateDimensions);
     };
   }, [appProps]);
