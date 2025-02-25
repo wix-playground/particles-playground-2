@@ -23,11 +23,13 @@ const App = () => {
     text: 'WIX',
   });
 
+  console.log({dimensions});
+
   useEffect(() => {
+    console.log('mount');
     const updateDimensions = () => {
       if (canvasRef.current) {
-        const {width, height} =
-          canvasRef.current.parentElement!.getBoundingClientRect();
+        const {width, height} = canvasRef.current.getBoundingClientRect();
         setDimensions({width, height});
       }
     };
@@ -35,8 +37,11 @@ const App = () => {
     window.addEventListener('resize', updateDimensions);
     updateDimensions();
 
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
+    return () => {
+      console.log('unmount');
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, [appProps]);
 
   useEffect(() => {
     // Create the Web Worker
@@ -51,6 +56,7 @@ const App = () => {
       }
       if (data.type === WorkerAction.INITIALIZED) {
         // console.log('INITIALIZED', data.data);
+
         canvasInitialized.current = true;
         setAppProps(data.data);
       }
@@ -63,22 +69,12 @@ const App = () => {
     };
   }, []);
 
-  // setTimeout(
-  //   () =>
-  //     console.log(
-  //       document.querySelector('canvas')?.parentElement?.getBoundingClientRect()
-  //     ),
-  //   1000
-  // );
-
   useEffect(() => {
     const initializeWorker = async () => {
       const canvas = canvasRef.current;
       if (!canvasInitialized.current && canvas && bitmap) {
         canvas.width = bitmap.width;
         canvas.height = bitmap.height;
-        canvas.style.width = `${bitmap.width}px`;
-        canvas.style.height = `${bitmap.height}px`;
         const transferrableCanvas = canvas.transferControlToOffscreen();
         const urlParams = new URLSearchParams(window.location.search);
         const snippetId = urlParams.get(SNIPPET_QUERY_PARAM);
@@ -153,7 +149,7 @@ const App = () => {
               }}
             >
               <Settings editorRef={editorRef} />
-              <div className="card" style={{width: '70%'}}>
+              <div className="card" style={{flex: 3}}>
                 <div
                   style={{
                     display: 'flex',
@@ -171,9 +167,16 @@ const App = () => {
                 </div>
                 <div
                   className="card noPadding"
-                  style={{width: '100%', height: '100%'}}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    boxSizing: 'border-box',
+                  }}
                 >
-                  <canvas ref={canvasRef} />
+                  <canvas
+                    ref={canvasRef}
+                    style={{width: '100%', height: '100%'}}
+                  />
                 </div>
               </div>
             </div>

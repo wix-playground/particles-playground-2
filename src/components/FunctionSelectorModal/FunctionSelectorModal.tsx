@@ -105,7 +105,15 @@ export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
 
   return (
     <>
-      <dialog ref={dialogRef} style={{margin: '2em 15em', padding: '0 3em'}}>
+      <dialog
+        ref={dialogRef}
+        style={{
+          margin: '2em 15em',
+          padding: '0 3em',
+          borderRadius: '1em',
+          borderWidth: '2px',
+        }}
+      >
         <div
           style={{
             display: 'flex',
