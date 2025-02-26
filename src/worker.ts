@@ -205,16 +205,22 @@ self.onmessage = (event) => {
       play();
     },
     [Action.RESET]: () => {
-      workerState.workerParticles.forEach((particle) => {
-        const initialCoordinates =
-          startCoordinatesConfig[
-            workerState.appProps.startPosition as StartPositionType
-          ]();
-        particle.initialX = initialCoordinates.x;
-        particle.initialY = initialCoordinates.y;
-        particle.x = initialCoordinates.x;
-        particle.y = initialCoordinates.y;
-      });
+      workerState.workerParticles = workerState.workerParticles.map(
+        (particle) => {
+          const initialCoordinates =
+            startCoordinatesConfig[
+              workerState.appProps.startPosition as StartPositionType
+            ]();
+          return {
+            x: initialCoordinates.x,
+            y: initialCoordinates.y,
+            initialX: initialCoordinates.x,
+            initialY: initialCoordinates.y,
+            targetX: particle.targetX,
+            targetY: particle.targetY,
+          };
+        }
+      );
 
       workerState.frameContext!.clearRect(
         0,
