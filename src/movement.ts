@@ -336,7 +336,7 @@ export const getPredefinedMovementOptions: () => {
     },
     ...easingFunctions.map(({name, comment, definition}) => ({
       [name]: {
-        code: `return (particle, animationStartTime, currentTime) => {
+        code: `return (particle, animationStartTime, currentTime, canvasDimensions) => {
     const animationDuration = 2000;
     // This is obviously inefficient because the same constant will be recalculated for every particle, but this is a playground and its not that expensive.
     ${comment}

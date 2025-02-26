@@ -10,6 +10,7 @@ import {
   Action,
   WorkerAction,
   AppProps,
+  Dimensions,
 } from './interfaces';
 import {getPredefinedMovementOptions} from './movement';
 import {getStartCoordinatesConfig, getValidImageBlocks} from './utils';
@@ -17,7 +18,8 @@ import {getStartCoordinatesConfig, getValidImageBlocks} from './utils';
 let customMovementFunction: (
   particle: Particle,
   animationStartTime: number,
-  requestAnimationFrameTime: number
+  requestAnimationFrameTime: number,
+  canvasDimensions: Dimensions
 ) => void;
 
 const workerState: {
@@ -146,7 +148,11 @@ const renderParticles = (
     customMovementFunction(
       particle,
       animationStartTime,
-      requestAnimationFrameTime
+      requestAnimationFrameTime,
+      {
+        width: workerState.mainCanvas!.width,
+        height: workerState.mainCanvas!.height,
+      }
     );
 
     // Draw particle on frame context

@@ -1,4 +1,4 @@
-import {Dimensions, StartPositionType} from './interfaces';
+import {StartPositionType} from './interfaces';
 
 export const DEFAULT_PARTICLE_RADIUS = 2;
 export const DEFAULT_START_POSITION: StartPositionType = 'random';
@@ -18,10 +18,8 @@ export const GENERATING_LINK_TEXT = 'Generating link...';
 
 export const SNIPPET_QUERY_PARAM = 'snippet';
 
-export const CANVAS_DIMENSIONS: Dimensions = {width: 600, height: 300};
-
 export const DEV_EXAMPLE_CODE = `// This function will be called twice for each particle, because all particles reach the target in two frames.
-return (particle, animationStartTime, currentTime) => {
+return (particle, animationStartTime, currentTime, canvasDimensions) => {
     if (particle.x === 0 && particle.y === 0) {
         particle.x = particle.targetX;
         particle.y = particle.targetY;
@@ -43,9 +41,12 @@ export const EXAMPLE_CODE = `/**
  * @param {number} particle.targetY - The target y-coordinate for the particle.
  * @param {number} animationStartTime - The timestamp when the animation started.
  * @param {number} currentTime - The current timestamp of the animation frame.
+ * @param {Object} canvasDimensions - The dimensions of the canvas.
+ * @param {number} canvasDimensions.width - Width of the canvas where particles are being rendered.
+ * @param {number} canvasDimensions.height - Height of the canvas where particles are being rendered.
  * @returns {Function} A function to be called on each animation frame to update the particle's position.
  */
-return (particle, animationStartTime, currentTime) => {
+return (particle, animationStartTime, currentTime, canvasDimensions) => {
     /**
     * Write your movement animation code here to incrementally update particle position.
     * The particle is mutable here so you can add whatever properties you need to achieve your animation.
