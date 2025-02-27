@@ -86,6 +86,18 @@ export const Editor = ({
     }
   };
 
+  const handleClearClick = useCallback(() => {
+    if (worker) {
+      worker.postMessage({
+        type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
+        data: {
+          key: appProps?.selectedMovementFunction,
+          movementFunctionCode: '',
+        },
+      });
+    }
+  }, [worker, appProps?.selectedMovementFunction]);
+
   return (
     <div
       className="card layout editorContainer"
@@ -113,6 +125,7 @@ export const Editor = ({
           >
             Reset code to example
           </button>
+          <button onClick={handleClearClick}>Clear code</button>
         </div>
       </div>
       <MonacoEditor

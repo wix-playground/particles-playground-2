@@ -319,7 +319,7 @@ self.onmessage = (event) => {
       if (key) {
         workerState.appProps.selectedMovementFunction = key;
       }
-      if (movementFunctionCode) {
+      if (movementFunctionCode !== undefined || movementFunctionCode !== null) {
         workerState.appProps.movementFunctionCode = movementFunctionCode;
       }
 
