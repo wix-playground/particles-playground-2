@@ -21,6 +21,8 @@ const fontConfig: Record<
   Playfair: {weight: [300, 900], hasItalic: true, width: [87.5, 112.5]},
   'Luxurious Script': {weight: 400, hasItalic: false},
   Fraunces: {weight: [100, 900], hasItalic: true},
+  Belinda: {weight: 400, hasItalic: false},
+  DIN: {weight: 400, hasItalic: true},
 };
 
 export const FontSettings = () => {

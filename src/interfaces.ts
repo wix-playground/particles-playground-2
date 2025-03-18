@@ -133,6 +133,8 @@ export const fontFamilies = [
   'Playfair',
   'Luxurious Script',
   'Fraunces',
+  'Belinda',
+  'DIN',
 ] as const;
 
 export type FontFamily = (typeof fontFamilies)[number];
