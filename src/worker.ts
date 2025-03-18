@@ -11,6 +11,8 @@ import {
   WorkerAction,
   AppProps,
   Dimensions,
+  MainThreadMessage,
+  InitializeMessagePayload,
 } from './interfaces';
 import {getPredefinedMovementOptions} from './movement';
 import {getStartCoordinatesConfig, getValidImageBlocks} from './utils';
@@ -54,6 +56,15 @@ const workerState: {
     movementFunctionCode:
       getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY].code,
     text: DEFAULT_PARTICLES_TEXT,
+    font: {
+      fontFamily: 'Arial',
+      fontSize: 0,
+      italic: false,
+      weight: 0,
+      letterSpacing: 0,
+    },
+    // fontFamily: 'Arial',
+    // fontStyle: 'regular',
   },
 };
 
@@ -74,7 +85,7 @@ const initializeCanvas = async (canvas: OffscreenCanvas) => {
   })! as OffscreenCanvasRenderingContext2D;
 };
 
-const initialize = async (data: any) => {
+const initialize = async (data: InitializeMessagePayload) => {
   const {
     imageBitmap: _imageBitmap,
     canvas,
@@ -84,6 +95,8 @@ const initialize = async (data: any) => {
     selectedMovementFunction,
     startPosition,
     text,
+    // fontFamily,
+    // fontStyle,
   } = data;
   workerState.imageBitmap = _imageBitmap;
 
@@ -93,12 +106,16 @@ const initialize = async (data: any) => {
     particleRadius &&
     startPosition &&
     text
+    // fontFamily &&
+    // fontStyle
   ) {
     workerState.appProps.movementFunctionCode = movementFunctionCode;
     workerState.appProps.selectedMovementFunction = selectedMovementFunction;
     workerState.appProps.particleRadius = particleRadius;
     workerState.appProps.startPosition = startPosition;
     workerState.appProps.text = text;
+    // workerState.appProps.fontFamily = fontFamily;
+    // workerState.appProps.fontStyle = fontStyle;
   }
 
   initializeCanvas(canvas);
@@ -196,21 +213,26 @@ const play = () => {
   renderParticles(startTime, startTime);
 };
 
-self.onmessage = (event) => {
+self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
   // TODO: move to reducer.ts, create a state
   // TODO: do type magic
-  const reducerConfig: Record<Action, (data: any, ...rest: any[]) => void> = {
-    [Action.INITIALIZE]: (data: any) => {
-      initialize(data);
+
+  const {payload, type} = event.data;
+
+  switch (type) {
+    case Action.INITIALIZE: {
+      initialize(payload);
       self.postMessage({
         type: WorkerAction.INITIALIZED,
         data: workerState.appProps,
       });
-    },
-    [Action.PLAY]: () => {
+      break;
+    }
+    case Action.PLAY: {
       play();
-    },
-    [Action.RESET]: () => {
+      break;
+    }
+    case Action.RESET: {
       workerState.workerParticles = workerState.workerParticles.map(
         (particle) => {
           const initialCoordinates =
@@ -240,9 +262,10 @@ self.onmessage = (event) => {
       if (workerState.animationFrameId) {
         cancelAnimationFrame(workerState.animationFrameId);
       }
-    },
-    [Action.RESIZE_PARTICLE_RADIUS]: (data: any) => {
-      workerState.appProps.particleRadius = data.particleRadius;
+      break;
+    }
+    case Action.RESIZE_PARTICLE_RADIUS: {
+      workerState.appProps.particleRadius = payload;
       workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
       const {
         validBlocks: _validBlocks,
@@ -280,10 +303,11 @@ self.onmessage = (event) => {
         const startTime = performance.now();
         renderParticles(startTime, startTime);
       }
-    },
-    [Action.UPDATE_START_POSITION]: (data: any) => {
+      break;
+    }
+    case Action.UPDATE_START_POSITION: {
       // TODO: fix start position for easing ??
-      workerState.appProps.startPosition = data.startPosition;
+      workerState.appProps.startPosition = payload;
 
       if (workerState.workerParticles.length) {
         workerState.workerParticles.forEach((particle) => {
@@ -313,9 +337,10 @@ self.onmessage = (event) => {
           }
         );
       }
-    },
-    [Action.UPDATE_SELECTED_MOVEMENT_FUNCTION]: (data: any) => {
-      const {key, movementFunctionCode} = data ?? {};
+      break;
+    }
+    case Action.UPDATE_SELECTED_MOVEMENT_FUNCTION: {
+      const {key, movementFunctionCode} = payload ?? {};
       if (key) {
         workerState.appProps.selectedMovementFunction = key;
       }
@@ -327,17 +352,29 @@ self.onmessage = (event) => {
         type: WorkerAction.UPDATE_APP_PROPS,
         data: workerState.appProps,
       });
-    },
-    [Action.UPDATE_TEXT]: (data: any) => {
-      workerState.appProps.text = data.text;
+      break;
+    }
+    case Action.UPDATE_TEXT: {
+      workerState.appProps.text = payload;
 
       self.postMessage({
         type: WorkerAction.UPDATE_APP_PROPS,
         data: workerState.appProps,
       });
-    },
-    [Action.UPDATE_BITMAP]: (data: any) => {
-      workerState.imageBitmap = data;
+      break;
+    }
+    case Action.UPDATE_FONT: {
+      // workerState.appProps.fontFamily = data.fontFamily;
+      // workerState.appProps.fontStyle = data.fontStyle;
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+      break;
+    }
+    case Action.UPDATE_BITMAP: {
+      workerState.imageBitmap = payload;
       if (workerState.frameCanvas && workerState.mainCanvas) {
         workerState.frameCanvas.width = workerState.imageBitmap!.width;
         workerState.frameCanvas.height = workerState.imageBitmap!.height;
@@ -378,11 +415,11 @@ self.onmessage = (event) => {
           startPosition: workerState.appProps.startPosition,
         });
       }
-    },
-  };
-
-  const {data, type} = event.data;
-  reducerConfig[type as Action](data);
+      break;
+    }
+    default:
+      break;
+  }
 };
 
 const generateParticles = ({

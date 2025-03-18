@@ -1,9 +1,16 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import './App.css';
 import {SNIPPET_QUERY_PARAM} from './constants';
 import {editor} from 'monaco-editor';
-import {Settings} from './components/Settings';
-import {Action, AppProps, WorkerAction} from './interfaces';
+import {Settings} from './components/Settings/Settings';
+import {
+  AppProps,
+  getInitializeMessage,
+  getPlayMessage,
+  getResetMessage,
+  getUpdateBitmapMessage,
+  WorkerAction,
+} from './interfaces';
 import {useImageLoader} from './hooks/useImageLoader';
 import {AppContext} from './contexts/AppContext';
 import {WorkerContext} from './contexts/WorkerContext';
@@ -18,9 +25,22 @@ const App = () => {
   const [appProps, setAppProps] = useState<AppProps | null>(null);
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
 
+  // const font = useMemo(() => {
+  //   setTimeout(() => {
+  //     if (canvasRef.current) {
+  //       const _font = window.getComputedStyle(canvasRef.current).font;
+  //       console.log('font update: ', {_font, appProps});
+  //       return _font;
+  //     } else {
+  //       return '';
+  //     }
+  //   }, 100);
+  // }, [appProps?.fontFamily, appProps?.fontStyle]);
+
   const bitmap = useImageLoader({
     dimensions,
     text: appProps?.text ?? '',
+    font: '400 90px Arial',
   });
 
   useEffect(() => {
@@ -81,22 +101,18 @@ const App = () => {
         }
 
         workerRef.current?.postMessage(
-          {
-            type: Action.INITIALIZE,
-            data: {
-              canvas: transferrableCanvas,
-              dimensions: {width: bitmap.width, height: bitmap.height},
-              imageBitmap: bitmap!,
-              ...(snippetData ? snippetData : {}),
-            },
-          },
+          getInitializeMessage({
+            canvas: transferrableCanvas,
+            dimensions: {width: bitmap.width, height: bitmap.height},
+            imageBitmap: bitmap!,
+            ...(snippetData ? snippetData : ({} as AppProps)),
+          }),
           [transferrableCanvas, bitmap!]
         );
       } else if (bitmap && canvasInitialized) {
-        workerRef.current?.postMessage(
-          {type: Action.UPDATE_BITMAP, data: bitmap},
-          [bitmap]
-        );
+        workerRef.current?.postMessage(getUpdateBitmapMessage(bitmap), [
+          bitmap,
+        ]);
       }
     };
     initializeWorker();
@@ -114,13 +130,13 @@ const App = () => {
       editorRef.current.getAction('editor.action.formatDocument')?.run();
     }
 
-    workerRef.current?.postMessage({
-      type: Action.PLAY,
-    });
+    workerRef.current?.postMessage(getPlayMessage());
   }, []);
 
+  // console.log({appProps});
+
   const reset = useCallback(() => {
-    workerRef.current?.postMessage({type: Action.RESET});
+    workerRef.current?.postMessage(getResetMessage());
   }, []);
 
   return (

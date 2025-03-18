@@ -1,9 +1,13 @@
 import {useCallback, useContext} from 'react';
-import {Arrow} from '../assets/Arrow';
-import {CenterFilled} from '../assets/CenterFilled';
-import {Action, StartPositionType} from '../interfaces';
-import {AppContext} from '../contexts/AppContext';
-import {WorkerContext} from '../contexts/WorkerContext';
+import {Arrow} from '../../assets/Arrow';
+import {CenterFilled} from '../../assets/CenterFilled';
+import {
+  Action,
+  getUpdateStartPositionMessage,
+  StartPositionType,
+} from '../../interfaces';
+import {AppContext} from '../../contexts/AppContext';
+import {WorkerContext} from '../../contexts/WorkerContext';
 
 export const StartPosition = () => {
   const appProps = useContext(AppContext);
@@ -11,10 +15,7 @@ export const StartPosition = () => {
 
   const handleSelect = useCallback(
     (id: StartPositionType) => {
-      worker?.postMessage({
-        type: Action.UPDATE_START_POSITION,
-        data: {startPosition: id},
-      });
+      worker?.postMessage(getUpdateStartPositionMessage(id));
     },
     [worker]
   );

@@ -8,9 +8,11 @@ import {
 export const useImageLoader = ({
   dimensions,
   text,
+  font,
 }: {
   dimensions: Dimensions;
   text: string;
+  font: string;
 }) => {
   const imageData = useMemo(() => {
     const {height, width} = dimensions;
@@ -27,6 +29,7 @@ export const useImageLoader = ({
     if (!analysisContext) {
       return;
     }
+    // console.log({font});
 
     analysisContext.textAlign = 'center';
     analysisContext.textBaseline = 'middle';
@@ -35,12 +38,12 @@ export const useImageLoader = ({
       window.matchMedia('(prefers-color-scheme: dark)').matches
         ? DEFAULT_DARK_THEME_COLOR
         : DEFAULT_LIGHT_THEME_COLOR;
-    analysisContext.font = 'bold 90pt sans-serif';
+    analysisContext.font = font;
     analysisContext.fillText(text, width / 2, height / 2);
 
     // Analyze image data without affecting main canvas
     return analysisCanvas.transferToImageBitmap();
-  }, [dimensions, text]);
+  }, [dimensions, text, font]);
 
   return imageData;
 };

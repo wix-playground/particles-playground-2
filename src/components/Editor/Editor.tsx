@@ -1,7 +1,7 @@
 import {useCallback, useContext, useMemo, useState} from 'react';
 import {getPredefinedMovementOptions} from '../../movement';
 import {WorkerContext} from '../../contexts/WorkerContext';
-import {Action} from '../../interfaces';
+import {getUpdateSelectedMovementFunctionMessage} from '../../interfaces';
 import MonacoEditor from '@monaco-editor/react';
 import {editor} from 'monaco-editor';
 import {AppContext} from '../../contexts/AppContext';
@@ -46,15 +46,18 @@ export const Editor = ({
 
         if (predefinedFunctionEntry) {
           const [key, {code}] = predefinedFunctionEntry;
-          worker.postMessage({
-            type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-            data: {key, movementFunctionCode: code},
-          });
+          worker.postMessage(
+            getUpdateSelectedMovementFunctionMessage({
+              key,
+              movementFunctionCode: code,
+            })
+          );
         } else {
-          worker.postMessage({
-            type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-            data: {movementFunctionCode: value ?? ''},
-          });
+          worker.postMessage(
+            getUpdateSelectedMovementFunctionMessage({
+              movementFunctionCode: value ?? '',
+            })
+          );
         }
       }
     },
@@ -63,13 +66,12 @@ export const Editor = ({
 
   const handleResetCode = useCallback(() => {
     if (worker) {
-      worker.postMessage({
-        type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-        data: {
+      worker.postMessage(
+        getUpdateSelectedMovementFunctionMessage({
           key: DEFAULT_MOVEMENT_FUNCTION_KEY,
           movementFunctionCode: EXAMPLE_CODE,
-        },
-      });
+        })
+      );
     }
   }, [worker]);
 
@@ -88,13 +90,12 @@ export const Editor = ({
 
   const handleClearClick = useCallback(() => {
     if (worker) {
-      worker.postMessage({
-        type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-        data: {
+      worker.postMessage(
+        getUpdateSelectedMovementFunctionMessage({
           key: appProps?.selectedMovementFunction,
           movementFunctionCode: '',
-        },
-      });
+        })
+      );
     }
   }, [worker, appProps?.selectedMovementFunction]);
 

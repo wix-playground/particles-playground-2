@@ -36,6 +36,7 @@ export enum Action {
   UPDATE_SELECTED_MOVEMENT_FUNCTION = 'UPDATE_SELECTED_MOVEMENT_FUNCTION',
   UPDATE_BITMAP = 'UPDATE_BITMAP',
   UPDATE_TEXT = 'UPDATE_TEXT',
+  UPDATE_FONT = 'UPDATE_FONT',
 }
 
 export enum WorkerAction {
@@ -43,10 +44,103 @@ export enum WorkerAction {
   UPDATE_APP_PROPS = 'UPDATE_APP_PROPS',
 }
 
+export type FontState = {
+  fontFamily: FontFamily;
+  fontSize: number;
+  italic: boolean;
+  weight: number;
+  letterSpacing: number; // number in px
+};
+
+export const getUpdateFontMessage = (payload: FontState) => ({
+  type: Action.UPDATE_FONT as const,
+  payload,
+});
+
+export interface InitializeMessagePayload extends AppProps {
+  canvas: OffscreenCanvas;
+  dimensions: Dimensions;
+  imageBitmap: ImageBitmap;
+}
+
+export const getInitializeMessage = (payload: InitializeMessagePayload) => ({
+  type: Action.INITIALIZE as const,
+  payload,
+});
+
+export const getPlayMessage = () => ({
+  type: Action.PLAY as const,
+  payload: undefined,
+});
+
+export const getResetMessage = () => ({
+  type: Action.RESET as const,
+  payload: undefined,
+});
+
+export const getResizeParticleRadiusMessage = (payload: number) => ({
+  type: Action.RESIZE_PARTICLE_RADIUS as const,
+  payload,
+});
+
+export const getUpdateStartPositionMessage = (payload: StartPositionType) => ({
+  type: Action.UPDATE_START_POSITION as const,
+  payload,
+});
+
+export const getUpdateSelectedMovementFunctionMessage = (payload: {
+  key?: string;
+  movementFunctionCode?: string;
+}) => ({
+  type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION as const,
+  payload,
+});
+
+export const getUpdateBitmapMessage = (payload: ImageBitmap) => ({
+  type: Action.UPDATE_BITMAP as const,
+  payload,
+});
+
+export const getUpdateTextMessage = (payload: string) => ({
+  type: Action.UPDATE_TEXT as const,
+  payload,
+});
+
+export type MainThreadMessage =
+  | ReturnType<typeof getUpdateBitmapMessage>
+  | ReturnType<typeof getUpdateTextMessage>
+  | ReturnType<typeof getUpdateSelectedMovementFunctionMessage>
+  | ReturnType<typeof getUpdateStartPositionMessage>
+  | ReturnType<typeof getResizeParticleRadiusMessage>
+  | ReturnType<typeof getResetMessage>
+  | ReturnType<typeof getPlayMessage>
+  | ReturnType<typeof getInitializeMessage>
+  | ReturnType<typeof getUpdateFontMessage>;
+
+export const fontFamilies = [
+  'Arial',
+  'Pirata One',
+  'Poppins',
+  'Press Start 2P',
+  'Modak',
+  'UnifrakturMaguntia',
+  'Junge',
+  'Ojuju',
+  'Syne',
+  'Sora',
+  'K2D',
+  'Playfair',
+  'Luxurious Script',
+  'Fraunces',
+] as const;
+
+export type FontFamily = (typeof fontFamilies)[number];
+
 export interface AppProps {
   startPosition: StartPositionType;
   movementFunctionCode: string;
   selectedMovementFunction: string;
   particleRadius: number;
   text: string;
+  font: FontState;
 }

@@ -1,6 +1,6 @@
 import {useCallback, useContext, useMemo, useRef} from 'react';
 import './FunctionSelectorModal.css';
-import {Action} from '../../interfaces';
+import {getUpdateSelectedMovementFunctionMessage} from '../../interfaces';
 import {getPredefinedMovementOptions} from '../../movement';
 import {WorkerContext} from '../../contexts/WorkerContext';
 import {
@@ -57,13 +57,12 @@ export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
   const handleFunctionSelect = useCallback(
     (option: string) => {
       if (worker) {
-        worker.postMessage({
-          type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-          data: {
+        worker.postMessage(
+          getUpdateSelectedMovementFunctionMessage({
             key: option,
             movementFunctionCode: predefinedMovementOptions[option].code,
-          },
-        });
+          })
+        );
         if (dialogRef.current) {
           dialogRef.current.close();
         }

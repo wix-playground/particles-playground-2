@@ -1,10 +1,13 @@
 import {useCallback, useContext} from 'react';
 import {StartPosition} from './StartPosition';
-import {Action} from '../interfaces';
-import {AppContext} from '../contexts/AppContext';
-import {WorkerContext} from '../contexts/WorkerContext';
-import {FunctionSelectorModal} from './FunctionSelectorModal/FunctionSelectorModal';
+import {getResizeParticleRadiusMessage} from '../../interfaces';
+import {AppContext} from '../../contexts/AppContext';
+import {WorkerContext} from '../../contexts/WorkerContext';
+import {FunctionSelectorModal} from '../FunctionSelectorModal/FunctionSelectorModal';
 import {editor} from 'monaco-editor';
+import {TextInput} from './TextInput';
+import {FontSettings1} from './FontSettings';
+// import {FontSettings} from './FontSettings';
 
 export const Settings = ({
   editorRef,
@@ -16,22 +19,7 @@ export const Settings = ({
 
   const handleResizeParticleRadius = useCallback(
     (radius: number) => {
-      if (worker)
-        worker.postMessage({
-          type: Action.RESIZE_PARTICLE_RADIUS,
-          data: {particleRadius: radius},
-        });
-    },
-    [worker]
-  );
-
-  const handleTextChange = useCallback(
-    (value: string) => {
-      if (worker)
-        worker.postMessage({
-          type: Action.UPDATE_TEXT,
-          data: {text: value ?? ''},
-        });
+      if (worker) worker.postMessage(getResizeParticleRadiusMessage(radius));
     },
     [worker]
   );
@@ -79,16 +67,8 @@ export const Settings = ({
             }}
           />
         </div>
-        <div className="card">
-          <span className="innerTitle">Text</span>
-          <input
-            className="userInput"
-            value={appProps.text}
-            onChange={(e) => {
-              handleTextChange(e.target.value);
-            }}
-          />
-        </div>
+        <TextInput />
+        <FontSettings1 />
       </div>
     </div>
   );
