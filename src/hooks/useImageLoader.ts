@@ -9,14 +9,18 @@ export const useImageLoader = ({
   dimensions,
   text,
   font,
+  letterSpacing,
+  fontLoaded,
 }: {
   dimensions: Dimensions;
   text: string;
   font: string;
+  letterSpacing: number;
+  fontLoaded: boolean;
 }) => {
   const imageData = useMemo(() => {
     const {height, width} = dimensions;
-    if (!height && !width) {
+    if (!height && !width && !fontLoaded) {
       return null;
     }
 
@@ -29,7 +33,6 @@ export const useImageLoader = ({
     if (!analysisContext) {
       return;
     }
-    // console.log({font});
 
     analysisContext.textAlign = 'center';
     analysisContext.textBaseline = 'middle';
@@ -39,11 +42,12 @@ export const useImageLoader = ({
         ? DEFAULT_DARK_THEME_COLOR
         : DEFAULT_LIGHT_THEME_COLOR;
     analysisContext.font = font;
+    analysisContext.letterSpacing = `${letterSpacing}px`;
     analysisContext.fillText(text, width / 2, height / 2);
 
     // Analyze image data without affecting main canvas
     return analysisCanvas.transferToImageBitmap();
-  }, [dimensions, text, font]);
+  }, [dimensions, text, font, letterSpacing, fontLoaded]);
 
   return imageData;
 };

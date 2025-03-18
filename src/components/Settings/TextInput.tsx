@@ -19,7 +19,7 @@ export const TextInput = () => {
   }
 
   return (
-    <div className="card">
+    <>
       <span className="innerTitle">Text</span>
       <input
         className="userInput"
@@ -28,6 +28,6 @@ export const TextInput = () => {
           handleTextChange(e.target.value);
         }}
       />
-    </div>
+    </>
   );
 };

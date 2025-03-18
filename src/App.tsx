@@ -1,10 +1,12 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import FontFaceObserver from 'fontfaceobserver';
+import {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import './App.css';
 import {SNIPPET_QUERY_PARAM} from './constants';
 import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings/Settings';
 import {
   AppProps,
+  FontState,
   getInitializeMessage,
   getPlayMessage,
   getResetMessage,
@@ -17,6 +19,11 @@ import {WorkerContext} from './contexts/WorkerContext';
 import {Editor} from './components/Editor/Editor';
 import {loadJsonFromSnippet} from './snippet';
 
+const getFontString = (font: FontState) =>
+  `${font.italic ? 'italic ' : ''}${font.weight} ${font.fontSize}px '${
+    font.fontFamily
+  }'`;
+
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -24,23 +31,29 @@ const App = () => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [appProps, setAppProps] = useState<AppProps | null>(null);
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
+  const [fontLoaded, setFontLoaded] = useState(false);
 
-  // const font = useMemo(() => {
-  //   setTimeout(() => {
-  //     if (canvasRef.current) {
-  //       const _font = window.getComputedStyle(canvasRef.current).font;
-  //       console.log('font update: ', {_font, appProps});
-  //       return _font;
-  //     } else {
-  //       return '';
-  //     }
-  //   }, 100);
-  // }, [appProps?.fontFamily, appProps?.fontStyle]);
+  useLayoutEffect(() => {
+    if (appProps?.font.fontFamily) {
+      const font = new FontFaceObserver(appProps.font.fontFamily);
+      setFontLoaded(false);
+      font.load().then(
+        () => {
+          setFontLoaded(true);
+        },
+        () => {
+          setFontLoaded(false);
+        }
+      );
+    }
+  }, [appProps?.font.fontFamily]);
 
   const bitmap = useImageLoader({
     dimensions,
     text: appProps?.text ?? '',
-    font: '400 90px Arial',
+    font: appProps?.font ? getFontString(appProps.font) : '',
+    letterSpacing: appProps?.font ? appProps.font.letterSpacing : 0,
+    fontLoaded,
   });
 
   useEffect(() => {
@@ -67,12 +80,9 @@ const App = () => {
 
     workerRef.current.addEventListener('message', ({data}) => {
       if (data.type === WorkerAction.UPDATE_APP_PROPS) {
-        // console.log('UPDATE_APP_PROPS', data.data);
         setAppProps(data.data);
       }
       if (data.type === WorkerAction.INITIALIZED) {
-        // console.log('INITIALIZED', data.data);
-
         canvasInitialized.current = true;
         setAppProps(data.data);
       }
@@ -132,8 +142,6 @@ const App = () => {
 
     workerRef.current?.postMessage(getPlayMessage());
   }, []);
-
-  // console.log({appProps});
 
   const reset = useCallback(() => {
     workerRef.current?.postMessage(getResetMessage());

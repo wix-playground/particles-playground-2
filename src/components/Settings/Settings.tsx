@@ -6,8 +6,7 @@ import {WorkerContext} from '../../contexts/WorkerContext';
 import {FunctionSelectorModal} from '../FunctionSelectorModal/FunctionSelectorModal';
 import {editor} from 'monaco-editor';
 import {TextInput} from './TextInput';
-import {FontSettings1} from './FontSettings';
-// import {FontSettings} from './FontSettings';
+import {FontSettings} from './FontSettings';
 
 export const Settings = ({
   editorRef,
@@ -67,8 +66,10 @@ export const Settings = ({
             }}
           />
         </div>
-        <TextInput />
-        <FontSettings1 />
+        <div className="card">
+          <TextInput />
+          <FontSettings />
+        </div>
       </div>
     </div>
   );

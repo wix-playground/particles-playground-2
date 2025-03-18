@@ -58,8 +58,8 @@ const workerState: {
     text: DEFAULT_PARTICLES_TEXT,
     font: {
       fontFamily: 'Arial',
-      fontSize: 16,
-      italic: false,
+      fontSize: 90,
+      italic: true,
       weight: 400,
       letterSpacing: 0,
     },
@@ -337,8 +337,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
       break;
     }
     case Action.UPDATE_FONT: {
-      // workerState.appProps.fontFamily = data.fontFamily;
-      // workerState.appProps.fontStyle = data.fontStyle;
+      workerState.appProps.font = payload;
 
       self.postMessage({
         type: WorkerAction.UPDATE_APP_PROPS,

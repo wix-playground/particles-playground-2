@@ -2,7 +2,6 @@ import {useCallback, useContext} from 'react';
 import {Arrow} from '../../assets/Arrow';
 import {CenterFilled} from '../../assets/CenterFilled';
 import {
-  Action,
   getUpdateStartPositionMessage,
   StartPositionType,
 } from '../../interfaces';

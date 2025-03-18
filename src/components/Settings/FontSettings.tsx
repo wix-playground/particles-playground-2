@@ -1,5 +1,7 @@
-import React, {useState, useEffect} from 'react';
-import {FontFamily, FontState} from '../../interfaces';
+import React, {useEffect, useCallback, useContext} from 'react';
+import {FontFamily, FontState, getUpdateFontMessage} from '../../interfaces';
+import {AppContext} from '../../contexts/AppContext';
+import {WorkerContext} from '../../contexts/WorkerContext';
 
 const fontConfig: Record<
   FontFamily,
@@ -21,15 +23,20 @@ const fontConfig: Record<
   Fraunces: {weight: [100, 900], hasItalic: true},
 };
 
-export const FontSettings1 = () => {
-  // Default font state
-  const [fontState, setFontState] = useState<FontState>({
-    fontFamily: 'Arial',
-    fontSize: 16,
-    italic: false,
-    weight: 400,
-    letterSpacing: 0,
-  });
+export const FontSettings = () => {
+  const appProps = useContext(AppContext);
+  const worker = useContext(WorkerContext);
+
+  const fontState = appProps?.font;
+
+  const setFontState = useCallback(
+    (font: Partial<FontState>) => {
+      worker?.postMessage(
+        getUpdateFontMessage({...appProps?.font, ...font} as FontState)
+      );
+    },
+    [worker, appProps]
+  );
 
   // Generate weight options for fonts with weight ranges
   const generateWeightOptions = (font: FontFamily) => {
@@ -47,78 +54,61 @@ export const FontSettings1 = () => {
 
   // Update weight when font family changes
   useEffect(() => {
-    const fontWeightConfig = fontConfig[fontState.fontFamily].weight;
-    const newWeight = Array.isArray(fontWeightConfig)
-      ? fontWeightConfig[0]
-      : fontWeightConfig;
+    if (fontState) {
+      const fontWeightConfig = fontConfig[fontState?.fontFamily].weight;
+      const newWeight = Array.isArray(fontWeightConfig)
+        ? fontWeightConfig[0]
+        : fontWeightConfig;
 
-    setFontState((prevState) => ({
-      ...prevState,
-      weight: newWeight,
-      italic: false, // Reset italic when changing font family
-    }));
-  }, [fontState.fontFamily]);
+      setFontState({
+        weight: newWeight,
+        italic: false, // Reset italic when changing font family
+      });
+    }
+  }, [fontState?.fontFamily]);
 
   // Handle font family change
   const handleFontFamilyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newFontFamily = e.target.value as FontFamily;
-    setFontState((prevState) => ({
-      ...prevState,
+    setFontState({
       fontFamily: newFontFamily,
-    }));
+    });
   };
 
   // Handle font weight change
   const handleWeightChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFontState((prevState) => ({
-      ...prevState,
+    setFontState({
       weight: parseInt(e.target.value),
-    }));
+    });
   };
 
   // Handle italic toggle
   const handleItalicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFontState((prevState) => ({
-      ...prevState,
+    setFontState({
       italic: e.target.checked,
-    }));
+    });
   };
 
   // Handle font size change
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFontState((prevState) => ({
-      ...prevState,
+    setFontState({
       fontSize: parseInt(e.target.value),
-    }));
+    });
   };
 
   // Handle letter spacing change
   const handleLetterSpacingChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setFontState((prevState) => ({
-      ...prevState,
-      letterSpacing: parseInt(e.target.value),
-    }));
+    setFontState({letterSpacing: parseInt(e.target.value)});
   };
 
-  // Generate the preview style
-  const previewStyle = {
-    fontFamily: fontState.fontFamily,
-    fontSize: `${fontState.fontSize}px`,
-    fontWeight: fontState.weight,
-    fontStyle: fontState.italic ? 'italic' : 'normal',
-    letterSpacing: `${fontState.letterSpacing}px`,
-    marginTop: '20px',
-    padding: '15px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-  };
+  if (!fontState) {
+    return;
+  }
 
   return (
-    <div className="font-settings">
-      <h2>Font Settings</h2>
-
+    <div>
       <div className="setting-group">
         <label htmlFor="font-family">Font Family:</label>
         <select
@@ -138,7 +128,7 @@ export const FontSettings1 = () => {
         <label htmlFor="font-weight">Font Weight:</label>
         <select
           id="font-weight"
-          value={fontState.weight}
+          value={fontState?.weight}
           onChange={handleWeightChange}
         >
           {generateWeightOptions(fontState.fontFamily).map((weight) => (
@@ -171,7 +161,7 @@ export const FontSettings1 = () => {
           value={fontState.fontSize}
           onChange={handleFontSizeChange}
           min="8"
-          max="72"
+          max="140"
         />
       </div>
 
@@ -186,15 +176,6 @@ export const FontSettings1 = () => {
           max="20"
         />
       </div>
-
-      <div className="font-preview" style={previewStyle}>
-        The quick brown fox jumps over the lazy dog.
-      </div>
-
-      {/* <div className="current-settings">
-        <h3>Current Font Settings:</h3>
-        <pre>{JSON.stringify(fontState, null, 2)}</pre>
-      </div> */}
     </div>
   );
 };

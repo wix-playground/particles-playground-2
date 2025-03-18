@@ -192,3 +192,7 @@ button.iconButton.selected {
     background-color: #ffffff;
   }
 }
+
+.setting-group {
+  text-align: start;
+}
