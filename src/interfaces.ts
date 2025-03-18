@@ -57,10 +57,11 @@ export const getUpdateFontMessage = (payload: FontState) => ({
   payload,
 });
 
-export interface InitializeMessagePayload extends AppProps {
+export interface InitializeMessagePayload {
   canvas: OffscreenCanvas;
   dimensions: Dimensions;
   imageBitmap: ImageBitmap;
+  appProps: AppProps;
 }
 
 export const getInitializeMessage = (payload: InitializeMessagePayload) => ({

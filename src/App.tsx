@@ -105,7 +105,7 @@ const App = () => {
             canvas: transferrableCanvas,
             dimensions: {width: bitmap.width, height: bitmap.height},
             imageBitmap: bitmap!,
-            ...(snippetData ? snippetData : ({} as AppProps)),
+            appProps: snippetData ?? ({} as AppProps),
           }),
           [transferrableCanvas, bitmap!]
         );

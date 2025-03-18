@@ -1,13 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {FontFamily} from '../../interfaces';
-
-type FontState = {
-  fontFamily: FontFamily;
-  fontSize: number;
-  italic: boolean;
-  weight: number;
-  letterSpacing: number; // number in px
-};
+import {FontFamily, FontState} from '../../interfaces';
 
 const fontConfig: Record<
   FontFamily,

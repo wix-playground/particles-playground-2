@@ -58,13 +58,11 @@ const workerState: {
     text: DEFAULT_PARTICLES_TEXT,
     font: {
       fontFamily: 'Arial',
-      fontSize: 0,
+      fontSize: 16,
       italic: false,
-      weight: 0,
+      weight: 400,
       letterSpacing: 0,
     },
-    // fontFamily: 'Arial',
-    // fontStyle: 'regular',
   },
 };
 
@@ -86,36 +84,11 @@ const initializeCanvas = async (canvas: OffscreenCanvas) => {
 };
 
 const initialize = async (data: InitializeMessagePayload) => {
-  const {
-    imageBitmap: _imageBitmap,
-    canvas,
-    dimensions,
-    particleRadius,
-    movementFunctionCode,
-    selectedMovementFunction,
-    startPosition,
-    text,
-    // fontFamily,
-    // fontStyle,
-  } = data;
+  const {imageBitmap: _imageBitmap, canvas, dimensions, appProps} = data;
   workerState.imageBitmap = _imageBitmap;
 
-  if (
-    movementFunctionCode &&
-    selectedMovementFunction &&
-    particleRadius &&
-    startPosition &&
-    text
-    // fontFamily &&
-    // fontStyle
-  ) {
-    workerState.appProps.movementFunctionCode = movementFunctionCode;
-    workerState.appProps.selectedMovementFunction = selectedMovementFunction;
-    workerState.appProps.particleRadius = particleRadius;
-    workerState.appProps.startPosition = startPosition;
-    workerState.appProps.text = text;
-    // workerState.appProps.fontFamily = fontFamily;
-    // workerState.appProps.fontStyle = fontStyle;
+  if (Object.keys(appProps).length) {
+    workerState.appProps = appProps;
   }
 
   initializeCanvas(canvas);
@@ -344,7 +317,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
       if (key) {
         workerState.appProps.selectedMovementFunction = key;
       }
-      if (movementFunctionCode !== undefined || movementFunctionCode !== null) {
+      if (movementFunctionCode !== undefined && movementFunctionCode !== null) {
         workerState.appProps.movementFunctionCode = movementFunctionCode;
       }
 
