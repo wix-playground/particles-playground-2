@@ -160,7 +160,6 @@ const App = () => {
             className="layout"
             style={{display: 'flex', flexDirection: 'column'}}
           >
-            <h1>Particles playground</h1>
             <div
               style={{
                 display: 'flex',
