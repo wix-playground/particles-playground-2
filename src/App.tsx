@@ -6,7 +6,6 @@ import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings/Settings';
 import {
   AppProps,
-  FontState,
   getInitializeMessage,
   getPlayMessage,
   getResetMessage,
@@ -18,11 +17,7 @@ import {AppContext} from './contexts/AppContext';
 import {WorkerContext} from './contexts/WorkerContext';
 import {Editor} from './components/Editor/Editor';
 import {loadJsonFromSnippet} from './snippet';
-
-const getFontString = (font: FontState) =>
-  `${font.italic ? 'italic ' : ''}${font.weight} ${font.fontSize}px '${
-    font.fontFamily
-  }'`;
+import {getFontString} from './utils';
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

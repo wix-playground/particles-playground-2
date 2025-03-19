@@ -1,4 +1,9 @@
-import {Coordinates, Dimensions, StartPositionType} from './interfaces';
+import {
+  Coordinates,
+  Dimensions,
+  FontState,
+  StartPositionType,
+} from './interfaces';
 
 export const getValidImageBlocks = (
   imageData: ImageData,
@@ -96,3 +101,8 @@ export const getStartCoordinatesConfig = ({
   };
   return config;
 };
+
+export const getFontString = (font: FontState) =>
+  `${font.italic ? 'italic ' : ''}${font.weight} ${font.fontSize}px '${
+    font.fontFamily
+  }'`;
