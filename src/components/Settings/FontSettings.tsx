@@ -95,7 +95,7 @@ export const FontSettings = () => {
   const handleLetterSpacingChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setFontState({letterSpacing: parseInt(e.target.value)});
+    setFontState({letterSpacing: Number(e.target.value)});
   };
 
   if (!fontState) {
@@ -161,12 +161,13 @@ export const FontSettings = () => {
       </div>
 
       <div className="setting-group">
-        <label htmlFor="letter-spacing">Letter Spacing (px):</label>
+        <label htmlFor="letter-spacing">Letter Spacing (rem):</label>
         <input
           type="number"
           id="letter-spacing"
           value={fontState.letterSpacing}
           onChange={handleLetterSpacingChange}
+          step="0.1"
           min="-5"
           max="20"
         />

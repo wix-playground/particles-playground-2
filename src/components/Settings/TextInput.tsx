@@ -24,7 +24,7 @@ export const TextInput = () => {
             fontSize: `24px`,
             fontWeight: fontState.weight,
             fontStyle: fontState.italic ? 'italic' : 'normal',
-            letterSpacing: `${fontState.letterSpacing}px`,
+            letterSpacing: `${fontState.letterSpacing}rem`,
             maxWidth: '250px',
           }
         : {},

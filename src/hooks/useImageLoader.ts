@@ -42,7 +42,7 @@ export const useImageLoader = ({
         ? DEFAULT_DARK_THEME_COLOR
         : DEFAULT_LIGHT_THEME_COLOR;
     analysisContext.font = font;
-    analysisContext.letterSpacing = `${letterSpacing}px`;
+    analysisContext.letterSpacing = `${letterSpacing}rem`;
     analysisContext.fillText(text, width / 2, height / 2);
 
     // Analyze image data without affecting main canvas
