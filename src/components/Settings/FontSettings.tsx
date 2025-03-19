@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback, useContext} from 'react';
+import React, {useCallback, useContext} from 'react';
 import {FontFamily, FontState, getUpdateFontMessage} from '../../interfaces';
 import {AppContext} from '../../contexts/AppContext';
 import {WorkerContext} from '../../contexts/WorkerContext';
@@ -54,26 +54,19 @@ export const FontSettings = () => {
     return [config.weight];
   };
 
-  // Update weight when font family changes
-  useEffect(() => {
-    if (fontState) {
-      const fontWeightConfig = fontConfig[fontState?.fontFamily].weight;
-      const newWeight = Array.isArray(fontWeightConfig)
-        ? fontWeightConfig[0]
-        : fontWeightConfig;
-
-      setFontState({
-        weight: newWeight,
-        italic: false, // Reset italic when changing font family
-      });
-    }
-  }, [fontState?.fontFamily]);
-
   // Handle font family change
   const handleFontFamilyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newFontFamily = e.target.value as FontFamily;
+
+    const fontWeightConfig = fontConfig[newFontFamily].weight;
+    const newWeight = Array.isArray(fontWeightConfig)
+      ? fontWeightConfig[0]
+      : fontWeightConfig;
+
     setFontState({
       fontFamily: newFontFamily,
+      weight: newWeight,
+      italic: false, // Reset italic when changing font family
     });
   };
 

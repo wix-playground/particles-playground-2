@@ -1,5 +1,5 @@
 import FontFaceObserver from 'fontfaceobserver';
-import {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import './App.css';
 import {SNIPPET_QUERY_PARAM} from './constants';
 import {editor} from 'monaco-editor';
@@ -28,9 +28,12 @@ const App = () => {
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
   const [fontLoaded, setFontLoaded] = useState(false);
 
-  useLayoutEffect(() => {
-    if (appProps?.font.fontFamily) {
-      const font = new FontFaceObserver(appProps.font.fontFamily);
+  useEffect(() => {
+    if (appProps?.font.fontFamily && appProps.font.weight) {
+      const font = new FontFaceObserver(appProps.font.fontFamily, {
+        weight: appProps.font.weight,
+        style: appProps.font.italic ? 'italic' : undefined,
+      });
       setFontLoaded(false);
       font.load().then(
         () => {
@@ -41,7 +44,7 @@ const App = () => {
         }
       );
     }
-  }, [appProps?.font.fontFamily]);
+  }, [appProps?.font]);
 
   const bitmap = useImageLoader({
     dimensions,

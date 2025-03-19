@@ -83,12 +83,12 @@ const initializeCanvas = async (canvas: OffscreenCanvas) => {
   })! as OffscreenCanvasRenderingContext2D;
 };
 
-const initialize = async (data: InitializeMessagePayload) => {
+const initialize = (data: InitializeMessagePayload) => {
   const {imageBitmap: _imageBitmap, canvas, dimensions, appProps} = data;
   workerState.imageBitmap = _imageBitmap;
 
   if (Object.keys(appProps).length) {
-    workerState.appProps = appProps;
+    workerState.appProps = {...appProps};
   }
 
   initializeCanvas(canvas);
