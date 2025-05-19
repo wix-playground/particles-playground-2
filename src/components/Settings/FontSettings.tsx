@@ -2,6 +2,7 @@ import React, {useCallback, useContext} from 'react';
 import {FontFamily, FontState, getUpdateFontMessage} from '../../interfaces';
 import {AppContext} from '../../contexts/AppContext';
 import {WorkerContext} from '../../contexts/WorkerContext';
+import {DEFAULT_FONT_STATE} from '../../constants';
 
 const fontConfig: Record<
   FontFamily,
@@ -29,12 +30,12 @@ export const FontSettings = () => {
   const appProps = useContext(AppContext);
   const worker = useContext(WorkerContext);
 
-  const fontState = appProps?.font;
+  const fontState = appProps?.font ?? DEFAULT_FONT_STATE;
 
   const setFontState = useCallback(
     (font: Partial<FontState>) => {
       worker?.postMessage(
-        getUpdateFontMessage({...appProps?.font, ...font} as FontState)
+        getUpdateFontMessage({...fontState, ...font} as FontState)
       );
     },
     [worker, appProps]

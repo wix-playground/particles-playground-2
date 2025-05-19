@@ -1,7 +1,7 @@
 import FontFaceObserver from 'fontfaceobserver';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import './App.css';
-import {SNIPPET_QUERY_PARAM} from './constants';
+import {DEFAULT_FONT_STATE, SNIPPET_QUERY_PARAM} from './constants';
 import {editor} from 'monaco-editor';
 import {Settings} from './components/Settings/Settings';
 import {
@@ -49,7 +49,7 @@ const App = () => {
   const bitmap = useImageLoader({
     dimensions,
     text: appProps?.text ?? '',
-    font: appProps?.font ? getFontString(appProps.font) : '',
+    font: getFontString(appProps?.font ?? DEFAULT_FONT_STATE),
     letterSpacing: appProps?.font ? appProps.font.letterSpacing : 0,
     fontLoaded,
   });

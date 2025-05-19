@@ -1,4 +1,4 @@
-import {StartPositionType} from './interfaces';
+import {FontState, StartPositionType} from './interfaces';
 
 export const DEFAULT_PARTICLE_RADIUS = 2;
 export const DEFAULT_START_POSITION: StartPositionType = 'random';
@@ -6,10 +6,17 @@ export const DEFAULT_MOVEMENT_FUNCTION_KEY = 'DEV_EXAMPLE';
 export const DEFAULT_DARK_THEME_COLOR = '#FFFFFF';
 export const DEFAULT_LIGHT_THEME_COLOR = '#213547';
 export const DEFAULT_PARTICLES_TEXT = 'WIX 🤠';
+export const DEFAULT_FONT_STATE: FontState = {
+    fontFamily: 'Arial',
+    fontSize: 90,
+    italic: true,
+    weight: 400,
+    letterSpacing: 0,
+}
 
 export const COPY_AI_PROMPT_TEXT = 'Copy AI prompt';
 export const AI_PROMPT_TOOLTIP_TEXT =
-  'Copy an AI friendly prompt to your clipboard and run it on a LLM to receive an AI generated movement function.';
+    'Copy an AI friendly prompt to your clipboard and run it on a LLM to receive an AI generated movement function.';
 export const COPIED_TEXT = 'Copied!';
 export const COPY_ERROR_TEXT = 'Copy error, try again';
 

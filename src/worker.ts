@@ -1,4 +1,5 @@
 import {
+  DEFAULT_FONT_STATE,
   DEFAULT_MOVEMENT_FUNCTION_KEY,
   DEFAULT_PARTICLE_RADIUS,
   DEFAULT_PARTICLES_TEXT,
@@ -56,13 +57,7 @@ const workerState: {
     movementFunctionCode:
       getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY].code,
     text: DEFAULT_PARTICLES_TEXT,
-    font: {
-      fontFamily: 'Arial',
-      fontSize: 90,
-      italic: true,
-      weight: 400,
-      letterSpacing: 0,
-    },
+    font: DEFAULT_FONT_STATE,
   },
 };
 
