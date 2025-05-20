@@ -128,7 +128,7 @@ const renderParticles = (
     workerState.frameCanvas!.height
   );
 
-  workerState.workerParticles.forEach((particle) => {
+  workerState.workerParticles.forEach((particle,) => {
     // Update particles position by calling your movement function here:
     customMovementFunction(
       particle,
@@ -140,18 +140,80 @@ const renderParticles = (
       }
     );
 
-    // Draw particle on frame context
-    workerState.frameContext!.drawImage(
-      workerState.imageBitmap!,
-      particle.targetX,
-      particle.targetY,
-      workerState.appProps.particleRadius,
-      workerState.appProps.particleRadius,
-      Math.floor(particle.x),
-      Math.floor(particle.y),
-      workerState.appProps.particleRadius,
-      workerState.appProps.particleRadius
-    );
+    // Calculate distance to target as percentage (0-1)
+    const dx = particle.targetX - particle.initialX;
+    const dy = particle.targetY - particle.initialY;
+    const initialDistance = Math.sqrt(dx * dx + dy * dy);
+
+    const currentDx = particle.targetX - particle.x;
+    const currentDy = particle.targetY - particle.y;
+    const currentDistance = Math.sqrt(currentDx * currentDx + currentDy * currentDy);
+
+    // Update reveal progress based on distance traveled
+    const distanceProgress = initialDistance > 0 ? 1 - (currentDistance / initialDistance) : 1;
+
+    // Randomly vary the reveal threshold for each particle if not already set
+    if (particle.revealThreshold === undefined) {
+      particle.revealThreshold = 0.7 + Math.random() * 0.25; // Between 0.7 and 0.95
+    }
+
+    // Set reveal progress based on distance progress and threshold
+    particle.revealProgress = distanceProgress >= particle.revealThreshold ?
+      Math.min(1, (distanceProgress - particle.revealThreshold) / (1 - particle.revealThreshold) * 3) : 0;
+
+    // Draw particle on frame context based on reveal progress
+    if (particle.revealProgress >= 1) {
+      // Fully revealed - draw the image part
+      workerState.frameContext!.drawImage(
+        workerState.imageBitmap!,
+        particle.targetX,
+        particle.targetY,
+        workerState.appProps.particleRadius,
+        workerState.appProps.particleRadius,
+        Math.floor(particle.x),
+        Math.floor(particle.y),
+        workerState.appProps.particleRadius,
+        workerState.appProps.particleRadius
+      );
+    } else {
+      // Not fully revealed - draw a circle with possible image blending
+      const radius = Math.floor(workerState.appProps.particleRadius * (particle.scale || 1));
+
+      if (particle.revealProgress > 0) {
+        // Draw partial image with reduced opacity based on reveal progress
+        workerState.frameContext!.globalAlpha = particle.revealProgress * (particle.opacity || 1);
+        workerState.frameContext!.drawImage(
+          workerState.imageBitmap!,
+          particle.targetX,
+          particle.targetY,
+          workerState.appProps.particleRadius,
+          workerState.appProps.particleRadius,
+          Math.floor(particle.x),
+          Math.floor(particle.y),
+          workerState.appProps.particleRadius,
+          workerState.appProps.particleRadius
+        );
+        workerState.frameContext!.globalAlpha = 1;
+      }
+
+      // Draw circle with reduced opacity based on reveal progress
+      workerState.frameContext!.beginPath();
+      workerState.frameContext!.arc(
+        Math.floor(particle.x) + radius / 2,
+        Math.floor(particle.y) + radius / 2,
+        radius / 2,
+        0,
+        Math.PI * 2
+      );
+      workerState.frameContext!.fillStyle = particle.color || '#ffffff';
+      if (particle.opacity !== undefined) {
+        workerState.frameContext!.globalAlpha = (1 - particle.revealProgress) * particle.opacity;
+      } else {
+        workerState.frameContext!.globalAlpha = 1 - particle.revealProgress;
+      }
+      workerState.frameContext!.fill();
+      workerState.frameContext!.globalAlpha = 1;
+    }
 
     if (particle.x !== particle.targetX || particle.y !== particle.targetY) {
       particlesReachedTarget = false;
@@ -214,6 +276,11 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
             initialY: initialCoordinates.y,
             targetX: particle.targetX,
             targetY: particle.targetY,
+            scale: particle.scale,
+            opacity: particle.opacity,
+            color: particle.color,
+            revealProgress: 0,
+            revealThreshold: particle.revealThreshold,
           };
         }
       );
@@ -260,6 +327,8 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
         blockWidth: workerState.blockWidth,
         startPosition: workerState.appProps.startPosition,
       });
+
+      console.log('workerState.workerParticles', workerState.workerParticles);
 
       self.postMessage({
         type: WorkerAction.UPDATE_APP_PROPS,
@@ -420,6 +489,11 @@ const generateParticles = ({
           y: initialY,
           initialX,
           initialY,
+          scale: 1,
+          opacity: 1,
+          color: '#ffffff',
+          revealProgress: 0,
+          revealThreshold: 0.7 + Math.random() * 0.25, // Between 0.7 and 0.95
         });
       }
     }

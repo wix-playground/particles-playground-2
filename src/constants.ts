@@ -46,6 +46,9 @@ export const EXAMPLE_CODE = `/**
  * @param {number} particle.initialY - The initial y-coordinate for the particle.
  * @param {number} particle.targetX - The target x-coordinate for the particle.
  * @param {number} particle.targetY - The target y-coordinate for the particle.
+ * @param {number} particle.scale - The scale of the particle.
+ * @param {number} particle.opacity - The opacity of the particle.
+ * @param {string} particle.color - The color of the particle.
  * @param {number} animationStartTime - The timestamp when the animation started.
  * @param {number} currentTime - The current timestamp of the animation frame.
  * @param {Object} canvasDimensions - The dimensions of the canvas.

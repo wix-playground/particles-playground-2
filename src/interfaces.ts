@@ -13,6 +13,11 @@ export interface Particle extends Coordinates {
   targetY: number;
   initialX: number;
   initialY: number;
+  scale: number;
+  opacity: number;
+  color: string;
+  revealProgress?: number;
+  revealThreshold?: number;
 }
 
 export type StartPositionType =
