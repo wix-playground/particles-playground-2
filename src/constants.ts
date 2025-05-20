@@ -36,7 +36,7 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
     }
 }`;
 
-export const EXAMPLE_CODE = `/**
+export const EXAMPLE_JSDOC = `/**
  * Define an animation function for moving a particle towards its target coordinates.
  *
  * @param {Object} particle - The particle object to be animated.
@@ -56,6 +56,9 @@ export const EXAMPLE_CODE = `/**
  * @param {number} canvasDimensions.height - Height of the canvas where particles are being rendered.
  * @returns {Function} A function to be called on each animation frame to update the particle's position.
  */
+`
+
+export const EXAMPLE_CODE = `${EXAMPLE_JSDOC}
 return (particle, animationStartTime, currentTime, canvasDimensions) => {
     /**
     * Write your movement animation code here to incrementally update particle position.
@@ -84,5 +87,5 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
     particle.y = getUpdatedPosition(particle.y, particle.targetY, delta)
 }`;
 
-export const EXAMPLE_AI_PROMPT = `Write another function using the contract like this one with interesting animation:
+export const EXAMPLE_AI_PROMPT = `Write another function using the contract like this one with interesting animation. Make sure the all of the particles reach the target within the animation duration. You don't need to write JSDOC.:
 ${EXAMPLE_CODE}`;
