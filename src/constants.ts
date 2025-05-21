@@ -6,6 +6,8 @@ export const DEFAULT_MOVEMENT_FUNCTION_KEY = 'DEV_EXAMPLE';
 export const DEFAULT_DARK_THEME_COLOR = '#FFFFFF';
 export const DEFAULT_LIGHT_THEME_COLOR = '#213547';
 export const DEFAULT_PARTICLES_TEXT = 'WIX 🤠';
+export const DEFAULT_PARTICLE_COLOR = '#ffffff';
+export const DEFAULT_PARTICLE_COLORS = ['#ff0000', '#00ff00', '#0000ff'];
 export const DEFAULT_FONT_STATE: FontState = {
     fontFamily: 'Arial',
     fontSize: 90,

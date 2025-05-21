@@ -42,6 +42,7 @@ export enum Action {
   UPDATE_BITMAP = 'UPDATE_BITMAP',
   UPDATE_TEXT = 'UPDATE_TEXT',
   UPDATE_FONT = 'UPDATE_FONT',
+  UPDATE_PARTICLE_COLORS = 'UPDATE_PARTICLE_COLORS',
 }
 
 export enum WorkerAction {
@@ -112,6 +113,11 @@ export const getUpdateTextMessage = (payload: string) => ({
   payload,
 });
 
+export const getUpdateParticleColorsMessage = (payload: string[]) => ({
+  type: Action.UPDATE_PARTICLE_COLORS as const,
+  payload,
+});
+
 export type MainThreadMessage =
   | ReturnType<typeof getUpdateBitmapMessage>
   | ReturnType<typeof getUpdateTextMessage>
@@ -121,7 +127,8 @@ export type MainThreadMessage =
   | ReturnType<typeof getResetMessage>
   | ReturnType<typeof getPlayMessage>
   | ReturnType<typeof getInitializeMessage>
-  | ReturnType<typeof getUpdateFontMessage>;
+  | ReturnType<typeof getUpdateFontMessage>
+  | ReturnType<typeof getUpdateParticleColorsMessage>;
 
 export const fontFamilies = [
   'Arial',
@@ -151,4 +158,6 @@ export interface AppProps {
   particleRadius: number;
   text: string;
   font: FontState;
+  particleColor: string;
+  particleColors: string[];
 }

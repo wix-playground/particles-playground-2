@@ -43,6 +43,58 @@ export const getValidImageBlocks = (
 export const lerp = (start: number, end: number, t: number) =>
   start + t * (end - start);
 
+// Convert hex color to RGB
+export const hexToRgb = (hex: string): {r: number, g: number, b: number} => {
+  // Remove # if present
+  hex = hex.replace(/^#/, '');
+
+  // Parse hex values
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+
+  return {r, g, b};
+};
+
+// Convert RGB to hex color
+export const rgbToHex = (r: number, g: number, b: number): string => {
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+};
+
+// Get color based on progress and array of colors
+export const getColorFromProgress = (colors: string[], progress: number): string => {
+  if (!colors.length) return '#ffffff';
+  if (colors.length === 1) return colors[0];
+
+  // Ensure progress is between 0 and 1
+  const clampedProgress = Math.max(0, Math.min(1, progress));
+
+  // Calculate which segment of the gradient we're in
+  const segment = clampedProgress * (colors.length - 1);
+  const segmentIndex = Math.floor(segment);
+
+  // Handle edge case when progress is exactly 1
+  if (segmentIndex === colors.length - 1) {
+    return colors[colors.length - 1];
+  }
+
+  // Calculate interpolation value within this segment (0-1)
+  const segmentProgress = segment - segmentIndex;
+
+  // Get the two colors to interpolate between
+  const color1 = hexToRgb(colors[segmentIndex]);
+  const color2 = hexToRgb(colors[segmentIndex + 1]);
+
+  // Interpolate RGB values
+  const r = Math.round(lerp(color1.r, color2.r, segmentProgress));
+  const g = Math.round(lerp(color1.g, color2.g, segmentProgress));
+  const b = Math.round(lerp(color1.b, color2.b, segmentProgress));
+
+  // Convert back to hex
+  return rgbToHex(r, g, b);
+};
+
 export const calculateDistance = (point1: Coordinates, point2: Coordinates) => {
   const dx = point2.x - point1.x;
   const dy = point2.y - point1.y;
@@ -103,6 +155,5 @@ export const getStartCoordinatesConfig = ({
 };
 
 export const getFontString = (font: FontState) =>
-  `${font.italic ? 'italic ' : ''}${font.weight} ${font.fontSize}px '${
-    font.fontFamily
+  `${font.italic ? 'italic ' : ''}${font.weight} ${font.fontSize}px '${font.fontFamily
   }'`;

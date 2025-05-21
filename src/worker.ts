@@ -1,6 +1,8 @@
 import {
   DEFAULT_FONT_STATE,
   DEFAULT_MOVEMENT_FUNCTION_KEY,
+  DEFAULT_PARTICLE_COLOR,
+  DEFAULT_PARTICLE_COLORS,
   DEFAULT_PARTICLE_RADIUS,
   DEFAULT_PARTICLES_TEXT,
   DEFAULT_START_POSITION,
@@ -16,7 +18,7 @@ import {
   InitializeMessagePayload,
 } from './interfaces';
 import {getPredefinedMovementOptions} from './movement';
-import {getStartCoordinatesConfig, getValidImageBlocks} from './utils';
+import {getStartCoordinatesConfig, getValidImageBlocks, getColorFromProgress} from './utils';
 
 let customMovementFunction: (
   particle: Particle,
@@ -58,6 +60,8 @@ const workerState: {
       getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY].code,
     text: DEFAULT_PARTICLES_TEXT,
     font: DEFAULT_FONT_STATE,
+    particleColor: DEFAULT_PARTICLE_COLOR,
+    particleColors: DEFAULT_PARTICLE_COLORS,
   },
 };
 
@@ -128,7 +132,7 @@ const renderParticles = (
     workerState.frameCanvas!.height
   );
 
-  workerState.workerParticles.forEach((particle,) => {
+  workerState.workerParticles.forEach((particle) => {
     // Update particles position by calling your movement function here:
     customMovementFunction(
       particle,
@@ -160,6 +164,20 @@ const renderParticles = (
     // Set reveal progress based on distance progress and threshold
     particle.revealProgress = distanceProgress >= particle.revealThreshold ?
       Math.min(1, (distanceProgress - particle.revealThreshold) / (1 - particle.revealThreshold) * 3) : 0;
+
+    // Calculate particle color based on the color gradient if there are colors specified
+    if (workerState.appProps.particleColors?.length > 0) {
+      if (workerState.appProps.particleColors.length === 1) {
+        // If there's only one color, use that color
+        particle.color = workerState.appProps.particleColors[0];
+      } else {
+        // Otherwise use gradient interpolation
+        particle.color = getColorFromProgress(
+          workerState.appProps.particleColors,
+          distanceProgress
+        );
+      }
+    }
 
     // Draw particle on frame context based on reveal progress
     if (particle.revealProgress >= 1) {
@@ -205,7 +223,7 @@ const renderParticles = (
         0,
         Math.PI * 2
       );
-      workerState.frameContext!.fillStyle = particle.color || '#ffffff';
+      workerState.frameContext!.fillStyle = particle.color;
       if (particle.opacity !== undefined) {
         workerState.frameContext!.globalAlpha = (1 - particle.revealProgress) * particle.opacity;
       } else {
@@ -409,6 +427,26 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
       });
       break;
     }
+    case Action.UPDATE_PARTICLE_COLORS: {
+      workerState.appProps.particleColors = payload;
+
+      // Update default particleColor to match the first color in the array
+      if (payload.length > 0) {
+        workerState.appProps.particleColor = payload[0];
+      }
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+
+      if (workerState.animationFrameId) {
+        cancelAnimationFrame(workerState.animationFrameId);
+        const startTime = performance.now();
+        renderParticles(startTime, startTime);
+      }
+      break;
+    }
     case Action.UPDATE_BITMAP: {
       workerState.imageBitmap = payload;
       if (workerState.frameCanvas && workerState.mainCanvas) {
@@ -482,6 +520,8 @@ const generateParticles = ({
 
         const {x: initialX, y: initialY} =
           startCoordinatesConfig[startPosition as StartPositionType]();
+
+
         particles.push({
           targetX: x,
           targetY: y,
@@ -491,7 +531,7 @@ const generateParticles = ({
           initialY,
           scale: 1,
           opacity: 1,
-          color: '#ffffff',
+          color: DEFAULT_PARTICLE_COLOR,
           revealProgress: 0,
           revealThreshold: 0.7 + Math.random() * 0.25, // Between 0.7 and 0.95
         });

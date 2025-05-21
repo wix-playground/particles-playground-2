@@ -1,12 +1,13 @@
 import {useCallback, useContext} from 'react';
 import {StartPosition} from './StartPosition';
-import {getResizeParticleRadiusMessage} from '../../interfaces';
+import {getResizeParticleRadiusMessage, getUpdateParticleColorsMessage} from '../../interfaces';
 import {AppContext} from '../../contexts/AppContext';
 import {WorkerContext} from '../../contexts/WorkerContext';
 import {FunctionSelectorModal} from '../FunctionSelectorModal/FunctionSelectorModal';
 import {editor} from 'monaco-editor';
 import {TextInput} from './TextInput';
 import {FontSettings} from './FontSettings';
+import {MultiColorPicker} from './MultiColorPicker';
 
 export const Settings = ({
   editorRef,
@@ -19,6 +20,15 @@ export const Settings = ({
   const handleResizeParticleRadius = useCallback(
     (radius: number) => {
       if (worker) worker.postMessage(getResizeParticleRadiusMessage(radius));
+    },
+    [worker]
+  );
+
+  const handleColorChange = useCallback(
+    (color: string) => {
+      if (worker) {
+        worker.postMessage(getUpdateParticleColorsMessage([color]));
+      }
     },
     [worker]
   );
@@ -53,6 +63,7 @@ export const Settings = ({
             }}
           />
         </div>
+        <MultiColorPicker />
         <StartPosition />
         <div className="card">
           <span className="innerTitle">Predefined movement functions</span>
