@@ -91,3 +91,12 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
 
 export const EXAMPLE_AI_PROMPT = `Write another function using the contract like this one with interesting animation. Make sure the all of the particles reach the target within the animation duration. You don't need to write JSDOC.:
 ${EXAMPLE_CODE}`;
+
+export const DATA_TEST_IDS = {
+    FONT_FAMILY_SELECT: 'font-family-select',
+    FONT_WEIGHT_SELECT: 'font-weight-select',
+    FONT_SIZE_INPUT: 'font-size-input',
+    LETTER_SPACING_INPUT: 'letter-spacing-input',
+    FONT_ITALIC_CHECKBOX: 'font-italic-checkbox',
+    TEXT_INPUT: 'text-input',
+}

@@ -1,8 +1,8 @@
 import {useContext, useCallback, useMemo} from 'react';
-import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
-import {getUpdateTextMessage} from '../../interfaces';
-
+import {AppContext} from '../../../contexts/AppContext';
+import {WorkerContext} from '../../../contexts/WorkerContext';
+import {getUpdateTextMessage} from '../../../interfaces';
+import {DATA_TEST_IDS} from '../../../constants';
 export const TextInput = () => {
   const worker = useContext(WorkerContext);
   const appProps = useContext(AppContext);
@@ -20,13 +20,13 @@ export const TextInput = () => {
     () =>
       fontState
         ? {
-            fontFamily: `"${fontState.fontFamily}"`,
-            fontSize: `24px`,
-            fontWeight: fontState.weight,
-            fontStyle: fontState.italic ? 'italic' : 'normal',
-            letterSpacing: `${fontState.letterSpacing}rem`,
-            maxWidth: '250px',
-          }
+          fontFamily: `"${fontState.fontFamily}"`,
+          fontSize: `24px`,
+          fontWeight: fontState.weight,
+          fontStyle: fontState.italic ? 'italic' : 'normal',
+          letterSpacing: `${fontState.letterSpacing}rem`,
+          maxWidth: '250px',
+        }
         : {},
     [fontState]
   );
@@ -39,6 +39,7 @@ export const TextInput = () => {
     <>
       <span className="innerTitle">Text</span>
       <input
+        data-testid={DATA_TEST_IDS.TEXT_INPUT}
         style={previewStyle}
         className="userInput"
         value={appProps.text}

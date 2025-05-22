@@ -60,7 +60,6 @@ const workerState: {
       getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY].code,
     text: DEFAULT_PARTICLES_TEXT,
     font: DEFAULT_FONT_STATE,
-    particleColor: DEFAULT_PARTICLE_COLOR,
     particleColors: DEFAULT_PARTICLE_COLORS,
   },
 };
@@ -436,9 +435,10 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
     case Action.UPDATE_PARTICLE_COLORS: {
       workerState.appProps.particleColors = payload;
 
-      // Update default particleColor to match the first color in the array
+      // Remove setting particleColor as it doesn't exist in AppProps interface
       if (payload.length > 0) {
-        workerState.appProps.particleColor = payload[0];
+        // The particleColor property doesn't exist on AppProps
+        // workerState.appProps.particleColor = payload[0];
       }
 
       self.postMessage({

@@ -1,8 +1,8 @@
 import React, {useCallback, useContext} from 'react';
-import {FontFamily, FontState, getUpdateFontMessage} from '../../interfaces';
-import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
-import {DEFAULT_FONT_STATE} from '../../constants';
+import {FontFamily, FontState, getUpdateFontMessage} from '../../../interfaces';
+import {AppContext} from '../../../contexts/AppContext';
+import {WorkerContext} from '../../../contexts/WorkerContext';
+import {DATA_TEST_IDS, DEFAULT_FONT_STATE} from '../../../constants';
 
 const fontConfig: Record<
   FontFamily,
@@ -31,6 +31,8 @@ export const FontSettings = () => {
   const worker = useContext(WorkerContext);
 
   const fontState = appProps?.font ?? DEFAULT_FONT_STATE;
+
+  console.log('fontState', fontState);
 
   const setFontState = useCallback(
     (font: Partial<FontState>) => {
@@ -108,6 +110,7 @@ export const FontSettings = () => {
       <div className="setting-group">
         <label htmlFor="font-family">Font Family:</label>
         <select
+          data-testid={DATA_TEST_IDS.FONT_FAMILY_SELECT}
           id="font-family"
           value={fontState.fontFamily}
           onChange={handleFontFamilyChange}
@@ -123,6 +126,7 @@ export const FontSettings = () => {
       <div className="setting-group">
         <label htmlFor="font-weight">Font Weight:</label>
         <select
+          data-testid={DATA_TEST_IDS.FONT_WEIGHT_SELECT}
           id="font-weight"
           value={fontState?.weight}
           onChange={handleWeightChange}
@@ -140,6 +144,7 @@ export const FontSettings = () => {
           <label htmlFor="font-italic">
             <input
               type="checkbox"
+              data-testid={DATA_TEST_IDS.FONT_ITALIC_CHECKBOX}
               id="font-italic"
               checked={fontState.italic}
               onChange={handleItalicChange}
@@ -152,6 +157,7 @@ export const FontSettings = () => {
       <div className="setting-group">
         <label htmlFor="font-size">Font Size (px):</label>
         <input
+          data-testid={DATA_TEST_IDS.FONT_SIZE_INPUT}
           type="number"
           id="font-size"
           value={fontState.fontSize}
@@ -164,6 +170,7 @@ export const FontSettings = () => {
       <div className="setting-group">
         <label htmlFor="letter-spacing">Letter Spacing (rem):</label>
         <input
+          data-testid={DATA_TEST_IDS.LETTER_SPACING_INPUT}
           type="number"
           id="letter-spacing"
           value={fontState.letterSpacing}

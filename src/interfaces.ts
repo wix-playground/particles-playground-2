@@ -158,6 +158,5 @@ export interface AppProps {
   particleRadius: number;
   text: string;
   font: FontState;
-  particleColor: string;
   particleColors: string[];
 }

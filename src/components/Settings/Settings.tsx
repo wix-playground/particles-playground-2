@@ -5,11 +5,9 @@ import {AppContext} from '../../contexts/AppContext';
 import {WorkerContext} from '../../contexts/WorkerContext';
 import {FunctionSelectorModal} from '../FunctionSelectorModal/FunctionSelectorModal';
 import {editor} from 'monaco-editor';
-import {TextInput} from './TextInput';
-import {FontSettings} from './FontSettings';
 import {MultiColorPicker} from './MultiColorPicker';
 import {PulseColorSettings} from './PulseColorSettings';
-
+import {TextSettings} from './TextSettings';
 export const Settings = ({
   editorRef,
 }: {
@@ -73,11 +71,7 @@ export const Settings = ({
         {appProps.selectedMovementFunction === 'pulseColorCycle' && (
           <PulseColorSettings />
         )}
-
-        <div className="card">
-          <TextInput />
-          <FontSettings />
-        </div>
+        <TextSettings />
       </div>
     </div>
   );
