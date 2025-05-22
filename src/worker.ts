@@ -277,10 +277,16 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
       break;
     }
     case Action.PLAY: {
+      if (workerState.animationFrameId) {
+        cancelAnimationFrame(workerState.animationFrameId);
+      }
       play();
       break;
     }
     case Action.RESET: {
+      if (workerState.animationFrameId) {
+        cancelAnimationFrame(workerState.animationFrameId);
+      }
       workerState.workerParticles = workerState.workerParticles.map(
         (particle) => {
           const initialCoordinates =
@@ -294,8 +300,8 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
             initialY: initialCoordinates.y,
             targetX: particle.targetX,
             targetY: particle.targetY,
-            scale: particle.scale,
-            opacity: particle.opacity,
+            scale: 1,
+            opacity: 1,
             color: particle.color,
             revealProgress: 0,
             revealThreshold: particle.revealThreshold,
