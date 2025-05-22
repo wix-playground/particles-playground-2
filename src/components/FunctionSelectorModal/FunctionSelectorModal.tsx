@@ -33,6 +33,7 @@ import {
   ElasticIn,
   ElasticInOut,
   ElasticOut,
+  PulseColorCycle,
 } from '../../assets/easings';
 import {AppContext} from '../../contexts/AppContext';
 export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
@@ -104,6 +105,7 @@ export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
       elasticIn: <ElasticIn />,
       elasticOut: <ElasticOut />,
       elasticInOut: <ElasticInOut />,
+      pulseColorCycle: <PulseColorCycle />,
     }),
     []
   );

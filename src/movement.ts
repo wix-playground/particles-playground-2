@@ -325,6 +325,57 @@ const bezierMovementFunctionString = `return (particle, animationStartTime, curr
     }
 };`;
 
+const pulseColorCycleMovementString = `return (particle, animationStartTime, currentTime, canvasDimensions) => {
+    const animationDuration = 3000; // 3 seconds
+    const progress = Math.min((currentTime - animationStartTime) / animationDuration, 1);
+
+    // Initialize properties if not set
+    if (!particle.hasInit) {
+        particle.hasInit = true;
+        particle.originalScale = particle.scale;
+        particle.hueOffset = Math.random() * 360; // Random starting hue
+        particle.pulseFrequency = 3 + Math.random() * 2; // Individual pulse frequency
+    }
+
+    if (progress >= 1) {
+        particle.x = particle.targetX;
+        particle.y = particle.targetY;
+    } else {
+        // Direct path with slight delay at beginning
+        const adjustedProgress = Math.pow(progress, 0.7);
+        particle.x = particle.initialX + (particle.targetX - particle.initialX) * adjustedProgress;
+        particle.y = particle.initialY + (particle.targetY - particle.initialY) * adjustedProgress;
+    }
+
+    // Dramatic scale pulsation - goes from very small to very large
+    const pulseWave = Math.sin(progress * Math.PI * particle.pulseFrequency);
+
+    // Scale gets extremely large at pulse peaks
+    if (pulseWave > 0) {
+        // Exponential scale increase on positive pulses
+        particle.scale = particle.originalScale * (1 + Math.pow(pulseWave, 2) * 15);
+    } else {
+        // Become very small on negative pulses
+        particle.scale = particle.originalScale * 0.2;
+    }
+
+    // End at normal scale
+    if (progress > 0.9) {
+        const finalAdjustment = (progress - 0.9) / 0.1;
+        particle.scale = particle.scale * (1 - finalAdjustment) + particle.originalScale * finalAdjustment;
+    }
+
+    // Rapid color cycling through entire spectrum
+    const hue = (particle.hueOffset + progress * 720) % 360; // 2 complete color cycles
+    const saturation = 100; // Full saturation
+    const lightness = 50 + 30 * pulseWave; // Brightness changes with pulse
+
+    particle.color = \`hsl(\${hue}, \${saturation}%, \${lightness}%)\`;
+
+    // Opacity pulses oppositely to scale
+    particle.opacity = 0.4 + 0.6 * (1 - Math.abs(pulseWave));
+}`;
+
 export const getPredefinedMovementOptions: () => {
   [functionName: string]: {code: string; illustration?: React.ReactNode};
 } = () =>
@@ -334,6 +385,7 @@ export const getPredefinedMovementOptions: () => {
         [DEFAULT_MOVEMENT_FUNCTION_KEY]: {code: `${EXAMPLE_JSDOC}${EXAMPLE_CODE}`},
         DEV_TWO_FRAMES: {code: `${EXAMPLE_JSDOC}${DEV_EXAMPLE_CODE}`},
         bezier: {code: `${EXAMPLE_JSDOC}${bezierMovementFunctionString}`},
+        pulseColorCycle: {code: `${EXAMPLE_JSDOC}${pulseColorCycleMovementString}`},
       },
       ...easingFunctions.map(({name, comment, definition}) => ({
         [name]: {

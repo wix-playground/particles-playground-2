@@ -1,6 +1,6 @@
 import {useCallback, useContext} from 'react';
 import {StartPosition} from './StartPosition';
-import {getResizeParticleRadiusMessage, getUpdateParticleColorsMessage} from '../../interfaces';
+import {getResizeParticleRadiusMessage} from '../../interfaces';
 import {AppContext} from '../../contexts/AppContext';
 import {WorkerContext} from '../../contexts/WorkerContext';
 import {FunctionSelectorModal} from '../FunctionSelectorModal/FunctionSelectorModal';
@@ -8,6 +8,7 @@ import {editor} from 'monaco-editor';
 import {TextInput} from './TextInput';
 import {FontSettings} from './FontSettings';
 import {MultiColorPicker} from './MultiColorPicker';
+import {PulseColorSettings} from './PulseColorSettings';
 
 export const Settings = ({
   editorRef,
@@ -20,15 +21,6 @@ export const Settings = ({
   const handleResizeParticleRadius = useCallback(
     (radius: number) => {
       if (worker) worker.postMessage(getResizeParticleRadiusMessage(radius));
-    },
-    [worker]
-  );
-
-  const handleColorChange = useCallback(
-    (color: string) => {
-      if (worker) {
-        worker.postMessage(getUpdateParticleColorsMessage([color]));
-      }
     },
     [worker]
   );
@@ -77,6 +69,11 @@ export const Settings = ({
             }}
           />
         </div>
+
+        {appProps.selectedMovementFunction === 'pulseColorCycle' && (
+          <PulseColorSettings />
+        )}
+
         <div className="card">
           <TextInput />
           <FontSettings />

@@ -26,8 +26,8 @@ import {Linear} from './Linear';
 import {QuintIn} from './QuintIn';
 import {ElasticIn} from './ElasticIn';
 import {ElasticInOut} from './ElasticInOut';
-
 import {ElasticOut} from './ElasticOut';
+import {PulseColorCycle} from './PulseColorCycle';
 
 export {
   SineIn,
@@ -59,4 +59,5 @@ export {
   ElasticIn,
   ElasticInOut,
   ElasticOut,
+  PulseColorCycle,
 };
