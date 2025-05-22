@@ -8,6 +8,9 @@ import {editor} from 'monaco-editor';
 import {MultiColorPicker} from './MultiColorPicker';
 import {PulseColorSettings} from './PulseColorSettings';
 import {TextSettings} from './TextSettings';
+import {AnimationDurationSlider} from './AnimationDurationSlider';
+import {BubbleEffectToggle} from './BubbleEffectToggle';
+
 export const Settings = ({
   editorRef,
 }: {
@@ -52,9 +55,11 @@ export const Settings = ({
               }
             }}
           />
+          <BubbleEffectToggle />
         </div>
         <MultiColorPicker />
         <StartPosition />
+        <AnimationDurationSlider />
         <div className="card">
           <span className="innerTitle">Predefined movement functions</span>
           <FunctionSelectorModal

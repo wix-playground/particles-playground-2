@@ -32,7 +32,6 @@ export const FontSettings = () => {
 
   const fontState = appProps?.font ?? DEFAULT_FONT_STATE;
 
-  console.log('fontState', fontState);
 
   const setFontState = useCallback(
     (font: Partial<FontState>) => {

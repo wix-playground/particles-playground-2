@@ -76,7 +76,6 @@ export const StartPosition = () => {
         <input
           type="checkbox"
           id="random-position-toggle"
-          style={{width: '16px', height: '16px'}}
           checked={appProps.startPosition === 'random'}
           onChange={() => {
             if (appProps.startPosition !== 'random') {
@@ -95,9 +94,8 @@ export const StartPosition = () => {
               <button
                 key={id as string}
                 id={id as string}
-                className={`iconButton ${
-                  appProps?.startPosition === id ? 'selected' : ''
-                }`}
+                className={`iconButton ${appProps?.startPosition === id ? 'selected' : ''
+                  }`}
                 onClick={() => handleSelect(id as StartPositionType)}
               >
                 {id === 'center' ? (

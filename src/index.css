@@ -196,3 +196,8 @@ button.iconButton.selected {
 .setting-group {
   text-align: start;
 }
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}

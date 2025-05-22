@@ -2,7 +2,7 @@ import {render, screen} from '@testing-library/react';
 import {TextSettings} from '../../../components/Settings/TextSettings';
 import {AppContext} from '../../../contexts/AppContext';
 import {WorkerContext} from '../../../contexts/WorkerContext';
-import {DATA_TEST_IDS, DEFAULT_FONT_STATE} from '../../../constants';
+import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_ENABLE_BUBBLES, DEFAULT_FONT_STATE} from '../../../constants';
 import {AppProps, FontState} from '../../../interfaces';
 
 // Mock Worker class
@@ -29,6 +29,8 @@ describe('TextSettings', () => {
       text: 'Test',
       particleColors: ['#000000'],
       font: undefined as any, // Cast to any to simulate undefined font
+      animationDuration: DEFAULT_ANIMATION_DURATION,
+      enableBubbles: DEFAULT_ENABLE_BUBBLES,
     };
 
     // Create mock worker
@@ -80,6 +82,8 @@ describe('TextSettings', () => {
       text: 'Test',
       particleColors: ['#000000'],
       font: mockFontState,
+      animationDuration: DEFAULT_ANIMATION_DURATION,
+      enableBubbles: DEFAULT_ENABLE_BUBBLES,
     };
 
     // Create mock worker

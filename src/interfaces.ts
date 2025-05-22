@@ -18,6 +18,8 @@ export interface Particle extends Coordinates {
   color: string;
   revealProgress?: number;
   revealThreshold?: number;
+  emittedBubbles?: boolean;
+  reachedTarget?: boolean;
 }
 
 export type StartPositionType =
@@ -43,6 +45,8 @@ export enum Action {
   UPDATE_TEXT = 'UPDATE_TEXT',
   UPDATE_FONT = 'UPDATE_FONT',
   UPDATE_PARTICLE_COLORS = 'UPDATE_PARTICLE_COLORS',
+  UPDATE_ANIMATION_DURATION = 'UPDATE_ANIMATION_DURATION',
+  UPDATE_ENABLE_BUBBLES = 'UPDATE_ENABLE_BUBBLES',
 }
 
 export enum WorkerAction {
@@ -118,6 +122,16 @@ export const getUpdateParticleColorsMessage = (payload: string[]) => ({
   payload,
 });
 
+export const getUpdateAnimationDurationMessage = (payload: number) => ({
+  type: Action.UPDATE_ANIMATION_DURATION as const,
+  payload,
+});
+
+export const getUpdateEnableBubblesMessage = (payload: boolean) => ({
+  type: Action.UPDATE_ENABLE_BUBBLES as const,
+  payload,
+});
+
 export type MainThreadMessage =
   | ReturnType<typeof getUpdateBitmapMessage>
   | ReturnType<typeof getUpdateTextMessage>
@@ -128,7 +142,9 @@ export type MainThreadMessage =
   | ReturnType<typeof getPlayMessage>
   | ReturnType<typeof getInitializeMessage>
   | ReturnType<typeof getUpdateFontMessage>
-  | ReturnType<typeof getUpdateParticleColorsMessage>;
+  | ReturnType<typeof getUpdateParticleColorsMessage>
+  | ReturnType<typeof getUpdateAnimationDurationMessage>
+  | ReturnType<typeof getUpdateEnableBubblesMessage>;
 
 export const fontFamilies = [
   'Arial',
@@ -159,4 +175,6 @@ export interface AppProps {
   text: string;
   font: FontState;
   particleColors: string[];
+  animationDuration: number;
+  enableBubbles: boolean;
 }

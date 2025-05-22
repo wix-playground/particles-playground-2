@@ -1,6 +1,8 @@
 import {FontState, StartPositionType} from './interfaces';
 
-export const DEFAULT_PARTICLE_RADIUS = 2;
+export const DEFAULT_PARTICLE_RADIUS = 5;
+export const DEFAULT_ANIMATION_DURATION = 2000; // 2 seconds in milliseconds
+export const DEFAULT_ENABLE_BUBBLES = false; // Default setting for bubble emission
 export const DEFAULT_START_POSITION: StartPositionType = 'random';
 export const DEFAULT_MOVEMENT_FUNCTION_KEY = 'DEV_EXAMPLE';
 export const DEFAULT_DARK_THEME_COLOR = '#FFFFFF';
@@ -56,12 +58,13 @@ export const EXAMPLE_JSDOC = `/**
  * @param {Object} canvasDimensions - The dimensions of the canvas.
  * @param {number} canvasDimensions.width - Width of the canvas where particles are being rendered.
  * @param {number} canvasDimensions.height - Height of the canvas where particles are being rendered.
+ * @param {number} animationDuration - The duration of the animation.
  * @returns {Function} A function to be called on each animation frame to update the particle's position.
  */
 `
 
 export const EXAMPLE_CODE = `${EXAMPLE_JSDOC}
-return (particle, animationStartTime, currentTime, canvasDimensions) => {
+return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
     /**
     * Write your movement animation code here to incrementally update particle position.
     * The particle is mutable here so you can add whatever properties you need to achieve your animation.
