@@ -43,6 +43,19 @@ interface BubbleParticle {
   maxLife: number;
 }
 
+const defaultAppProps: AppProps = {
+  particleRadius: DEFAULT_PARTICLE_RADIUS,
+  startPosition: DEFAULT_START_POSITION,
+  selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
+  movementFunctionCode:
+    getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY].code,
+  text: DEFAULT_PARTICLES_TEXT,
+  font: DEFAULT_FONT_STATE,
+  particleColors: DEFAULT_PARTICLE_COLORS,
+  animationDuration: DEFAULT_ANIMATION_DURATION,
+  enableBubbles: DEFAULT_ENABLE_BUBBLES,
+}
+
 const workerState: {
   // Internal worker state
   workerParticles: Particle[];
@@ -71,18 +84,7 @@ const workerState: {
   validBlocks: null,
   blockHeight: 0,
   blockWidth: 0,
-  appProps: {
-    particleRadius: DEFAULT_PARTICLE_RADIUS,
-    startPosition: DEFAULT_START_POSITION,
-    selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
-    movementFunctionCode:
-      getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY].code,
-    text: DEFAULT_PARTICLES_TEXT,
-    font: DEFAULT_FONT_STATE,
-    particleColors: DEFAULT_PARTICLE_COLORS,
-    animationDuration: DEFAULT_ANIMATION_DURATION,
-    enableBubbles: DEFAULT_ENABLE_BUBBLES,
-  },
+  appProps: defaultAppProps,
   revealProgress: 0,
 };
 
@@ -108,7 +110,7 @@ const initialize = (data: InitializeMessagePayload) => {
   workerState.imageBitmap = _imageBitmap;
 
   if (Object.keys(appProps).length) {
-    workerState.appProps = {...appProps, animationDuration: appProps.animationDuration ?? DEFAULT_ANIMATION_DURATION};
+    workerState.appProps = {...defaultAppProps, ...appProps};
   }
 
   initializeCanvas(canvas);
