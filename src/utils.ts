@@ -64,7 +64,7 @@ export const rgbToHex = (r: number, g: number, b: number): string => {
 
 // Get color based on progress and array of colors
 export const getColorFromProgress = (colors: string[], progress: number): string => {
-  if (!colors.length) return '#ffffff';
+  if (!colors?.length) return '#ffffff';
   if (colors.length === 1) return colors[0];
 
   // Ensure progress is between 0 and 1

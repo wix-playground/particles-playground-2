@@ -108,7 +108,7 @@ const initialize = (data: InitializeMessagePayload) => {
   workerState.imageBitmap = _imageBitmap;
 
   if (Object.keys(appProps).length) {
-    workerState.appProps = {...appProps};
+    workerState.appProps = {...appProps, animationDuration: appProps.animationDuration ?? DEFAULT_ANIMATION_DURATION};
   }
 
   initializeCanvas(canvas);
@@ -414,6 +414,9 @@ const renderParticles = (
   } else {
     if (workerState.animationFrameId) {
       cancelAnimationFrame(workerState.animationFrameId);
+      workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
+      // Clear any remaining bubbles
+      workerState.bubbleParticles = [];
     }
   }
 };
@@ -451,6 +454,10 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
       if (workerState.animationFrameId) {
         cancelAnimationFrame(workerState.animationFrameId);
       }
+
+      // Clear any existing bubbles before starting new animation
+      workerState.bubbleParticles = [];
+
       play();
       break;
     }
@@ -675,6 +682,11 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
         type: WorkerAction.UPDATE_APP_PROPS,
         data: workerState.appProps,
       });
+
+      // If animation is currently running, clear bubbles
+      if (workerState.animationFrameId) {
+        workerState.bubbleParticles = [];
+      }
       break;
     }
     case Action.UPDATE_ENABLE_BUBBLES: {

@@ -2,10 +2,12 @@ import {useCallback, useContext} from 'react';
 import {getUpdateAnimationDurationMessage} from '../../interfaces';
 import {WorkerContext} from '../../contexts/WorkerContext';
 import {AppContext} from '../../contexts/AppContext';
+import {DEFAULT_ANIMATION_DURATION} from '../../constants';
 
 export const AnimationDurationSlider = () => {
   const worker = useContext(WorkerContext);
   const appProps = useContext(AppContext);
+  const duration = appProps?.animationDuration ?? DEFAULT_ANIMATION_DURATION;
 
   const handleDurationChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,11 +32,11 @@ export const AnimationDurationSlider = () => {
           min="500"
           max="5000"
           step="100"
-          value={appProps.animationDuration}
+          value={duration}
           onChange={handleDurationChange}
         />
         <span className="settings-item-value">
-          {(appProps.animationDuration / 1000).toFixed(1)}s
+          {(duration / 1000).toFixed(1)}s
         </span>
       </div>
     </div>
