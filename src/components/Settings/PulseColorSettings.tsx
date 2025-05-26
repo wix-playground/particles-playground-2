@@ -1,11 +1,10 @@
-import { useCallback, useContext } from 'react';
-import { AppContext } from '../../contexts/AppContext';
-import { WorkerContext } from '../../contexts/WorkerContext';
-import { Action } from '../../interfaces';
+import {useCallback, useContext} from 'react';
+import {AppContext} from '../../contexts/AppContext';
+import {WorkerContext} from '../../contexts/WorkerContext';
+import {Action} from '../../interfaces';
 import './PulseColorSettings.css';
 
 // Default values from the movement function
-const DEFAULT_ANIMATION_DURATION = 3000;
 const DEFAULT_PULSE_FREQUENCY_MIN = 3;
 const DEFAULT_PULSE_FREQUENCY_MAX = 5;
 const DEFAULT_SCALE_MAX_MULTIPLIER = 15;
@@ -27,8 +26,7 @@ export const PulseColorSettings = () => {
 
       // Create an updated movement function with the new values
       const updatedCode = `
-return (particle, animationStartTime, currentTime, canvasDimensions) => {
-    const animationDuration = ${settings.animationDuration}; // milliseconds
+return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
     const progress = Math.min((currentTime - animationStartTime) / animationDuration, 1);
 
     // Initialize properties if not set
@@ -36,9 +34,8 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
         particle.hasInit = true;
         particle.originalScale = particle.scale;
         particle.hueOffset = Math.random() * 360; // Random starting hue
-        particle.pulseFrequency = ${settings.pulseFrequencyMin} + Math.random() * ${
-        settings.pulseFrequencyMax - settings.pulseFrequencyMin
-      }; // Individual pulse frequency
+        particle.pulseFrequency = ${settings.pulseFrequencyMin} + Math.random() * ${settings.pulseFrequencyMax - settings.pulseFrequencyMin
+        }; // Individual pulse frequency
     }
 
     if (progress >= 1) {
@@ -77,9 +74,8 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
     particle.color = \`hsl(\${hue}, \${saturation}%, \${lightness}%)\`;
 
     // Opacity pulses oppositely to scale
-    particle.opacity = ${settings.opacityMin} + ${
-        settings.opacityMax - settings.opacityMin
-      } * (1 - Math.abs(pulseWave));
+    particle.opacity = ${settings.opacityMin} + ${settings.opacityMax - settings.opacityMin
+        } * (1 - Math.abs(pulseWave));
 }`;
 
       worker.postMessage({
@@ -100,22 +96,20 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
       return saved
         ? JSON.parse(saved)
         : {
-            animationDuration: DEFAULT_ANIMATION_DURATION,
-            pulseFrequencyMin: DEFAULT_PULSE_FREQUENCY_MIN,
-            pulseFrequencyMax: DEFAULT_PULSE_FREQUENCY_MAX,
-            scaleMaxMultiplier: DEFAULT_SCALE_MAX_MULTIPLIER,
-            scaleMinMultiplier: DEFAULT_SCALE_MIN_MULTIPLIER,
-            colorCycles: DEFAULT_COLOR_CYCLES,
-            saturation: DEFAULT_SATURATION,
-            lightnessBase: DEFAULT_LIGHTNESS_BASE,
-            lightnessVariation: DEFAULT_LIGHTNESS_VARIATION,
-            opacityMin: DEFAULT_OPACITY_MIN,
-            opacityMax: DEFAULT_OPACITY_MAX,
-          };
+          pulseFrequencyMin: DEFAULT_PULSE_FREQUENCY_MIN,
+          pulseFrequencyMax: DEFAULT_PULSE_FREQUENCY_MAX,
+          scaleMaxMultiplier: DEFAULT_SCALE_MAX_MULTIPLIER,
+          scaleMinMultiplier: DEFAULT_SCALE_MIN_MULTIPLIER,
+          colorCycles: DEFAULT_COLOR_CYCLES,
+          saturation: DEFAULT_SATURATION,
+          lightnessBase: DEFAULT_LIGHTNESS_BASE,
+          lightnessVariation: DEFAULT_LIGHTNESS_VARIATION,
+          opacityMin: DEFAULT_OPACITY_MIN,
+          opacityMax: DEFAULT_OPACITY_MAX,
+        };
     } catch (e) {
       console.error('Error loading pulse color settings', e);
       return {
-        animationDuration: DEFAULT_ANIMATION_DURATION,
         pulseFrequencyMin: DEFAULT_PULSE_FREQUENCY_MIN,
         pulseFrequencyMax: DEFAULT_PULSE_FREQUENCY_MAX,
         scaleMaxMultiplier: DEFAULT_SCALE_MAX_MULTIPLIER,
@@ -149,29 +143,17 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
   return (
     <div className="card">
       <span className="innerTitle">Pulse Color Settings</span>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div className="settingRow">
-          <label>Animation Duration (ms):</label>
-          <input
-            type="range"
-            min="500"
-            max="10000"
-            step="100"
-            value={settings.animationDuration}
-            onChange={(e) => handleSettingChange('animationDuration', Number(e.target.value))}
-          />
-          <span>{settings.animationDuration}ms</span>
-        </div>
+      <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
 
         <div className="settingRow">
           <label>Pulse Frequency:</label>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
             <input
               type="number"
               min="0.5"
               max="10"
               step="0.1"
-              style={{ width: '60px' }}
+              style={{width: '60px'}}
               value={settings.pulseFrequencyMin}
               onChange={(e) => handleSettingChange('pulseFrequencyMin', Number(e.target.value))}
             />
@@ -181,7 +163,7 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
               min="0.5"
               max="10"
               step="0.1"
-              style={{ width: '60px' }}
+              style={{width: '60px'}}
               value={settings.pulseFrequencyMax}
               onChange={(e) => handleSettingChange('pulseFrequencyMax', Number(e.target.value))}
             />
@@ -190,14 +172,14 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
 
         <div className="settingRow">
           <label>Scale Range:</label>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
             <span>Min:</span>
             <input
               type="number"
               min="0.1"
               max="1"
               step="0.05"
-              style={{ width: '60px' }}
+              style={{width: '60px'}}
               value={settings.scaleMinMultiplier}
               onChange={(e) => handleSettingChange('scaleMinMultiplier', Number(e.target.value))}
             />
@@ -207,7 +189,7 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
               min="1"
               max="30"
               step="0.5"
-              style={{ width: '60px' }}
+              style={{width: '60px'}}
               value={settings.scaleMaxMultiplier}
               onChange={(e) => handleSettingChange('scaleMaxMultiplier', Number(e.target.value))}
             />
@@ -242,14 +224,14 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
 
         <div className="settingRow">
           <label>Lightness:</label>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
             <span>Base:</span>
             <input
               type="number"
               min="0"
               max="100"
               step="5"
-              style={{ width: '60px' }}
+              style={{width: '60px'}}
               value={settings.lightnessBase}
               onChange={(e) => handleSettingChange('lightnessBase', Number(e.target.value))}
             />
@@ -259,7 +241,7 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
               min="0"
               max="50"
               step="5"
-              style={{ width: '60px' }}
+              style={{width: '60px'}}
               value={settings.lightnessVariation}
               onChange={(e) => handleSettingChange('lightnessVariation', Number(e.target.value))}
             />
@@ -268,14 +250,14 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
 
         <div className="settingRow">
           <label>Opacity Range:</label>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
             <span>Min:</span>
             <input
               type="number"
               min="0"
               max="1"
               step="0.05"
-              style={{ width: '60px' }}
+              style={{width: '60px'}}
               value={settings.opacityMin}
               onChange={(e) => handleSettingChange('opacityMin', Number(e.target.value))}
             />
@@ -285,7 +267,7 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
               min="0"
               max="1"
               step="0.05"
-              style={{ width: '60px' }}
+              style={{width: '60px'}}
               value={settings.opacityMax}
               onChange={(e) => handleSettingChange('opacityMax', Number(e.target.value))}
             />

@@ -293,40 +293,79 @@ const easingFunctions: {
       comment: ``,
     },
   ];
-const bezierMovementFunctionString = `return (particle, animationStartTime, currentTime) => {
-    const targetCoordinates = { x: particle.targetX, y: particle.targetY };
+const bezierMovementFunctionString = `return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
+    const totalElapsedTime = currentTime - animationStartTime;
+    const progress = Math.min(totalElapsedTime / animationDuration, 1);
 
-    if (!particle.t) {
-        particle.t = 0;
-        particle.controlX =
-            (particle.x + targetCoordinates.x) / 2 + (Math.random() - 0.5) * 100;
-        particle.controlY =
-            (particle.y + targetCoordinates.y) / 2 + (Math.random() - 0.5) * 100;
+    // Cubic ease-in-out for smooth animation timing
+    const t = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+    // Initialize control points if not already set
+    if (!particle.controlPoint1X) {
+        const deltaX = particle.targetX - particle.initialX;
+        const deltaY = particle.targetY - particle.initialY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // Create control points for a natural curved path
+        const midX = (particle.initialX + particle.targetX) / 2;
+        const midY = (particle.initialY + particle.targetY) / 2;
+
+        // Offset control points perpendicular to the direct path
+        const perpX = -deltaY / distance;
+        const perpY = deltaX / distance;
+
+        // Control points create an arc - adjust curvature based on distance
+        const curvature = Math.min(distance * 0.3, 150);
+
+        particle.controlPoint1X = particle.initialX + deltaX * 0.3 + perpX * curvature;
+        particle.controlPoint1Y = particle.initialY + deltaY * 0.3 + perpY * curvature;
+
+        particle.controlPoint2X = particle.targetX - deltaX * 0.3 + perpX * curvature * 0.5;
+        particle.controlPoint2Y = particle.targetY - deltaY * 0.3 + perpY * curvature * 0.5;
     }
 
-    if (particle.t < 1) {
-        particle.t += 0.01;
-        const t = particle.t;
-        const startX = particle.initialX || particle.x;
-        const startY = particle.initialY || particle.y;
+    // Cubic Bézier curve calculation: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
+    const oneMinusT = 1 - t;
+    const oneMinusT2 = oneMinusT * oneMinusT;
+    const oneMinusT3 = oneMinusT2 * oneMinusT;
+    const t2 = t * t;
+    const t3 = t2 * t;
 
-        particle.x =
-            Math.pow(1 - t, 2) * startX +
-            2 * (1 - t) * t * particle.controlX +
-            Math.pow(t, 2) * targetCoordinates.x;
-        particle.y =
-            Math.pow(1 - t, 2) * startY +
-            2 * (1 - t) * t * particle.controlY +
-            Math.pow(t, 2) * targetCoordinates.y;
-    } else {
-        particle.x = targetCoordinates.x;
-        particle.y = targetCoordinates.y;
-        particle.t = 0;
+    particle.x = oneMinusT3 * particle.initialX +
+                 3 * oneMinusT2 * t * particle.controlPoint1X +
+                 3 * oneMinusT * t2 * particle.controlPoint2X +
+                 t3 * particle.targetX;
+
+    particle.y = oneMinusT3 * particle.initialY +
+                 3 * oneMinusT2 * t * particle.controlPoint1Y +
+                 3 * oneMinusT * t2 * particle.controlPoint2Y +
+                 t3 * particle.targetY;
+
+    // Optional: Add rotation based on movement direction for enhanced visual effect
+    if (progress > 0) {
+        // Calculate tangent vector for rotation
+        const tangentX = 3 * oneMinusT2 * (particle.controlPoint1X - particle.initialX) +
+                        6 * oneMinusT * t * (particle.controlPoint2X - particle.controlPoint1X) +
+                        3 * t2 * (particle.targetX - particle.controlPoint2X);
+
+        const tangentY = 3 * oneMinusT2 * (particle.controlPoint1Y - particle.initialY) +
+                        6 * oneMinusT * t * (particle.controlPoint2Y - particle.controlPoint1Y) +
+                        3 * t2 * (particle.targetY - particle.controlPoint2Y);
+
+        particle.rotation = Math.atan2(tangentY, tangentX);
     }
-};`;
 
-const pulseColorCycleMovementString = `return (particle, animationStartTime, currentTime, canvasDimensions) => {
-    const animationDuration = 3000; // 3 seconds
+    // Scale effect - starts small, grows, then shrinks slightly at the end
+    particle.scale = 0.5 + 0.7 * Math.sin(progress * Math.PI);
+
+    // Opacity fades in and stays visible
+    particle.opacity = Math.min(1, progress * 3);
+};
+`;
+
+const pulseColorCycleMovementString = `return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
     const progress = Math.min((currentTime - animationStartTime) / animationDuration, 1);
 
     // Initialize properties if not set

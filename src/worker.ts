@@ -8,6 +8,7 @@ import {
   DEFAULT_START_POSITION,
   DEFAULT_ANIMATION_DURATION,
   DEFAULT_ENABLE_BUBBLES,
+  BUBBLE_PARTICLE_LIFETIME,
 } from './constants';
 import {
   Particle,
@@ -20,7 +21,11 @@ import {
   InitializeMessagePayload,
 } from './interfaces';
 import {getPredefinedMovementOptions} from './movement';
-import {getStartCoordinatesConfig, getValidImageBlocks, getColorFromProgress} from './utils';
+import {
+  getStartCoordinatesConfig,
+  getValidImageBlocks,
+  getColorFromProgress,
+} from './utils';
 
 let customMovementFunction: (
   particle: Particle,
@@ -39,8 +44,8 @@ interface BubbleParticle {
   radius: number;
   color: string;
   opacity: number;
-  life: number;
-  maxLife: number;
+  createdAt: number; // Time when bubble was created
+  lifetime: number; // How long the bubble should live (in ms)
 }
 
 const defaultAppProps: AppProps = {
@@ -54,7 +59,7 @@ const defaultAppProps: AppProps = {
   particleColors: DEFAULT_PARTICLE_COLORS,
   animationDuration: DEFAULT_ANIMATION_DURATION,
   enableBubbles: DEFAULT_ENABLE_BUBBLES,
-}
+};
 
 const workerState: {
   // Internal worker state
@@ -144,7 +149,13 @@ const initialize = (data: InitializeMessagePayload) => {
 };
 
 // Add function to create bubble particles
-const createBubbleParticles = (x: number, y: number, color: string, count: number = 5) => {
+const createBubbleParticles = (
+  x: number,
+  y: number,
+  color: string,
+  currentTime: number,
+  count: number = 5
+) => {
   const bubbles: BubbleParticle[] = [];
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
@@ -157,8 +168,8 @@ const createBubbleParticles = (x: number, y: number, color: string, count: numbe
       radius: 2 + Math.random() * 5,
       color,
       opacity: 0.7 + Math.random() * 0.3,
-      life: 0,
-      maxLife: 50 + Math.random() * 100
+      createdAt: currentTime,
+      lifetime: BUBBLE_PARTICLE_LIFETIME, // 300ms lifetime
     });
   }
   return bubbles;
@@ -201,15 +212,36 @@ const generateParticles = ({
           opacity: 1,
           color: DEFAULT_PARTICLE_COLOR,
           revealProgress: 0,
-          revealThreshold: 0.7 + Math.random() * 0.25, // Between 0.7 and 0.95
+          revealThreshold: 0.97 + Math.random() * 0.02, // Between 0.97 and 0.99
           reachedTarget: false,
-          emittedBubbles: false
+          emittedBubbles: false,
         });
       }
     }
   }
 
   return particles;
+};
+
+// Add function to determine if particle should be drawn as image
+const shouldDrawAsImage = (particle: Particle, revealProgress: number): boolean => {
+  // Check if reveal progress exceeds particle's threshold
+  if (revealProgress > (particle.revealThreshold || 0.99)) {
+    return true;
+  }
+
+  // Check if particle is within 5 pixels of target and progress > 85%
+  if (revealProgress > 0.85) {
+    const distanceToTarget = Math.sqrt(
+      Math.pow(particle.x - particle.targetX, 2) +
+      Math.pow(particle.y - particle.targetY, 2)
+    );
+    if (distanceToTarget <= 5) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 const renderParticles = (
@@ -224,9 +256,11 @@ const renderParticles = (
     workerState.frameCanvas!.height
   );
 
-  // Update reveal progress - gradually unlock particles from left to right
   const elapsedTime = requestAnimationFrameTime - animationStartTime;
-  workerState.revealProgress = Math.min(1, elapsedTime / workerState.appProps.animationDuration);
+  workerState.revealProgress = Math.min(
+    1,
+    elapsedTime / workerState.appProps.animationDuration
+  );
 
   // Update and render bubble particles
   for (let i = workerState.bubbleParticles.length - 1; i >= 0; i--) {
@@ -240,11 +274,9 @@ const renderParticles = (
     bubble.dx += (Math.random() - 0.5) * 0.1;
     bubble.dy -= 0.02; // Slight upward drift
 
-    // Update life
-    bubble.life++;
-
-    // Fade out based on life
-    const lifeRatio = bubble.life / bubble.maxLife;
+    // Calculate age based on animation time
+    const age = requestAnimationFrameTime - bubble.createdAt;
+    const lifeRatio = Math.min(1, age / bubble.lifetime);
     const opacity = bubble.opacity * (1 - lifeRatio);
 
     // Draw bubble
@@ -264,7 +296,7 @@ const renderParticles = (
     workerState.frameContext!.fill();
 
     // Remove dead bubbles
-    if (bubble.life >= bubble.maxLife) {
+    if (age >= bubble.lifetime) {
       workerState.bubbleParticles.splice(i, 1);
     }
   }
@@ -272,134 +304,79 @@ const renderParticles = (
   // Reset alpha for particle rendering
   workerState.frameContext!.globalAlpha = 1;
 
-  workerState.workerParticles.forEach((particle, index) => {
-    // Only animate particles that have been "unlocked" based on left-to-right progress
-    const particleRevealIndex = index / workerState.workerParticles.length;
-    const shouldReveal = particleRevealIndex <= workerState.revealProgress;
 
-    if (shouldReveal) {
-      // Update particles position by calling your movement function here:
-      customMovementFunction(
-        particle,
-        animationStartTime,
-        requestAnimationFrameTime,
-        {
-          width: workerState.mainCanvas!.width,
-          height: workerState.mainCanvas!.height,
-        },
-        workerState.appProps.animationDuration
+  workerState.workerParticles.forEach((particle) => {
+    // Update particles position by calling your movement function here:
+    customMovementFunction(
+      particle,
+      animationStartTime,
+      requestAnimationFrameTime,
+      {
+        width: workerState.mainCanvas!.width,
+        height: workerState.mainCanvas!.height,
+      },
+      workerState.appProps.animationDuration
+    );
+
+    if (shouldDrawAsImage(particle, workerState.revealProgress)) {
+      // Set opacity for image drawing
+      workerState.frameContext!.globalAlpha = 1;
+      // Draw particle on frame context
+      workerState.frameContext!.drawImage(
+        workerState.imageBitmap!,
+        particle.targetX,
+        particle.targetY,
+        workerState.appProps.particleRadius,
+        workerState.appProps.particleRadius,
+        Math.floor(particle.x),
+        Math.floor(particle.y),
+        workerState.appProps.particleRadius,
+        workerState.appProps.particleRadius
+      );
+    } else {
+      const radius = Math.floor(
+        workerState.appProps.particleRadius * (particle.scale || 1)
       );
 
-      // Calculate distance to target as percentage (0-1)
-      const dx = particle.targetX - particle.initialX;
-      const dy = particle.targetY - particle.initialY;
-      const initialDistance = Math.sqrt(dx * dx + dy * dy);
+      // Set opacity for circle drawing
+      workerState.frameContext!.globalAlpha = particle.opacity || 1;
 
-      const currentDx = particle.targetX - particle.x;
-      const currentDy = particle.targetY - particle.y;
-      const currentDistance = Math.sqrt(currentDx * currentDx + currentDy * currentDy);
+      // Draw colored circle
+      workerState.frameContext!.beginPath();
+      workerState.frameContext!.arc(
+        Math.floor(particle.x) + radius / 2,
+        Math.floor(particle.y) + radius / 2,
+        radius / 2,
+        0,
+        2 * Math.PI
+      );
+      workerState.frameContext!.fillStyle = workerState.appProps.particleColors
+        .length
+        ? getColorFromProgress(
+          workerState.appProps.particleColors,
+          workerState.revealProgress
+        )
+        : particle.color;
+      workerState.frameContext!.fill();
+    }
 
-      // Update reveal progress based on distance traveled
-      const distanceProgress = initialDistance > 0 ? 1 - (currentDistance / initialDistance) : 1;
+    if (!particle.emittedBubbles && workerState.appProps.enableBubbles && particle.x === particle.targetX && particle.y === particle.targetY) {
+      particle.emittedBubbles = true;
+      const bubbles = createBubbleParticles(
+        particle.x,
+        particle.y,
+        particle.color,
+        requestAnimationFrameTime,
+        2 + Math.floor(Math.random() * 3)
+      );
+      workerState.bubbleParticles.push(...bubbles);
+    }
 
-      // Randomly vary the reveal threshold for each particle if not already set
-      if (particle.revealThreshold === undefined) {
-        particle.revealThreshold = 0.7 + Math.random() * 0.25; // Between 0.7 and 0.95
-      }
-
-      // Set reveal progress based on distance progress and threshold
-      particle.revealProgress = distanceProgress >= particle.revealThreshold ?
-        Math.min(1, (distanceProgress - particle.revealThreshold) / (1 - particle.revealThreshold) * 3) : 0;
-
-      // Calculate particle color based on the color gradient if there are colors specified
-      if (workerState.appProps.particleColors?.length > 0) {
-        if (workerState.appProps.particleColors.length === 1) {
-          // If there's only one color, use that color
-          particle.color = workerState.appProps.particleColors[0];
-        } else {
-          // Otherwise use gradient interpolation
-          particle.color = getColorFromProgress(
-            workerState.appProps.particleColors,
-            distanceProgress
-          );
-        }
-      }
-
-      // Check if particle reached target
-      const hasReachedTarget = Math.abs(particle.x - particle.targetX) < 0.5 &&
-        Math.abs(particle.y - particle.targetY) < 0.5;
-
-      // Emit bubbles when particle reaches target for the first time (if enabled)
-      if (hasReachedTarget && !particle.emittedBubbles && workerState.appProps.enableBubbles) {
-        particle.emittedBubbles = true;
-        const bubbles = createBubbleParticles(
-          particle.x,
-          particle.y,
-          particle.color,
-          2 + Math.floor(Math.random() * 3)
-        );
-        workerState.bubbleParticles.push(...bubbles);
-      }
-
-      // Draw particle on frame context based on reveal progress
-      if (particle.revealProgress >= 1) {
-        // Fully revealed - draw the image part
-        workerState.frameContext!.drawImage(
-          workerState.imageBitmap!,
-          particle.targetX,
-          particle.targetY,
-          workerState.appProps.particleRadius,
-          workerState.appProps.particleRadius,
-          Math.floor(particle.x),
-          Math.floor(particle.y),
-          workerState.appProps.particleRadius,
-          workerState.appProps.particleRadius
-        );
-      } else {
-        // Not fully revealed - draw a circle with possible image blending
-        const radius = Math.floor(workerState.appProps.particleRadius * (particle.scale || 1));
-
-        if (particle.revealProgress > 0) {
-          // Draw partial image with reduced opacity based on reveal progress
-          workerState.frameContext!.globalAlpha = particle.revealProgress * (particle.opacity || 1);
-          workerState.frameContext!.drawImage(
-            workerState.imageBitmap!,
-            particle.targetX,
-            particle.targetY,
-            workerState.appProps.particleRadius,
-            workerState.appProps.particleRadius,
-            Math.floor(particle.x),
-            Math.floor(particle.y),
-            workerState.appProps.particleRadius,
-            workerState.appProps.particleRadius
-          );
-          workerState.frameContext!.globalAlpha = 1;
-        }
-
-        // Draw circle with reduced opacity based on reveal progress
-        workerState.frameContext!.beginPath();
-        workerState.frameContext!.arc(
-          Math.floor(particle.x) + radius / 2,
-          Math.floor(particle.y) + radius / 2,
-          radius / 2,
-          0,
-          Math.PI * 2
-        );
-        workerState.frameContext!.fillStyle = particle.color;
-        if (particle.opacity !== undefined) {
-          workerState.frameContext!.globalAlpha = (1 - particle.revealProgress) * particle.opacity;
-        } else {
-          workerState.frameContext!.globalAlpha = 1 - particle.revealProgress;
-        }
-        workerState.frameContext!.fill();
-        workerState.frameContext!.globalAlpha = 1;
-      }
-
-      if (particle.x !== particle.targetX || particle.y !== particle.targetY) {
-        particlesReachedTarget = false;
-      }
-    } else {
-      // Particles that haven't been revealed yet should be considered not at target
+    if (
+      particle.x !== particle.targetX ||
+      particle.y !== particle.targetY ||
+      workerState.revealProgress < 0.99
+    ) {
       particlesReachedTarget = false;
     }
   });
@@ -407,8 +384,14 @@ const renderParticles = (
   const frameBitmap = workerState.frameCanvas!.transferToImageBitmap();
   workerState.mainContext!.transferFromImageBitmap(frameBitmap);
 
-  // Continue animation if particles haven't reached target or bubbles are still active
-  if (!particlesReachedTarget || workerState.bubbleParticles.length > 0) {
+  // Calculate if we should continue animation
+  const animationComplete = particlesReachedTarget && workerState.revealProgress >= 1;
+
+  const totalAnimationTime = workerState.appProps.animationDuration + (workerState.appProps.enableBubbles ? BUBBLE_PARTICLE_LIFETIME : 0);
+  const shouldStopAnimation = animationComplete &&
+    elapsedTime >= totalAnimationTime
+
+  if (!shouldStopAnimation) {
     workerState.animationFrameId = requestAnimationFrame(
       (requestAnimationFrameTime) =>
         renderParticles(animationStartTime, requestAnimationFrameTime)
@@ -416,9 +399,9 @@ const renderParticles = (
   } else {
     if (workerState.animationFrameId) {
       cancelAnimationFrame(workerState.animationFrameId);
-      workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
       // Clear any remaining bubbles
       workerState.bubbleParticles = [];
+      workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
     }
   }
 };
@@ -431,7 +414,7 @@ const play = () => {
   workerState.revealProgress = 0;
   workerState.bubbleParticles = [];
   // Reset emitted bubbles flag when playing again
-  workerState.workerParticles.forEach(particle => {
+  workerState.workerParticles.forEach((particle) => {
     particle.emittedBubbles = false;
   });
   renderParticles(startTime, startTime);
@@ -531,7 +514,6 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
         blockWidth: workerState.blockWidth,
         startPosition: workerState.appProps.startPosition,
       });
-
 
       self.postMessage({
         type: WorkerAction.UPDATE_APP_PROPS,

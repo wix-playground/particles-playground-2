@@ -1,7 +1,7 @@
 import {FontState, StartPositionType} from './interfaces';
 
 export const DEFAULT_PARTICLE_RADIUS = 5;
-export const DEFAULT_ANIMATION_DURATION = 2000; // 2 seconds in milliseconds
+export const DEFAULT_ANIMATION_DURATION = 3000; // 3 seconds in milliseconds
 export const DEFAULT_ENABLE_BUBBLES = false; // Default setting for bubble emission
 export const DEFAULT_START_POSITION: StartPositionType = 'random';
 export const DEFAULT_MOVEMENT_FUNCTION_KEY = 'DEV_EXAMPLE';
@@ -103,3 +103,5 @@ export const DATA_TEST_IDS = {
     FONT_ITALIC_CHECKBOX: 'font-italic-checkbox',
     TEXT_INPUT: 'text-input',
 }
+
+export const BUBBLE_PARTICLE_LIFETIME = 1300
