@@ -415,6 +415,110 @@ const pulseColorCycleMovementString = `return (particle, animationStartTime, cur
     particle.opacity = 0.4 + 0.6 * (1 - Math.abs(pulseWave));
 }`;
 
+const timeDistortionMovementString = `return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
+    const progress = Math.min((currentTime - animationStartTime) / animationDuration, 1);
+
+    // Initialize properties if not set
+    if (!particle.hasInit) {
+        particle.hasInit = true;
+        particle.originalScale = particle.scale;
+        particle.timeDialation = 0.3 + Math.random() * 1.4; // How fast/slow time moves for this particle
+        particle.temporalPhase = Math.random() * Math.PI * 2; // Phase in time wave
+        particle.chronoField = Math.random() * 0.8; // Strength of temporal field
+        particle.timeReversal = Math.random() > 0.8; // 20% chance of time reversal
+        particle.quantumFluctuation = Math.random() * 0.5; // Quantum time uncertainty
+        particle.lastPosition = {x: particle.initialX, y: particle.initialY};
+        particle.timeEcho = []; // Trail of previous positions
+        particle.maxEchos = 5 + Math.floor(Math.random() * 5);
+    }
+
+    // Apply time dilation to progress
+    let temporalProgress = progress;
+    if (particle.timeReversal && progress > 0.3 && progress < 0.8) {
+        // Time reversal in middle section, but still progress overall
+        const reversalStrength = Math.sin((progress - 0.3) / 0.5 * Math.PI);
+        const baseProgress = Math.pow(progress, 1 / particle.timeDialation);
+        temporalProgress = baseProgress * (1 - reversalStrength * 0.6);
+    } else {
+        temporalProgress = Math.pow(progress, 1 / particle.timeDialation);
+    }
+
+    // Add temporal fluctuations
+    const timeWave = Math.sin(progress * Math.PI * 4 + particle.temporalPhase);
+    const fluctuation = timeWave * particle.quantumFluctuation * 0.2;
+    temporalProgress = Math.max(0, Math.min(1, temporalProgress + fluctuation));
+
+    if (progress >= 1) {
+        particle.x = particle.targetX;
+        particle.y = particle.targetY;
+        particle.scale = particle.originalScale;
+        particle.opacity = 1;
+    } else {
+        // Calculate position based on temporal progress
+        let timeX = particle.initialX + (particle.targetX - particle.initialX) * temporalProgress;
+        let timeY = particle.initialY + (particle.targetY - particle.initialY) * temporalProgress;
+
+        // Add chronofield distortion - space-time curvature
+        const fieldStrength = particle.chronoField * (1 - Math.abs(progress - 0.5) * 2);
+        const distortionAngle = progress * Math.PI * 6 + particle.temporalPhase;
+        const distortion = Math.sin(distortionAngle) * fieldStrength * 15;
+
+        timeX += distortion;
+        timeY += Math.cos(distortionAngle) * distortion * 0.7;
+
+        // Store position in time echo trail
+        if (particle.timeEcho.length >= particle.maxEchos) {
+            particle.timeEcho.shift(); // Remove oldest echo
+        }
+        particle.timeEcho.push({x: particle.x || timeX, y: particle.y || timeY, opacity: 1});
+
+        particle.x = timeX;
+        particle.y = timeY;
+
+        // Temporal scaling - particles stretch through time
+        const timeStretch = 1 + Math.abs(timeWave) * particle.chronoField * 0.5;
+        const dialationScale = 1 + (particle.timeDialation - 1) * 0.3 * (1 - progress);
+        particle.scale = particle.originalScale * timeStretch * dialationScale;
+
+        // Opacity flickers due to temporal uncertainty
+        const uncertainty = Math.sin(progress * Math.PI * 12) * particle.quantumFluctuation;
+        particle.opacity = 0.6 + 0.4 * temporalProgress + uncertainty * 0.2;
+
+        // Time reversal creates ghostly effect during reversal phase
+        if (particle.timeReversal && progress > 0.3 && progress < 0.8) {
+            const reversalStrength = Math.sin((progress - 0.3) / 0.5 * Math.PI);
+            particle.opacity *= (1 - reversalStrength * 0.3); // More transparent during reversal
+        }
+    }
+
+    // Color represents temporal state
+    let hue, saturation, lightness;
+
+    if (particle.timeReversal && progress > 0.3 && progress < 0.8) {
+        // Time reversal - purple/violet spectrum during reversal phase
+        const reversalStrength = Math.sin((progress - 0.3) / 0.5 * Math.PI);
+        hue = 280 + temporalProgress * 40;
+        saturation = 70 + particle.chronoField * 30 + reversalStrength * 20;
+        lightness = 30 + temporalProgress * 50;
+    } else if (particle.timeDialation > 1) {
+        // Fast time - blue spectrum (blue shift)
+        hue = 240 - temporalProgress * 60; // Blue to cyan
+        saturation = 80 + particle.timeDialation * 20;
+        lightness = 40 + temporalProgress * 40;
+    } else {
+        // Slow time - red spectrum (red shift)
+        hue = 0 + temporalProgress * 60; // Red to yellow
+        saturation = 70 + (1 - particle.timeDialation) * 30;
+        lightness = 35 + temporalProgress * 45;
+    }
+
+    // Add temporal shimmer
+    const shimmer = Math.sin(progress * Math.PI * 8 + particle.temporalPhase) * 15;
+    lightness = Math.max(0, Math.min(100, lightness + shimmer * particle.chronoField));
+
+    particle.color = \`hsl(\${hue}, \${saturation}%, \${lightness}%)\`;
+}`;
+
 export const getPredefinedMovementOptions: () => {
   [functionName: string]: {code: string; illustration?: React.ReactNode};
 } = () =>
@@ -425,6 +529,7 @@ export const getPredefinedMovementOptions: () => {
         DEV_TWO_FRAMES: {code: `${EXAMPLE_JSDOC}${DEV_EXAMPLE_CODE}`},
         bezier: {code: `${EXAMPLE_JSDOC}${bezierMovementFunctionString}`},
         pulseColorCycle: {code: `${EXAMPLE_JSDOC}${pulseColorCycleMovementString}`},
+        timeDistortion: {code: `${EXAMPLE_JSDOC}${timeDistortionMovementString}`},
       },
       ...easingFunctions.map(({name, comment, definition}) => ({
         [name]: {
