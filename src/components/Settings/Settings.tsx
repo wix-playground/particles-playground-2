@@ -8,6 +8,7 @@ import {editor} from 'monaco-editor';
 import {MultiColorPicker} from './MultiColorPicker';
 import {PulseColorSettings} from './PulseColorSettings';
 import {TimeDistortionSettings} from './TimeDistortionSettings';
+import {ElasticPlopSettings} from './ElasticPlopSettings';
 import {TextSettings} from './TextSettings';
 import {AnimationDurationSlider} from './AnimationDurationSlider';
 import {BubbleEffectToggle} from './BubbleEffectToggle';
@@ -79,6 +80,9 @@ export const Settings = ({
         )}
         {appProps.selectedMovementFunction === 'timeDistortion' && (
           <TimeDistortionSettings />
+        )}
+        {appProps.selectedMovementFunction === 'elasticPlop' && (
+          <ElasticPlopSettings />
         )}
         <TextSettings />
       </div>

@@ -519,6 +519,143 @@ const timeDistortionMovementString = `return (particle, animationStartTime, curr
     particle.color = \`hsl(\${hue}, \${saturation}%, \${lightness}%)\`;
 }`;
 
+const elasticPlopMovementString = `return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
+    const progress = Math.min((currentTime - animationStartTime) / animationDuration, 1);
+
+    // Initialize elastic properties
+    if (!particle.hasInit) {
+        particle.hasInit = true;
+        particle.elasticity = 0.6 + Math.random() * 0.3; // Bounce factor
+        particle.damping = 0.95 + Math.random() * 0.04; // Energy loss per bounce
+        particle.bounceCount = 0;
+        particle.originalScale = particle.scale;
+        particle.lastUpdateTime = animationStartTime;
+
+        // Calculate initial velocity toward target (pixels per second)
+        const dx = particle.targetX - particle.initialX;
+        const dy = particle.targetY - particle.initialY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        particle.velocityX = (dx / distance) * 480; // pixels per second
+        particle.velocityY = (dy / distance) * 480; // pixels per second
+
+        // Create invisible barriers
+        particle.barriers = [
+            {x: particle.initialX + dx * 0.3, y: particle.initialY + dy * 0.3, normal: {x: 1, y: 0}},
+            {x: particle.initialX + dx * 0.6, y: particle.initialY + dy * 0.6, normal: {x: 0, y: 1}},
+            {x: particle.initialX + dx * 0.8, y: particle.initialY + dy * 0.8, normal: {x: -1, y: 1}}
+        ];
+
+        particle.currentX = particle.initialX;
+        particle.currentY = particle.initialY;
+        particle.bounceCooldown = {};
+    }
+
+    // Calculate actual deltaTime from the time parameters
+    const deltaTime = (currentTime - particle.lastUpdateTime) / 1000; // Convert to seconds
+    particle.lastUpdateTime = currentTime;
+
+    if (progress < 0.95) {
+        // Update position using actual deltaTime
+        particle.currentX += particle.velocityX * deltaTime;
+        particle.currentY += particle.velocityY * deltaTime;
+
+        // Check for barrier collisions
+        particle.barriers.forEach((barrier, index) => {
+            const distanceToBarrier = Math.abs(
+                (particle.currentX - barrier.x) * barrier.normal.x +
+                (particle.currentY - barrier.y) * barrier.normal.y
+            );
+
+            // Use time-based bounce prevention instead of frame-based
+            const bounceKey = \`bounce_\${index}\`;
+            const cooldownDuration = 50; // 50ms cooldown
+
+            if (distanceToBarrier < 15 && (!particle.bounceCooldown[bounceKey] || currentTime - particle.bounceCooldown[bounceKey] > cooldownDuration)) {
+                // Calculate reflection
+                const dotProduct = particle.velocityX * barrier.normal.x + particle.velocityY * barrier.normal.y;
+                particle.velocityX -= 2 * dotProduct * barrier.normal.x * particle.elasticity;
+                particle.velocityY -= 2 * dotProduct * barrier.normal.y * particle.elasticity;
+
+                // Apply damping
+                particle.velocityX *= particle.damping;
+                particle.velocityY *= particle.damping;
+
+                particle.bounceCount++;
+                particle.bounceCooldown[bounceKey] = currentTime; // Store the time of bounce
+            }
+        });
+
+        // Stronger gravity toward target as we approach the end
+        const targetDx = particle.targetX - particle.currentX;
+        const targetDy = particle.targetY - particle.currentY;
+        const targetDistance = Math.sqrt(targetDx * targetDx + targetDy * targetDy);
+
+        if (targetDistance > 5) {
+            // Increase attraction strength as we approach the end of animation (pixels per second squared)
+            const attractionStrength = (60 + (progress * 180)) * deltaTime; // Time-based acceleration
+            particle.velocityX += (targetDx / targetDistance) * attractionStrength;
+            particle.velocityY += (targetDy / targetDistance) * attractionStrength;
+        }
+
+        particle.x = particle.currentX;
+        particle.y = particle.currentY;
+    } else {
+        // Smooth transition to target in final 5%
+        const finalProgress = (progress - 0.95) / 0.05;
+        const smoothFinal = finalProgress * finalProgress * (3 - 2 * finalProgress); // Smooth step
+
+        particle.x = particle.currentX + (particle.targetX - particle.currentX) * smoothFinal;
+        particle.y = particle.currentY + (particle.targetY - particle.currentY) * smoothFinal;
+
+        // Gradually reduce velocity
+        particle.velocityX *= (1 - smoothFinal);
+        particle.velocityY *= (1 - smoothFinal);
+    }
+
+    // Check if particle has reached target (within 2 pixels)
+    const distanceToTarget = Math.sqrt(
+        Math.pow(particle.x - particle.targetX, 2) +
+        Math.pow(particle.y - particle.targetY, 2)
+    );
+
+    if (distanceToTarget < 2) {
+        // Snap to exact target position
+        particle.x = particle.targetX;
+        particle.y = particle.targetY;
+        particle.currentX = particle.targetX;
+        particle.currentY = particle.targetY;
+        particle.velocityX = 0;
+        particle.velocityY = 0;
+    }
+
+    // Visual effects based on bouncing
+    const speed = Math.sqrt(particle.velocityX * particle.velocityX + particle.velocityY * particle.velocityY);
+
+    // Scale increases with speed and bounces
+    const speedScale = 1 + speed * 0.0001; // Adjusted for pixels per second
+    const bounceScale = 1 + particle.bounceCount * 0.1;
+    particle.scale = Math.max(particle.originalScale * (speedScale * bounceScale) / 4, 1);
+
+    // Color changes with energy (speed) and bounce count
+    const energyHue = Math.min(speed * 0.5, 120); // Adjusted for pixels per second
+    const bounceHue = (particle.bounceCount * 60) % 360;
+    const hue = (energyHue + bounceHue) % 360;
+    const saturation = 70 + Math.min(speed * 0.01, 30); // Adjusted for pixels per second
+    const lightness = 40 + Math.min(speed * 0.008, 40); // Adjusted for pixels per second
+
+    particle.color = \`hsl(\${hue}, \${saturation}%, \${lightness}%)\`;
+
+    // Opacity based on energy
+    particle.opacity = 0.5 + Math.min(speed * 0.002, 0.5); // Adjusted for pixels per second
+
+    // Trail effect after bounces
+    if (particle.bounceCount > 0) {
+        const trailIntensity = Math.min(particle.bounceCount * 0.2, 1);
+        particle.opacity = Math.max(particle.opacity, 0.3 + trailIntensity * 0.7);
+    }
+}`;
+
 export const getPredefinedMovementOptions: () => {
   [functionName: string]: {code: string; illustration?: React.ReactNode};
 } = () =>
@@ -530,6 +667,7 @@ export const getPredefinedMovementOptions: () => {
         bezier: {code: `${EXAMPLE_JSDOC}${bezierMovementFunctionString}`},
         pulseColorCycle: {code: `${EXAMPLE_JSDOC}${pulseColorCycleMovementString}`},
         timeDistortion: {code: `${EXAMPLE_JSDOC}${timeDistortionMovementString}`},
+        elasticPlop: {code: `${EXAMPLE_JSDOC}${elasticPlopMovementString}`},
       },
       ...easingFunctions.map(({name, comment, definition}) => ({
         [name]: {

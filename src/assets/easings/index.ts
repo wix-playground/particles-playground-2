@@ -29,6 +29,7 @@ import {ElasticInOut} from './ElasticInOut';
 import {ElasticOut} from './ElasticOut';
 import {PulseColorCycle} from './PulseColorCycle';
 import {TimeDistortion} from './TimeDistortion';
+import {ElasticPlop} from './ElasticPlop';
 
 export {
   SineIn,
@@ -62,4 +63,5 @@ export {
   ElasticOut,
   PulseColorCycle,
   TimeDistortion,
+  ElasticPlop,
 };
