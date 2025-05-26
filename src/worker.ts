@@ -223,11 +223,11 @@ const generateParticles = ({
   return particles;
 };
 
-// Add function to determine if particle should be drawn as image
-const shouldDrawAsImage = (particle: Particle, revealProgress: number): boolean => {
+// Add function to calculate transition blend factor
+const getTransitionBlendFactor = (particle: Particle, revealProgress: number): number => {
   // Check if reveal progress exceeds particle's threshold
   if (revealProgress > (particle.revealThreshold || 0.99)) {
-    return true;
+    return 1; // Fully image
   }
 
   // Check if particle is within 5 pixels of target and progress > 85%
@@ -237,11 +237,15 @@ const shouldDrawAsImage = (particle: Particle, revealProgress: number): boolean 
       Math.pow(particle.y - particle.targetY, 2)
     );
     if (distanceToTarget <= 5) {
-      return true;
+      // Create a smooth transition over the last 2% of reveal progress
+      const threshold = particle.revealThreshold || 0.99;
+      const transitionStart = threshold - 0.02;
+      const transitionProgress = Math.max(0, (revealProgress - transitionStart) / 0.02);
+      return Math.min(1, transitionProgress);
     }
   }
 
-  return false;
+  return 0; // Fully circle
 };
 
 const renderParticles = (
@@ -318,10 +322,49 @@ const renderParticles = (
       workerState.appProps.animationDuration
     );
 
-    if (shouldDrawAsImage(particle, workerState.revealProgress)) {
-      // Set opacity for image drawing
+    const blendFactor = getTransitionBlendFactor(particle, workerState.revealProgress);
+
+    if (blendFactor > 0 && blendFactor < 1) {
+      // Blending mode: draw both circle and image with appropriate opacities
+      const radius = Math.floor(
+        workerState.appProps.particleRadius * (particle.scale || 1)
+      );
+
+      // Draw circle with reduced opacity
+      workerState.frameContext!.globalAlpha = (particle.opacity || 1) * (1 - blendFactor);
+      workerState.frameContext!.beginPath();
+      workerState.frameContext!.arc(
+        Math.floor(particle.x) + radius / 2,
+        Math.floor(particle.y) + radius / 2,
+        radius / 2,
+        0,
+        2 * Math.PI
+      );
+      workerState.frameContext!.fillStyle = workerState.appProps.particleColors
+        .length
+        ? getColorFromProgress(
+          workerState.appProps.particleColors,
+          workerState.revealProgress
+        )
+        : particle.color;
+      workerState.frameContext!.fill();
+
+      // Draw image with increasing opacity
+      workerState.frameContext!.globalAlpha = blendFactor;
+      workerState.frameContext!.drawImage(
+        workerState.imageBitmap!,
+        particle.targetX,
+        particle.targetY,
+        workerState.appProps.particleRadius,
+        workerState.appProps.particleRadius,
+        Math.floor(particle.x),
+        Math.floor(particle.y),
+        workerState.appProps.particleRadius,
+        workerState.appProps.particleRadius
+      );
+    } else if (blendFactor >= 1) {
+      // Fully image
       workerState.frameContext!.globalAlpha = 1;
-      // Draw particle on frame context
       workerState.frameContext!.drawImage(
         workerState.imageBitmap!,
         particle.targetX,
@@ -334,14 +377,12 @@ const renderParticles = (
         workerState.appProps.particleRadius
       );
     } else {
+      // Fully circle
       const radius = Math.floor(
         workerState.appProps.particleRadius * (particle.scale || 1)
       );
 
-      // Set opacity for circle drawing
       workerState.frameContext!.globalAlpha = particle.opacity || 1;
-
-      // Draw colored circle
       workerState.frameContext!.beginPath();
       workerState.frameContext!.arc(
         Math.floor(particle.x) + radius / 2,
