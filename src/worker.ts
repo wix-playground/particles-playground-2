@@ -9,6 +9,8 @@ import {
   DEFAULT_ANIMATION_DURATION,
   DEFAULT_ENABLE_BUBBLES,
   DEFAULT_PARTICLE_SPREAD,
+  DEFAULT_START_PARTICLE_OPACITY,
+  DEFAULT_END_PARTICLE_OPACITY,
   BUBBLE_PARTICLE_LIFETIME,
 } from './constants';
 import {
@@ -61,6 +63,8 @@ const defaultAppProps: AppProps = {
   animationDuration: DEFAULT_ANIMATION_DURATION,
   enableBubbles: DEFAULT_ENABLE_BUBBLES,
   particleSpread: DEFAULT_PARTICLE_SPREAD,
+  startParticleOpacity: DEFAULT_START_PARTICLE_OPACITY,
+  endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
 };
 
 const workerState: {
@@ -250,6 +254,14 @@ const getTransitionBlendFactor = (particle: Particle, revealProgress: number): n
   return 0; // Fully circle
 };
 
+// Add function to calculate current particle opacity based on animation progress
+const getCurrentParticleOpacity = (revealProgress: number): number => {
+  // Interpolate between start and end opacity based on animation progress
+  const startOpacity = workerState.appProps.startParticleOpacity;
+  const endOpacity = workerState.appProps.endParticleOpacity;
+  return startOpacity + (endOpacity - startOpacity) * revealProgress;
+};
+
 const renderParticles = (
   animationStartTime: number,
   requestAnimationFrameTime: number
@@ -325,6 +337,7 @@ const renderParticles = (
     );
 
     const blendFactor = getTransitionBlendFactor(particle, workerState.revealProgress);
+    const currentOpacity = getCurrentParticleOpacity(workerState.revealProgress);
 
     if (blendFactor > 0 && blendFactor < 1) {
       // Blending mode: draw both circle and image with appropriate opacities
@@ -333,7 +346,7 @@ const renderParticles = (
       );
 
       // Draw circle with reduced opacity
-      workerState.frameContext!.globalAlpha = (particle.opacity || 1) * (1 - blendFactor);
+      workerState.frameContext!.globalAlpha = currentOpacity * (1 - blendFactor);
       workerState.frameContext!.beginPath();
       workerState.frameContext!.arc(
         Math.floor(particle.x) + radius / 2,
@@ -352,7 +365,7 @@ const renderParticles = (
       workerState.frameContext!.fill();
 
       // Draw image with increasing opacity
-      workerState.frameContext!.globalAlpha = blendFactor;
+      workerState.frameContext!.globalAlpha = blendFactor * currentOpacity;
       workerState.frameContext!.drawImage(
         workerState.imageBitmap!,
         particle.targetX,
@@ -366,7 +379,7 @@ const renderParticles = (
       );
     } else if (blendFactor >= 1) {
       // Fully image
-      workerState.frameContext!.globalAlpha = 1;
+      workerState.frameContext!.globalAlpha = currentOpacity;
       workerState.frameContext!.drawImage(
         workerState.imageBitmap!,
         particle.targetX,
@@ -384,7 +397,7 @@ const renderParticles = (
         workerState.appProps.particleRadius * (particle.scale || 1)
       );
 
-      workerState.frameContext!.globalAlpha = particle.opacity || 1;
+      workerState.frameContext!.globalAlpha = currentOpacity;
       workerState.frameContext!.beginPath();
       workerState.frameContext!.arc(
         Math.floor(particle.x) + radius / 2,
@@ -748,6 +761,36 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
         type: WorkerAction.UPDATE_APP_PROPS,
         data: workerState.appProps,
       });
+      break;
+    }
+    case Action.UPDATE_START_PARTICLE_OPACITY: {
+      workerState.appProps.startParticleOpacity = payload;
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+
+      if (workerState.animationFrameId) {
+        cancelAnimationFrame(workerState.animationFrameId);
+        const startTime = performance.now();
+        renderParticles(startTime, startTime);
+      }
+      break;
+    }
+    case Action.UPDATE_END_PARTICLE_OPACITY: {
+      workerState.appProps.endParticleOpacity = payload;
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+
+      if (workerState.animationFrameId) {
+        cancelAnimationFrame(workerState.animationFrameId);
+        const startTime = performance.now();
+        renderParticles(startTime, startTime);
+      }
       break;
     }
     default:

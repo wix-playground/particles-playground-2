@@ -48,6 +48,8 @@ export enum Action {
   UPDATE_ANIMATION_DURATION = 'UPDATE_ANIMATION_DURATION',
   UPDATE_ENABLE_BUBBLES = 'UPDATE_ENABLE_BUBBLES',
   UPDATE_PARTICLE_SPREAD = 'UPDATE_PARTICLE_SPREAD',
+  UPDATE_START_PARTICLE_OPACITY = 'UPDATE_START_PARTICLE_OPACITY',
+  UPDATE_END_PARTICLE_OPACITY = 'UPDATE_END_PARTICLE_OPACITY',
 }
 
 export enum WorkerAction {
@@ -140,6 +142,16 @@ export const getUpdateParticleSpreadMessage = (payload: number) => ({
   payload,
 });
 
+export const getUpdateStartParticleOpacityMessage = (payload: number) => ({
+  type: Action.UPDATE_START_PARTICLE_OPACITY as const,
+  payload,
+});
+
+export const getUpdateEndParticleOpacityMessage = (payload: number) => ({
+  type: Action.UPDATE_END_PARTICLE_OPACITY as const,
+  payload,
+});
+
 export type MainThreadMessage =
   | ReturnType<typeof getUpdateBitmapMessage>
   | ReturnType<typeof getUpdateTextMessage>
@@ -153,7 +165,9 @@ export type MainThreadMessage =
   | ReturnType<typeof getUpdateParticleColorsMessage>
   | ReturnType<typeof getUpdateAnimationDurationMessage>
   | ReturnType<typeof getUpdateEnableBubblesMessage>
-  | ReturnType<typeof getUpdateParticleSpreadMessage>;
+  | ReturnType<typeof getUpdateParticleSpreadMessage>
+  | ReturnType<typeof getUpdateStartParticleOpacityMessage>
+  | ReturnType<typeof getUpdateEndParticleOpacityMessage>;
 
 export const fontFamilies = [
   'Arial',
@@ -187,4 +201,6 @@ export interface AppProps {
   animationDuration: number;
   enableBubbles: boolean;
   particleSpread: number;
+  startParticleOpacity: number;
+  endParticleOpacity: number;
 }

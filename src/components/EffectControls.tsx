@@ -5,6 +5,8 @@ import {MultiColorPicker} from './Settings/MultiColorPicker';
 import {WorkerContext} from '../contexts/WorkerContext';
 import {ParticleDensity} from './Settings/ParticleDensity';
 import {ParticleSpread} from './Settings/ParticleSpread';
+import {ParticleOpacity} from './Settings/ParticleOpacity';
+import {AnimationDuration} from './Settings/AnimationDuration';
 
 interface EffectControlsProps {
   onPlay: () => void;
@@ -21,9 +23,6 @@ interface ControlState {
   emitterSize: number;
   startParticleSize: number;
   endParticleSize: number;
-  startParticleOpacity: number;
-  endParticleOpacity: number;
-  animationSpeed: number;
   maxDelay: number;
 }
 
@@ -40,9 +39,6 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
     emitterSize: 100,
     startParticleSize: 1,
     endParticleSize: 5,
-    startParticleOpacity: 0.2,
-    endParticleOpacity: 1,
-    animationSpeed: 0.07,
     maxDelay: 700,
   });
 
@@ -59,7 +55,6 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
       effectsPreset: randomPreset,
       startParticleSize: Math.random() * 10 + 0.5,
       endParticleSize: Math.random() * 20 + 2,
-      animationSpeed: Math.random() * 0.15 + 0.01,
       maxDelay: Math.floor(Math.random() * 3000) + 100,
     }));
   }, []);
@@ -84,19 +79,10 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
           <option value="matrix">Matrix Code</option>
         </select>
       </div>
-
-      {/* Text Input */}
-      <div className="control-group" style={{gridColumn: 'span 2'}}>
-        <label htmlFor="textInput">Text</label>
-        <TextInput />
-      </div>
-
+      <TextInput />
       <FontSettings />
-
       <ParticleDensity />
-
       <ParticleSpread />
-
       {/* Particle Shape */}
       <div className="control-group">
         <label htmlFor="particleShape">Particle Shape:</label>
@@ -272,74 +258,8 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
         </div>
       </div>
 
-      {/* Particle Opacity */}
-      <div className="control-group">
-        <label htmlFor="startParticleOpacity">Start Particle Opacity (0-1):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={controlState.startParticleOpacity}
-            onChange={(e) => handleControlChange('startParticleOpacity', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="0"
-            max="1"
-            step="0.01"
-            value={controlState.startParticleOpacity}
-            onChange={(e) => handleControlChange('startParticleOpacity', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      <div className="control-group">
-        <label htmlFor="endParticleOpacity">End Particle Opacity (0-1):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={controlState.endParticleOpacity}
-            onChange={(e) => handleControlChange('endParticleOpacity', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="0"
-            max="1"
-            step="0.01"
-            value={controlState.endParticleOpacity}
-            onChange={(e) => handleControlChange('endParticleOpacity', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      {/* Animation Speed */}
-      <div className="control-group">
-        <label htmlFor="animationSpeed">Animation Speed:</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="0.01"
-            max="0.2"
-            step="0.01"
-            value={controlState.animationSpeed}
-            onChange={(e) => handleControlChange('animationSpeed', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="0.01"
-            max="0.2"
-            step="0.01"
-            value={controlState.animationSpeed}
-            onChange={(e) => handleControlChange('animationSpeed', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
+      <ParticleOpacity />
+      <AnimationDuration />
       {/* Max Delay */}
       <div className="control-group">
         <label htmlFor="maxDelay">Max Particle Delay (ms):</label>

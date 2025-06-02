@@ -9,7 +9,6 @@ import {MultiColorPicker} from './MultiColorPicker';
 import {TimeDistortionSettings} from './TimeDistortionSettings';
 import {ElasticPlopSettings} from './ElasticPlopSettings';
 import {TextSettings} from './TextSettings';
-import {AnimationDurationSlider} from './AnimationDurationSlider';
 import {BubbleEffectToggle} from './BubbleEffectToggle';
 
 export const Settings = ({
@@ -60,7 +59,6 @@ export const Settings = ({
         </div>
         <MultiColorPicker />
         <StartPosition />
-        <AnimationDurationSlider />
         <div className="card">
           <span className="innerTitle">Predefined movement functions</span>
           <FunctionSelectorModal

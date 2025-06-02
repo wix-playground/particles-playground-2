@@ -37,14 +37,17 @@ export const TextInput = () => {
   }
 
   return (
-    <textarea
-      data-testid={DATA_TEST_IDS.TEXT_INPUT}
-      style={previewStyle}
-      className="userInput"
-      value={appProps.text}
-      onChange={(e) => {
-        handleTextChange(e.target.value);
-      }}
-    />
+    <div className="control-group" style={{gridColumn: 'span 2'}}>
+      <label htmlFor="textInput">Text</label>
+      <textarea
+        data-testid={DATA_TEST_IDS.TEXT_INPUT}
+        style={previewStyle}
+        className="userInput"
+        value={appProps.text}
+        onChange={(e) => {
+          handleTextChange(e.target.value);
+        }}
+      />
+    </div>
   );
 };

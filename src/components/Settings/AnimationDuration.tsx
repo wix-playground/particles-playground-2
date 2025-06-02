@@ -4,7 +4,8 @@ import {WorkerContext} from '../../contexts/WorkerContext';
 import {AppContext} from '../../contexts/AppContext';
 import {DEFAULT_ANIMATION_DURATION} from '../../constants';
 
-export const AnimationDurationSlider = () => {
+
+export const AnimationDuration = () => {
   const worker = useContext(WorkerContext);
   const appProps = useContext(AppContext);
   const duration = appProps?.animationDuration ?? DEFAULT_ANIMATION_DURATION;
@@ -19,26 +20,26 @@ export const AnimationDurationSlider = () => {
     [worker]
   );
 
-  if (!appProps) return null;
 
-  return (
-    <div>
-      <div>
-        <span>Animation Duration</span>
-      </div>
-      <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-        <input
-          type="range"
-          min="500"
-          max="5000"
-          step="100"
-          value={duration}
-          onChange={handleDurationChange}
-        />
-        <span className="settings-item-value">
-          {(duration / 1000).toFixed(1)}s
-        </span>
-      </div>
+  return <div className="control-group">
+    <label htmlFor="animationDuration">Animation Duration (ms):</label>
+    <div className="slider-input-group">
+      <input
+        type="range"
+        min="500"
+        max="5000"
+        step="100"
+        value={duration}
+        onChange={handleDurationChange}
+      />
+      <input
+        type="number"
+        min="500"
+        max="5000"
+        step="100"
+        value={duration}
+        onChange={handleDurationChange}
+      />
     </div>
-  );
+  </div>;
 };

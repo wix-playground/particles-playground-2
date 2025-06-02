@@ -2,7 +2,7 @@ import {render, screen} from '@testing-library/react';
 import {TextSettings} from '../../../components/Settings/TextSettings';
 import {AppContext} from '../../../contexts/AppContext';
 import {WorkerContext} from '../../../contexts/WorkerContext';
-import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_ENABLE_BUBBLES, DEFAULT_FONT_STATE, DEFAULT_PARTICLE_SPREAD} from '../../../constants';
+import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_ENABLE_BUBBLES, DEFAULT_END_PARTICLE_OPACITY, DEFAULT_FONT_STATE, DEFAULT_PARTICLE_SPREAD, DEFAULT_START_PARTICLE_OPACITY} from '../../../constants';
 import {AppProps, FontState} from '../../../interfaces';
 
 // Mock Worker class
@@ -32,6 +32,8 @@ describe('TextSettings', () => {
       animationDuration: DEFAULT_ANIMATION_DURATION,
       enableBubbles: DEFAULT_ENABLE_BUBBLES,
       particleSpread: DEFAULT_PARTICLE_SPREAD,
+      startParticleOpacity: DEFAULT_START_PARTICLE_OPACITY,
+      endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
     };
 
     // Create mock worker
@@ -87,6 +89,8 @@ describe('TextSettings', () => {
       animationDuration: DEFAULT_ANIMATION_DURATION,
       enableBubbles: DEFAULT_ENABLE_BUBBLES,
       particleSpread: DEFAULT_PARTICLE_SPREAD,
+      startParticleOpacity: DEFAULT_START_PARTICLE_OPACITY,
+      endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
     };
 
     // Create mock worker
