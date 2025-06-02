@@ -1,5 +1,6 @@
 import {useCallback, useState, useContext} from 'react';
 import {TextInput} from './Settings/TextSettings/TextInput';
+import {MultiColorPicker} from './Settings/MultiColorPicker';
 import {getUpdateParticleSpreadMessage} from '../interfaces';
 import {WorkerContext} from '../contexts/WorkerContext';
 
@@ -438,24 +439,8 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
       )}
 
       {/* Particle Colors */}
-      <div className="control-group">
-        <label htmlFor="startParticleColor">Start Particle Color:</label>
-        <input
-          type="color"
-          id="startParticleColor"
-          value={controlState.startParticleColor}
-          onChange={(e) => handleControlChange('startParticleColor', e.target.value)}
-        />
-      </div>
-
-      <div className="control-group">
-        <label htmlFor="endParticleColor">End Particle Color:</label>
-        <input
-          type="color"
-          id="endParticleColor"
-          value={controlState.endParticleColor}
-          onChange={(e) => handleControlChange('endParticleColor', e.target.value)}
-        />
+      <div className="control-group" style={{gridColumn: 'span 2'}}>
+        <MultiColorPicker />
       </div>
 
       {/* Particle Sizes */}
