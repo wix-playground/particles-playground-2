@@ -57,6 +57,7 @@ const App = () => {
     letterSpacing: appProps?.font ? appProps.font.letterSpacing : 0,
     fontLoaded,
     canvasScale,
+    lineHeight: appProps?.font ? appProps.font.lineHeight : DEFAULT_FONT_STATE.lineHeight,
   });
   console.log({dimensions, canvasScale});
 

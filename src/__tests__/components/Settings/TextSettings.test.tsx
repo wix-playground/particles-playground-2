@@ -2,7 +2,7 @@ import {render, screen} from '@testing-library/react';
 import {TextSettings} from '../../../components/Settings/TextSettings';
 import {AppContext} from '../../../contexts/AppContext';
 import {WorkerContext} from '../../../contexts/WorkerContext';
-import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_ENABLE_BUBBLES, DEFAULT_FONT_STATE} from '../../../constants';
+import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_ENABLE_BUBBLES, DEFAULT_FONT_STATE, DEFAULT_PARTICLE_SPREAD} from '../../../constants';
 import {AppProps, FontState} from '../../../interfaces';
 
 // Mock Worker class
@@ -31,6 +31,7 @@ describe('TextSettings', () => {
       font: undefined as any, // Cast to any to simulate undefined font
       animationDuration: DEFAULT_ANIMATION_DURATION,
       enableBubbles: DEFAULT_ENABLE_BUBBLES,
+      particleSpread: DEFAULT_PARTICLE_SPREAD,
     };
 
     // Create mock worker
@@ -72,7 +73,8 @@ describe('TextSettings', () => {
       weight: 400,
       fontSize: 96,
       fontFamily: "UnifrakturMaguntia",
-      letterSpacing: 0
+      letterSpacing: 0,
+      lineHeight: 1.2,
     }
     const mockAppProps: AppProps = {
       startPosition: 'random',
@@ -84,6 +86,7 @@ describe('TextSettings', () => {
       font: mockFontState,
       animationDuration: DEFAULT_ANIMATION_DURATION,
       enableBubbles: DEFAULT_ENABLE_BUBBLES,
+      particleSpread: DEFAULT_PARTICLE_SPREAD,
     };
 
     // Create mock worker

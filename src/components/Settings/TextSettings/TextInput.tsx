@@ -25,6 +25,8 @@ export const TextInput = () => {
           fontWeight: fontState.weight,
           fontStyle: fontState.italic ? 'italic' : 'normal',
           letterSpacing: `${fontState.letterSpacing}rem`,
+          lineHeight: fontState.lineHeight,
+          whiteSpace: 'pre-line' as const,
         }
         : {},
     [fontState]

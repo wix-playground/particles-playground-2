@@ -22,6 +22,9 @@ export const SelectableTextOverlay: React.FC<{textRef: React.RefObject<HTMLDivEl
         fontWeight: fontState.weight,
         fontFamily: fontState.fontFamily,
         fontSize: `${fontState.fontSize}px`,
+        lineHeight: fontState.lineHeight,
+        whiteSpace: 'pre-line',
+        textAlign: 'center',
       }}
       onMouseDown={(e) => {
         // Ensure text selection works properly

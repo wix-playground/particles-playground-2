@@ -100,6 +100,13 @@ export const FontSettings = () => {
     setFontState({letterSpacing: Number(e.target.value)});
   };
 
+  // Handle line height change
+  const handleLineHeightChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setFontState({lineHeight: Number(e.target.value)});
+  };
+
   if (!fontState) {
     return;
   }
@@ -177,6 +184,20 @@ export const FontSettings = () => {
           step="0.1"
           min="-5"
           max="20"
+        />
+      </div>
+
+      <div className="setting-group">
+        <label htmlFor="line-height">Line Height:</label>
+        <input
+          data-testid={DATA_TEST_IDS.LINE_HEIGHT_INPUT}
+          type="number"
+          id="line-height"
+          value={fontState.lineHeight}
+          onChange={handleLineHeightChange}
+          step="0.1"
+          min="0.5"
+          max="3"
         />
       </div>
     </div>
