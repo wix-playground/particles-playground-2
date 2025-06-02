@@ -59,7 +59,6 @@ const App = () => {
     canvasScale,
     lineHeight: appProps?.font ? appProps.font.lineHeight : DEFAULT_FONT_STATE.lineHeight,
   });
-  console.log({dimensions, canvasScale});
 
   useEffect(() => {
     // Create the Web Worker
@@ -88,7 +87,6 @@ const App = () => {
     const initializeWorker = async () => {
       const canvas = canvasRef.current;
       if (!canvasInitialized.current && canvas && bitmap) {
-        console.log('INITIALIZING CANVAS');
         canvas.width = bitmap.width;
         canvas.height = bitmap.height;
         const transferrableCanvas = canvas.transferControlToOffscreen();

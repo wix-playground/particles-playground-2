@@ -8,6 +8,7 @@ import {ParticleSpread} from './Settings/ParticleSpread';
 import {ParticleOpacity} from './Settings/ParticleOpacity';
 import {ParticleSize} from './Settings/ParticleSize';
 import {AnimationDuration} from './Settings/AnimationDuration';
+import {ShareButton} from './ShareButton';
 
 interface EffectControlsProps {
   onPlay: () => void;
@@ -230,9 +231,12 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
       <AnimationDuration />
 
       {/* Action Buttons */}
-      <div className="control-group" style={{gridColumn: '1 / -1', display: 'flex', flexDirection: 'row', justifyContent: 'space-around', gap: '20px'}}>
-        <button onClick={onPlay} style={{flexGrow: 1}}>Generate / Update Text</button>
-        <button onClick={shuffleSettings} className="shuffle-button" style={{flexGrow: 1}}>Shuffle Settings</button>
+      <div className="control-group" style={{gridColumn: '1 / -1', display: 'flex', flexDirection: 'row', gap: '20px'}}>
+        <button onClick={onPlay} style={{flex: '1 1 0'}}>Play Animation</button>
+        <button onClick={shuffleSettings} className="shuffle-button" style={{flex: '1 1 0'}}>Shuffle Settings</button>
+        <div style={{flex: '1 1 0'}}>
+          <ShareButton />
+        </div>
       </div>
     </div>
   );

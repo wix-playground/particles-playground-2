@@ -190,6 +190,16 @@
   background-color: #E598B0;
 }
 
+.control-group button.share-button {
+  background-color: #94dbdb;
+  color: #1A1A2E;
+}
+
+.control-group button.share-button:hover {
+  background-color: #7ab5b5;
+}
+
+
 .effects-preset-group {
   grid-column: 1 / -1;
   margin-bottom: 10px;
@@ -204,7 +214,7 @@
 
 
 .selectable-text {
-  /* color: transparent; */
+  color: transparent;
   font: inherit;
   block-size: auto;
   inline-size: max-content;

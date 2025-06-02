@@ -392,7 +392,7 @@ const renderParticles = (
       );
     } else if (blendFactor >= 1) {
       // Fully image
-      workerState.frameContext!.globalAlpha = currentOpacity;
+      workerState.frameContext!.globalAlpha = 1;
       workerState.frameContext!.drawImage(
         workerState.imageBitmap!,
         particle.targetX,
@@ -503,7 +503,6 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
   switch (type) {
     case Action.INITIALIZE: {
       initialize(payload);
-      console.log('worker initializing')
       self.postMessage({
         type: WorkerAction.INITIALIZED,
         data: workerState.appProps,
