@@ -1,17 +1,17 @@
 import {useMemo} from 'react';
-import {Dimensions} from '../interfaces';
 import {
   DEFAULT_DARK_THEME_COLOR,
   DEFAULT_LIGHT_THEME_COLOR,
 } from '../constants';
 
 export const useImageLoader = ({
-  width,
-  height,
+  width: _width,
+  height: _height,
   text,
   font,
   letterSpacing,
   fontLoaded,
+  canvasScale,
 }: {
   width: number;
   height: number;
@@ -19,7 +19,10 @@ export const useImageLoader = ({
   font: string;
   letterSpacing: number;
   fontLoaded: boolean;
+  canvasScale: number;
 }) => {
+  const width = _width * canvasScale;
+  const height = _height * canvasScale;
   const imageData = useMemo(() => {
     if (!height && !width && !fontLoaded) {
       return null;
@@ -44,11 +47,11 @@ export const useImageLoader = ({
         : DEFAULT_LIGHT_THEME_COLOR;
     analysisContext.font = font;
     analysisContext.letterSpacing = `${letterSpacing}rem`;
-    analysisContext.fillText(text, width / 2, height / 2);
+    analysisContext.fillText(text.trim(), width / 2, height / 2);
 
     // Analyze image data without affecting main canvas
     return analysisCanvas.transferToImageBitmap();
-  }, [width, height, text, font, letterSpacing, fontLoaded]);
+  }, [width, height, text, font, letterSpacing, fontLoaded, canvasScale]);
 
   return imageData;
 };

@@ -1,5 +1,7 @@
-import {useCallback, useState} from 'react';
+import {useCallback, useState, useContext} from 'react';
 import {TextInput} from './Settings/TextSettings/TextInput';
+import {getUpdateParticleSpreadMessage} from '../interfaces';
+import {WorkerContext} from '../contexts/WorkerContext';
 
 interface EffectControlsProps {
   onPlay: () => void;
@@ -30,9 +32,12 @@ interface ControlState {
   endParticleOpacity: number;
   animationSpeed: number;
   maxDelay: number;
+  particleSpread: number;
 }
 
 export const EffectControls = ({onPlay}: EffectControlsProps) => {
+  const worker = useContext(WorkerContext);
+
   const [controlState, setControlState] = useState<ControlState>({
     effectsPreset: 'custom',
     fontFamily: 'Inter, Arial, sans-serif',
@@ -57,11 +62,17 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
     endParticleOpacity: 1,
     animationSpeed: 0.07,
     maxDelay: 700,
+    particleSpread: 3,
   });
 
   const handleControlChange = useCallback((field: keyof ControlState, value: any) => {
     setControlState(prev => ({...prev, [field]: value}));
-  }, []);
+
+    // Send particle spread updates to worker
+    if (field === 'particleSpread' && worker) {
+      worker.postMessage(getUpdateParticleSpreadMessage(value));
+    }
+  }, [worker]);
 
   const shuffleSettings = useCallback(() => {
     const presets = ['snow', 'smoke', 'fire', 'neon', 'matrix'];
@@ -76,6 +87,7 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
       endParticleSize: Math.random() * 20 + 2,
       animationSpeed: Math.random() * 0.15 + 0.01,
       maxDelay: Math.floor(Math.random() * 3000) + 100,
+      particleSpread: Math.random() * 8 + 1, // Random between 1-9
     }));
   }, []);
 
@@ -230,6 +242,29 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
             max="20"
             value={controlState.particleDensity}
             onChange={(e) => handleControlChange('particleDensity', Number(e.target.value))}
+          />
+        </div>
+      </div>
+
+      {/* Particle Spread */}
+      <div className="control-group">
+        <label htmlFor="particleSpread">Particle Spread:</label>
+        <div className="slider-input-group">
+          <input
+            type="range"
+            min="1"
+            max="10"
+            step="0.5"
+            value={controlState.particleSpread}
+            onChange={(e) => handleControlChange('particleSpread', Number(e.target.value))}
+          />
+          <input
+            type="number"
+            min="1"
+            max="10"
+            step="0.5"
+            value={controlState.particleSpread}
+            onChange={(e) => handleControlChange('particleSpread', Number(e.target.value))}
           />
         </div>
       </div>

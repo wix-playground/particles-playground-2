@@ -8,6 +8,7 @@ import {
   DEFAULT_START_POSITION,
   DEFAULT_ANIMATION_DURATION,
   DEFAULT_ENABLE_BUBBLES,
+  DEFAULT_PARTICLE_SPREAD,
   BUBBLE_PARTICLE_LIFETIME,
 } from './constants';
 import {
@@ -59,6 +60,7 @@ const defaultAppProps: AppProps = {
   particleColors: DEFAULT_PARTICLE_COLORS,
   animationDuration: DEFAULT_ANIMATION_DURATION,
   enableBubbles: DEFAULT_ENABLE_BUBBLES,
+  particleSpread: DEFAULT_PARTICLE_SPREAD,
 };
 
 const workerState: {
@@ -664,7 +666,6 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
     }
     case Action.UPDATE_BITMAP: {
       workerState.imageBitmap = payload;
-      console.log('worker updating bitmap', {width: workerState.imageBitmap!.width, height: workerState.imageBitmap!.height});
       if (workerState.frameCanvas && workerState.mainCanvas) {
         workerState.frameCanvas.width = workerState.imageBitmap!.width;
         workerState.frameCanvas.height = workerState.imageBitmap!.height;
@@ -697,6 +698,16 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
           },
         });
 
+        workerState.frameContext!.clearRect(
+          0,
+          0,
+          workerState.frameCanvas!.width,
+          workerState.frameCanvas!.height
+        );
+
+        const frameBitmap = workerState.frameCanvas!.transferToImageBitmap();
+        workerState.mainContext!.transferFromImageBitmap(frameBitmap);
+
         workerState.workerParticles = generateParticles({
           validBlocks: workerState.validBlocks,
           radius: workerState.appProps.particleRadius,
@@ -723,6 +734,15 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
     }
     case Action.UPDATE_ENABLE_BUBBLES: {
       workerState.appProps.enableBubbles = payload;
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+      break;
+    }
+    case Action.UPDATE_PARTICLE_SPREAD: {
+      workerState.appProps.particleSpread = payload;
 
       self.postMessage({
         type: WorkerAction.UPDATE_APP_PROPS,

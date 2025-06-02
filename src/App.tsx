@@ -1,7 +1,7 @@
 import FontFaceObserver from 'fontfaceobserver';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import './App.css';
-import {DEFAULT_FONT_STATE, SNIPPET_QUERY_PARAM} from './constants';
+import {DEFAULT_FONT_STATE, SNIPPET_QUERY_PARAM, DEFAULT_PARTICLE_SPREAD} from './constants';
 import {
   AppProps,
   getInitializeMessage,
@@ -19,8 +19,6 @@ import {EffectControls} from './components/EffectControls';
 import {SelectableTextOverlay} from './components/SelectableTextOverlay';
 import {useComputedDimensions} from './hooks/useComputedDimensions';
 
-const canvasScale = 3
-
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
@@ -29,6 +27,9 @@ const App = () => {
   const [appProps, setAppProps] = useState<AppProps | null>(null);
   const dimensions = useComputedDimensions({elementRef: textRef});
   const [fontLoaded, setFontLoaded] = useState(false);
+
+  // Get canvas scale from appProps, fallback to default
+  const canvasScale = appProps?.particleSpread ?? DEFAULT_PARTICLE_SPREAD;
 
   useEffect(() => {
     if (appProps?.font.fontFamily && appProps.font.weight) {
@@ -49,14 +50,15 @@ const App = () => {
   }, [appProps?.font]);
 
   const bitmap = useImageLoader({
-    width: dimensions.width * canvasScale,
-    height: dimensions.height * canvasScale,
+    width: dimensions.width,
+    height: dimensions.height,
     text: appProps?.text ?? '',
     font: getFontString(appProps?.font ?? DEFAULT_FONT_STATE),
     letterSpacing: appProps?.font ? appProps.font.letterSpacing : 0,
     fontLoaded,
+    canvasScale,
   });
-  console.log({dimensions});
+  console.log({dimensions, canvasScale});
 
   useEffect(() => {
     // Create the Web Worker
@@ -70,7 +72,6 @@ const App = () => {
       }
       if (data.type === WorkerAction.INITIALIZED) {
         canvasInitialized.current = true;
-        console.log('INITIALIZED');
         setAppProps(data.data);
       }
     });
