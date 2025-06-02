@@ -37,7 +37,7 @@ export const TextInput = () => {
   }
 
   return (
-    <div className="control-group" style={{gridColumn: 'span 2'}}>
+    <div className="control-group" style={{gridColumn: 'span 2', gridRow: 'span 2'}}>
       <label htmlFor="textInput">Text</label>
       <textarea
         data-testid={DATA_TEST_IDS.TEXT_INPUT}

@@ -6,6 +6,7 @@ import {WorkerContext} from '../contexts/WorkerContext';
 import {ParticleDensity} from './Settings/ParticleDensity';
 import {ParticleSpread} from './Settings/ParticleSpread';
 import {ParticleOpacity} from './Settings/ParticleOpacity';
+import {ParticleSize} from './Settings/ParticleSize';
 import {AnimationDuration} from './Settings/AnimationDuration';
 
 interface EffectControlsProps {
@@ -21,8 +22,6 @@ interface ControlState {
   emitterX: number;
   emitterY: number;
   emitterSize: number;
-  startParticleSize: number;
-  endParticleSize: number;
   maxDelay: number;
 }
 
@@ -37,8 +36,6 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
     emitterX: 500,
     emitterY: 300,
     emitterSize: 100,
-    startParticleSize: 1,
-    endParticleSize: 5,
     maxDelay: 700,
   });
 
@@ -53,8 +50,6 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
     setControlState(prev => ({
       ...prev,
       effectsPreset: randomPreset,
-      startParticleSize: Math.random() * 10 + 0.5,
-      endParticleSize: Math.random() * 20 + 2,
       maxDelay: Math.floor(Math.random() * 3000) + 100,
     }));
   }, []);
@@ -80,6 +75,7 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
         </select>
       </div>
       <TextInput />
+      <MultiColorPicker />
       <FontSettings />
       <ParticleDensity />
       <ParticleSpread />
@@ -207,59 +203,7 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
           </div>
         </>
       )}
-
-      {/* Particle Colors */}
-      <div className="control-group" style={{gridColumn: 'span 2'}}>
-        <MultiColorPicker />
-      </div>
-
-      {/* Particle Sizes */}
-      <div className="control-group">
-        <label htmlFor="startParticleSize">Start Particle Size (px):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="0.1"
-            max="30"
-            step="0.1"
-            value={controlState.startParticleSize}
-            onChange={(e) => handleControlChange('startParticleSize', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="0.1"
-            max="30"
-            step="0.1"
-            value={controlState.startParticleSize}
-            onChange={(e) => handleControlChange('startParticleSize', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      <div className="control-group">
-        <label htmlFor="endParticleSize">End Particle Size (px):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="0.1"
-            max="30"
-            step="0.1"
-            value={controlState.endParticleSize}
-            onChange={(e) => handleControlChange('endParticleSize', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="0.1"
-            max="30"
-            step="0.1"
-            value={controlState.endParticleSize}
-            onChange={(e) => handleControlChange('endParticleSize', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      <ParticleOpacity />
-      <AnimationDuration />
+      <ParticleSize />
       {/* Max Delay */}
       <div className="control-group">
         <label htmlFor="maxDelay">Max Particle Delay (ms):</label>
@@ -281,6 +225,9 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
           />
         </div>
       </div>
+
+      <ParticleOpacity />
+      <AnimationDuration />
 
       {/* Action Buttons */}
       <div className="control-group" style={{gridColumn: '1 / -1', display: 'flex', flexDirection: 'row', justifyContent: 'space-around', gap: '20px'}}>

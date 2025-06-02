@@ -50,6 +50,8 @@ export enum Action {
   UPDATE_PARTICLE_SPREAD = 'UPDATE_PARTICLE_SPREAD',
   UPDATE_START_PARTICLE_OPACITY = 'UPDATE_START_PARTICLE_OPACITY',
   UPDATE_END_PARTICLE_OPACITY = 'UPDATE_END_PARTICLE_OPACITY',
+  UPDATE_START_PARTICLE_SIZE = 'UPDATE_START_PARTICLE_SIZE',
+  UPDATE_END_PARTICLE_SIZE = 'UPDATE_END_PARTICLE_SIZE',
 }
 
 export enum WorkerAction {
@@ -152,6 +154,16 @@ export const getUpdateEndParticleOpacityMessage = (payload: number) => ({
   payload,
 });
 
+export const getUpdateStartParticleSizeMessage = (payload: number) => ({
+  type: Action.UPDATE_START_PARTICLE_SIZE as const,
+  payload,
+});
+
+export const getUpdateEndParticleSizeMessage = (payload: number) => ({
+  type: Action.UPDATE_END_PARTICLE_SIZE as const,
+  payload,
+});
+
 export type MainThreadMessage =
   | ReturnType<typeof getUpdateBitmapMessage>
   | ReturnType<typeof getUpdateTextMessage>
@@ -167,7 +179,9 @@ export type MainThreadMessage =
   | ReturnType<typeof getUpdateEnableBubblesMessage>
   | ReturnType<typeof getUpdateParticleSpreadMessage>
   | ReturnType<typeof getUpdateStartParticleOpacityMessage>
-  | ReturnType<typeof getUpdateEndParticleOpacityMessage>;
+  | ReturnType<typeof getUpdateEndParticleOpacityMessage>
+  | ReturnType<typeof getUpdateStartParticleSizeMessage>
+  | ReturnType<typeof getUpdateEndParticleSizeMessage>;
 
 export const fontFamilies = [
   'Arial',
@@ -203,4 +217,6 @@ export interface AppProps {
   particleSpread: number;
   startParticleOpacity: number;
   endParticleOpacity: number;
+  startParticleSize: number;
+  endParticleSize: number;
 }

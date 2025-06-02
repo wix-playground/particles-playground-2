@@ -37,91 +37,93 @@ export const MultiColorPicker = () => {
   if (!appProps) return null;
 
   return (
-    <div style={{width: '100%'}}>
-      <label htmlFor="particleColors">Particle Colors Gradient:</label>
-      <div style={{marginTop: '8px'}}>
-        <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px'}}>
-          {particleColors.map((color, index) => (
-            <div
-              key={index}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: '#2D3748',
-                padding: '4px',
-                borderRadius: '4px',
-                border: '1px solid #444'
-              }}
-            >
+    <div className="control-group" style={{gridColumn: 'span 2', gridRow: 'span 2'}}>
+      <div style={{width: '100%'}}>
+        <label htmlFor="particleColors">Particle Colors Gradient:</label>
+        <div style={{marginTop: '8px'}}>
+          <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px'}}>
+            {particleColors.map((color, index) => (
               <div
+                key={index}
                 style={{
-                  width: '20px',
-                  height: '20px',
-                  backgroundColor: color,
-                  marginRight: '5px',
-                  border: '1px solid #888',
-                  borderRadius: '2px'
-                }}
-              />
-              <span style={{marginRight: '5px', fontSize: '12px', color: '#ccc'}}>{color}</span>
-              <button
-                onClick={() => removeColor(index)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#ff4d4d',
-                  fontSize: '16px',
-                  padding: '0 4px'
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: '#2D3748',
+                  padding: '4px',
+                  borderRadius: '4px',
+                  border: '1px solid #444'
                 }}
               >
-                ×
-              </button>
-            </div>
-          ))}
+                <div
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: color,
+                    marginRight: '5px',
+                    border: '1px solid #888',
+                    borderRadius: '2px'
+                  }}
+                />
+                <span style={{marginRight: '5px', fontSize: '12px', color: '#ccc'}}>{color}</span>
+                <button
+                  onClick={() => removeColor(index)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#ff4d4d',
+                    fontSize: '16px',
+                    padding: '0 4px'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+            <input
+              type="color"
+              value={newColor}
+              onChange={(e) => setNewColor(e.target.value)}
+              style={{
+                width: '40px',
+                height: '30px',
+                border: '1px solid #444',
+                borderRadius: '4px',
+                backgroundColor: '#2D3748',
+                cursor: 'pointer'
+              }}
+            />
+            <button
+              onClick={addColor}
+              style={{
+                background: '#2D3748',
+                border: '1px solid #555',
+                borderRadius: '4px',
+                padding: '6px 12px',
+                cursor: 'pointer',
+                color: '#ccc',
+                fontSize: '14px'
+              }}
+            >
+              Add Color
+            </button>
+          </div>
         </div>
 
-        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-          <input
-            type="color"
-            value={newColor}
-            onChange={(e) => setNewColor(e.target.value)}
-            style={{
-              width: '40px',
-              height: '30px',
-              border: '1px solid #444',
-              borderRadius: '4px',
-              backgroundColor: '#2D3748',
-              cursor: 'pointer'
-            }}
-          />
-          <button
-            onClick={addColor}
-            style={{
-              background: '#2D3748',
-              border: '1px solid #555',
-              borderRadius: '4px',
-              padding: '6px 12px',
-              cursor: 'pointer',
-              color: '#ccc',
-              fontSize: '14px'
-            }}
-          >
-            Add Color
-          </button>
-        </div>
+        {particleColors.length > 0 && (
+          <div style={{
+            height: '20px',
+            marginTop: '10px',
+            width: '100%',
+            background: `linear-gradient(to right, ${particleColors.join(', ')})`,
+            borderRadius: '4px',
+            border: '1px solid #444'
+          }} />
+        )}
       </div>
-
-      {particleColors.length > 0 && (
-        <div style={{
-          height: '20px',
-          marginTop: '10px',
-          width: '100%',
-          background: `linear-gradient(to right, ${particleColors.join(', ')})`,
-          borderRadius: '4px',
-          border: '1px solid #444'
-        }} />
-      )}
     </div>
   );
 };

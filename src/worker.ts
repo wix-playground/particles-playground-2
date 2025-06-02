@@ -11,6 +11,8 @@ import {
   DEFAULT_PARTICLE_SPREAD,
   DEFAULT_START_PARTICLE_OPACITY,
   DEFAULT_END_PARTICLE_OPACITY,
+  DEFAULT_START_PARTICLE_SIZE,
+  DEFAULT_END_PARTICLE_SIZE,
   BUBBLE_PARTICLE_LIFETIME,
 } from './constants';
 import {
@@ -65,6 +67,8 @@ const defaultAppProps: AppProps = {
   particleSpread: DEFAULT_PARTICLE_SPREAD,
   startParticleOpacity: DEFAULT_START_PARTICLE_OPACITY,
   endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
+  startParticleSize: DEFAULT_START_PARTICLE_SIZE,
+  endParticleSize: DEFAULT_END_PARTICLE_SIZE,
 };
 
 const workerState: {
@@ -262,6 +266,14 @@ const getCurrentParticleOpacity = (revealProgress: number): number => {
   return startOpacity + (endOpacity - startOpacity) * revealProgress;
 };
 
+// Add function to calculate current particle size based on animation progress
+const getCurrentParticleSize = (revealProgress: number): number => {
+  // Interpolate between start and end size based on animation progress
+  const startSize = workerState.appProps.startParticleSize;
+  const endSize = workerState.appProps.endParticleSize;
+  return startSize + (endSize - startSize) * revealProgress;
+};
+
 const renderParticles = (
   animationStartTime: number,
   requestAnimationFrameTime: number
@@ -338,11 +350,12 @@ const renderParticles = (
 
     const blendFactor = getTransitionBlendFactor(particle, workerState.revealProgress);
     const currentOpacity = getCurrentParticleOpacity(workerState.revealProgress);
+    const currentSize = getCurrentParticleSize(workerState.revealProgress);
 
     if (blendFactor > 0 && blendFactor < 1) {
       // Blending mode: draw both circle and image with appropriate opacities
       const radius = Math.floor(
-        workerState.appProps.particleRadius * (particle.scale || 1)
+        workerState.appProps.particleRadius * (currentSize || 1)
       );
 
       // Draw circle with reduced opacity
@@ -370,12 +383,12 @@ const renderParticles = (
         workerState.imageBitmap!,
         particle.targetX,
         particle.targetY,
-        workerState.appProps.particleRadius,
-        workerState.appProps.particleRadius,
+        currentSize,
+        currentSize,
         Math.floor(particle.x),
         Math.floor(particle.y),
-        workerState.appProps.particleRadius,
-        workerState.appProps.particleRadius
+        currentSize,
+        currentSize
       );
     } else if (blendFactor >= 1) {
       // Fully image
@@ -394,7 +407,7 @@ const renderParticles = (
     } else {
       // Fully circle
       const radius = Math.floor(
-        workerState.appProps.particleRadius * (particle.scale || 1)
+        workerState.appProps.particleRadius * (currentSize || 1)
       );
 
       workerState.frameContext!.globalAlpha = currentOpacity;
@@ -780,6 +793,36 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
     }
     case Action.UPDATE_END_PARTICLE_OPACITY: {
       workerState.appProps.endParticleOpacity = payload;
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+
+      if (workerState.animationFrameId) {
+        cancelAnimationFrame(workerState.animationFrameId);
+        const startTime = performance.now();
+        renderParticles(startTime, startTime);
+      }
+      break;
+    }
+    case Action.UPDATE_START_PARTICLE_SIZE: {
+      workerState.appProps.startParticleSize = payload;
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+
+      if (workerState.animationFrameId) {
+        cancelAnimationFrame(workerState.animationFrameId);
+        const startTime = performance.now();
+        renderParticles(startTime, startTime);
+      }
+      break;
+    }
+    case Action.UPDATE_END_PARTICLE_SIZE: {
+      workerState.appProps.endParticleSize = payload;
 
       self.postMessage({
         type: WorkerAction.UPDATE_APP_PROPS,
