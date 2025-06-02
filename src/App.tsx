@@ -16,13 +16,18 @@ import {WorkerContext} from './contexts/WorkerContext';
 import {loadJsonFromSnippet} from './snippet';
 import {getFontString} from './utils';
 import {EffectControls} from './components/EffectControls';
+import {SelectableTextOverlay} from './components/SelectableTextOverlay';
+import {useComputedDimensions} from './hooks/useComputedDimensions';
+
+const canvasScale = 3
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const canvasInitialized = useRef<boolean>(false);
   const [appProps, setAppProps] = useState<AppProps | null>(null);
-  const [dimensions, setDimensions] = useState({width: 0, height: 0});
+  const dimensions = useComputedDimensions({elementRef: textRef});
   const [fontLoaded, setFontLoaded] = useState(false);
 
   useEffect(() => {
@@ -44,28 +49,14 @@ const App = () => {
   }, [appProps?.font]);
 
   const bitmap = useImageLoader({
-    dimensions,
+    width: dimensions.width * canvasScale,
+    height: dimensions.height * canvasScale,
     text: appProps?.text ?? '',
     font: getFontString(appProps?.font ?? DEFAULT_FONT_STATE),
     letterSpacing: appProps?.font ? appProps.font.letterSpacing : 0,
     fontLoaded,
   });
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (canvasRef.current) {
-        const {width, height} = canvasRef.current.getBoundingClientRect();
-        setDimensions({width, height});
-      }
-    };
-
-    window.addEventListener('resize', updateDimensions);
-    updateDimensions();
-
-    return () => {
-      window.removeEventListener('resize', updateDimensions);
-    };
-  }, [appProps]);
+  console.log({dimensions});
 
   useEffect(() => {
     // Create the Web Worker
@@ -79,6 +70,7 @@ const App = () => {
       }
       if (data.type === WorkerAction.INITIALIZED) {
         canvasInitialized.current = true;
+        console.log('INITIALIZED');
         setAppProps(data.data);
       }
     });
@@ -94,6 +86,7 @@ const App = () => {
     const initializeWorker = async () => {
       const canvas = canvasRef.current;
       if (!canvasInitialized.current && canvas && bitmap) {
+        console.log('INITIALIZING CANVAS');
         canvas.width = bitmap.width;
         canvas.height = bitmap.height;
         const transferrableCanvas = canvas.transferControlToOffscreen();
@@ -141,20 +134,20 @@ const App = () => {
         ) : null}
 
         <EffectControls onPlay={play} onReset={reset} />
-
-        <canvas
-          ref={canvasRef}
-          id="mainCanvas"
-          style={{
-            border: '1px solid #4A5568',
-            backgroundColor: '#1F2937',
-            borderRadius: '12px',
-            marginTop: '20px',
-            width: '100%',
-            maxWidth: '1000px',
-            height: '600px'
-          }}
-        />
+        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+          <div className='root-component'>
+            <canvas
+              ref={canvasRef}
+              id="mainCanvas"
+              style={{
+                border: '1px solid #4A5568',
+                backgroundColor: '#1F2937',
+                borderRadius: '12px',
+              }}
+            />
+            <SelectableTextOverlay textRef={textRef} />
+          </div>
+        </div>
       </WorkerContext.Provider>
     </AppContext.Provider>
   );

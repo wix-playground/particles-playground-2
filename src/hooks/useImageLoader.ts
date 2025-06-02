@@ -6,20 +6,21 @@ import {
 } from '../constants';
 
 export const useImageLoader = ({
-  dimensions,
+  width,
+  height,
   text,
   font,
   letterSpacing,
   fontLoaded,
 }: {
-  dimensions: Dimensions;
+  width: number;
+  height: number;
   text: string;
   font: string;
   letterSpacing: number;
   fontLoaded: boolean;
 }) => {
   const imageData = useMemo(() => {
-    const {height, width} = dimensions;
     if (!height && !width && !fontLoaded) {
       return null;
     }
@@ -38,7 +39,7 @@ export const useImageLoader = ({
     analysisContext.textBaseline = 'middle';
     analysisContext.fillStyle =
       window.matchMedia &&
-      window.matchMedia('(prefers-color-scheme: dark)').matches
+        window.matchMedia('(prefers-color-scheme: dark)').matches
         ? DEFAULT_DARK_THEME_COLOR
         : DEFAULT_LIGHT_THEME_COLOR;
     analysisContext.font = font;
@@ -47,7 +48,7 @@ export const useImageLoader = ({
 
     // Analyze image data without affecting main canvas
     return analysisCanvas.transferToImageBitmap();
-  }, [dimensions, text, font, letterSpacing, fontLoaded]);
+  }, [width, height, text, font, letterSpacing, fontLoaded]);
 
   return imageData;
 };

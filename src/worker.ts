@@ -443,6 +443,11 @@ const renderParticles = (
       // Clear any remaining bubbles
       workerState.bubbleParticles = [];
       workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
+
+      // Send animation complete message to main thread
+      self.postMessage({
+        type: WorkerAction.ANIMATION_COMPLETE,
+      });
     }
   }
 };
@@ -470,6 +475,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
   switch (type) {
     case Action.INITIALIZE: {
       initialize(payload);
+      console.log('worker initializing')
       self.postMessage({
         type: WorkerAction.INITIALIZED,
         data: workerState.appProps,
@@ -658,6 +664,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
     }
     case Action.UPDATE_BITMAP: {
       workerState.imageBitmap = payload;
+      console.log('worker updating bitmap', {width: workerState.imageBitmap!.width, height: workerState.imageBitmap!.height});
       if (workerState.frameCanvas && workerState.mainCanvas) {
         workerState.frameCanvas.width = workerState.imageBitmap!.width;
         workerState.frameCanvas.height = workerState.imageBitmap!.height;

@@ -13,7 +13,7 @@ export const DEFAULT_PARTICLE_COLORS = ['#ff0000', '#00ff00', '#0000ff'];
 export const DEFAULT_FONT_STATE: FontState = {
     fontFamily: 'Arial',
     fontSize: 90,
-    italic: true,
+    italic: false,
     weight: 400,
     letterSpacing: 0,
 }

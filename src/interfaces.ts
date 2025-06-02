@@ -52,6 +52,7 @@ export enum Action {
 export enum WorkerAction {
   INITIALIZED = 'INITIALIZED',
   UPDATE_APP_PROPS = 'UPDATE_APP_PROPS',
+  ANIMATION_COMPLETE = 'ANIMATION_COMPLETE',
 }
 
 export type FontState = {
