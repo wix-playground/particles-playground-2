@@ -112,8 +112,9 @@ export const FontSettings = () => {
   }
 
   return (
-    <div>
-      <div className="setting-group">
+    <>
+      {/* Font Family */}
+      <div className="control-group">
         <label htmlFor="font-family">Font Family:</label>
         <select
           data-testid={DATA_TEST_IDS.FONT_FAMILY_SELECT}
@@ -129,7 +130,8 @@ export const FontSettings = () => {
         </select>
       </div>
 
-      <div className="setting-group">
+      {/* Font Weight */}
+      <div className="control-group">
         <label htmlFor="font-weight">Font Weight:</label>
         <select
           data-testid={DATA_TEST_IDS.FONT_WEIGHT_SELECT}
@@ -145,8 +147,9 @@ export const FontSettings = () => {
         </select>
       </div>
 
+      {/* Font Italic */}
       {fontConfig[fontState.fontFamily].hasItalic && (
-        <div className="setting-group">
+        <div className="control-group">
           <label htmlFor="font-italic">
             <input
               type="checkbox"
@@ -160,46 +163,78 @@ export const FontSettings = () => {
         </div>
       )}
 
-      <div className="setting-group">
+      {/* Font Size */}
+      <div className="control-group">
         <label htmlFor="font-size">Font Size (px):</label>
-        <input
-          data-testid={DATA_TEST_IDS.FONT_SIZE_INPUT}
-          type="number"
-          id="font-size"
-          value={fontState.fontSize}
-          onChange={handleFontSizeChange}
-          min="8"
-          max="140"
-        />
+        <div className="slider-input-group">
+          <input
+            type="range"
+            min="8"
+            max="140"
+            value={fontState.fontSize}
+            onChange={handleFontSizeChange}
+          />
+          <input
+            data-testid={DATA_TEST_IDS.FONT_SIZE_INPUT}
+            type="number"
+            id="font-size"
+            value={fontState.fontSize}
+            onChange={handleFontSizeChange}
+            min="8"
+            max="140"
+          />
+        </div>
       </div>
 
-      <div className="setting-group">
+      {/* Letter Spacing */}
+      <div className="control-group">
         <label htmlFor="letter-spacing">Letter Spacing (rem):</label>
-        <input
-          data-testid={DATA_TEST_IDS.LETTER_SPACING_INPUT}
-          type="number"
-          id="letter-spacing"
-          value={fontState.letterSpacing}
-          onChange={handleLetterSpacingChange}
-          step="0.1"
-          min="-5"
-          max="20"
-        />
+        <div className="slider-input-group">
+          <input
+            type="range"
+            min="-5"
+            max="20"
+            step="0.1"
+            value={fontState.letterSpacing}
+            onChange={handleLetterSpacingChange}
+          />
+          <input
+            data-testid={DATA_TEST_IDS.LETTER_SPACING_INPUT}
+            type="number"
+            id="letter-spacing"
+            value={fontState.letterSpacing}
+            onChange={handleLetterSpacingChange}
+            step="0.1"
+            min="-5"
+            max="20"
+          />
+        </div>
       </div>
 
-      <div className="setting-group">
+      {/* Line Height */}
+      <div className="control-group">
         <label htmlFor="line-height">Line Height:</label>
-        <input
-          data-testid={DATA_TEST_IDS.LINE_HEIGHT_INPUT}
-          type="number"
-          id="line-height"
-          value={fontState.lineHeight}
-          onChange={handleLineHeightChange}
-          step="0.1"
-          min="0.5"
-          max="3"
-        />
+        <div className="slider-input-group">
+          <input
+            type="range"
+            min="0.5"
+            max="3"
+            step="0.1"
+            value={fontState.lineHeight}
+            onChange={handleLineHeightChange}
+          />
+          <input
+            data-testid={DATA_TEST_IDS.LINE_HEIGHT_INPUT}
+            type="number"
+            id="line-height"
+            value={fontState.lineHeight}
+            onChange={handleLineHeightChange}
+            step="0.1"
+            min="0.5"
+            max="3"
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };

@@ -1,8 +1,10 @@
 import {useCallback, useState, useContext} from 'react';
 import {TextInput} from './Settings/TextSettings/TextInput';
+import {FontSettings} from './Settings/TextSettings/FontSettings';
 import {MultiColorPicker} from './Settings/MultiColorPicker';
-import {getUpdateParticleSpreadMessage} from '../interfaces';
 import {WorkerContext} from '../contexts/WorkerContext';
+import {ParticleDensity} from './Settings/ParticleDensity';
+import {ParticleSpread} from './Settings/ParticleSpread';
 
 interface EffectControlsProps {
   onPlay: () => void;
@@ -11,29 +13,18 @@ interface EffectControlsProps {
 
 interface ControlState {
   effectsPreset: string;
-  fontFamily: string;
-  fontSize: number;
-  finalTextAngle: number;
-  leading: number;
-  letterSpacing: number;
-  particleDensity: number;
   particleShape: string;
-  startParticleAngle: number;
-  endParticleAngle: number;
   particleOrigin: string;
   sourceCloudAngle: number;
   emitterX: number;
   emitterY: number;
   emitterSize: number;
-  startParticleColor: string;
-  endParticleColor: string;
   startParticleSize: number;
   endParticleSize: number;
   startParticleOpacity: number;
   endParticleOpacity: number;
   animationSpeed: number;
   maxDelay: number;
-  particleSpread: number;
 }
 
 export const EffectControls = ({onPlay}: EffectControlsProps) => {
@@ -41,38 +32,22 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
 
   const [controlState, setControlState] = useState<ControlState>({
     effectsPreset: 'custom',
-    fontFamily: 'Inter, Arial, sans-serif',
-    fontSize: 70,
-    finalTextAngle: 0,
-    leading: 1.2,
-    letterSpacing: 0,
-    particleDensity: 3,
     particleShape: 'circle',
-    startParticleAngle: 0,
-    endParticleAngle: 0,
     particleOrigin: 'random',
     sourceCloudAngle: 0,
     emitterX: 500,
     emitterY: 300,
     emitterSize: 100,
-    startParticleColor: '#B2A4FF',
-    endParticleColor: '#FFACC7',
     startParticleSize: 1,
     endParticleSize: 5,
     startParticleOpacity: 0.2,
     endParticleOpacity: 1,
     animationSpeed: 0.07,
     maxDelay: 700,
-    particleSpread: 3,
   });
 
   const handleControlChange = useCallback((field: keyof ControlState, value: any) => {
     setControlState(prev => ({...prev, [field]: value}));
-
-    // Send particle spread updates to worker
-    if (field === 'particleSpread' && worker) {
-      worker.postMessage(getUpdateParticleSpreadMessage(value));
-    }
   }, [worker]);
 
   const shuffleSettings = useCallback(() => {
@@ -82,13 +57,10 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
     setControlState(prev => ({
       ...prev,
       effectsPreset: randomPreset,
-      fontSize: Math.floor(Math.random() * 200) + 20,
-      particleDensity: Math.floor(Math.random() * 15) + 1,
       startParticleSize: Math.random() * 10 + 0.5,
       endParticleSize: Math.random() * 20 + 2,
       animationSpeed: Math.random() * 0.15 + 0.01,
       maxDelay: Math.floor(Math.random() * 3000) + 100,
-      particleSpread: Math.random() * 8 + 1, // Random between 1-9
     }));
   }, []);
 
@@ -119,156 +91,11 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
         <TextInput />
       </div>
 
-      {/* Font Family */}
-      <div className="control-group">
-        <label htmlFor="fontFamily">Font Family:</label>
-        <select
-          id="fontFamily"
-          value={controlState.fontFamily}
-          onChange={(e) => handleControlChange('fontFamily', e.target.value)}
-        >
-          <option value="Inter, Arial, sans-serif">Inter (sans-serif)</option>
-          <option value="Arial, Helvetica, sans-serif">Arial (sans-serif)</option>
-          <option value="Verdana, Geneva, sans-serif">Verdana (sans-serif)</option>
-          <option value="Tahoma, Geneva, sans-serif">Tahoma (sans-serif)</option>
-          <option value="'Times New Roman', Times, serif">Times New Roman (serif)</option>
-          <option value="Georgia, serif">Georgia (serif)</option>
-          <option value="'Courier New', Courier, monospace">Courier New (monospace)</option>
-          <option value="'Lucida Console', Monaco, monospace">Lucida Console (monospace)</option>
-          <option value="'Comic Sans MS', cursive, sans-serif">Comic Sans MS (cursive)</option>
-          <option value="Impact, Charcoal, sans-serif">Impact (fantasy)</option>
-        </select>
-      </div>
+      <FontSettings />
 
-      {/* Font Size */}
-      <div className="control-group">
-        <label htmlFor="fontSize">Font Size (px):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="10"
-            max="300"
-            value={controlState.fontSize}
-            onChange={(e) => handleControlChange('fontSize', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="10"
-            max="300"
-            value={controlState.fontSize}
-            onChange={(e) => handleControlChange('fontSize', Number(e.target.value))}
-          />
-        </div>
-      </div>
+      <ParticleDensity />
 
-      {/* Final Text Angle */}
-      <div className="control-group">
-        <label htmlFor="finalTextAngle">Final Text Angle (°):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="-180"
-            max="180"
-            value={controlState.finalTextAngle}
-            onChange={(e) => handleControlChange('finalTextAngle', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="-180"
-            max="180"
-            value={controlState.finalTextAngle}
-            onChange={(e) => handleControlChange('finalTextAngle', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      {/* Leading */}
-      <div className="control-group">
-        <label htmlFor="leading">Leading (Line Height Mult):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="0.5"
-            max="3"
-            step="0.1"
-            value={controlState.leading}
-            onChange={(e) => handleControlChange('leading', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="0.5"
-            max="3"
-            step="0.1"
-            value={controlState.leading}
-            onChange={(e) => handleControlChange('leading', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      {/* Letter Spacing */}
-      <div className="control-group">
-        <label htmlFor="letterSpacing">Letter Spacing (px):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="-10"
-            max="30"
-            value={controlState.letterSpacing}
-            onChange={(e) => handleControlChange('letterSpacing', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="-10"
-            max="30"
-            value={controlState.letterSpacing}
-            onChange={(e) => handleControlChange('letterSpacing', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      {/* Particle Density */}
-      <div className="control-group">
-        <label htmlFor="particleDensity">Particle Density:</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="1"
-            max="20"
-            value={controlState.particleDensity}
-            onChange={(e) => handleControlChange('particleDensity', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="1"
-            max="20"
-            value={controlState.particleDensity}
-            onChange={(e) => handleControlChange('particleDensity', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      {/* Particle Spread */}
-      <div className="control-group">
-        <label htmlFor="particleSpread">Particle Spread:</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="1"
-            max="10"
-            step="0.5"
-            value={controlState.particleSpread}
-            onChange={(e) => handleControlChange('particleSpread', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="1"
-            max="10"
-            step="0.5"
-            value={controlState.particleSpread}
-            onChange={(e) => handleControlChange('particleSpread', Number(e.target.value))}
-          />
-        </div>
-      </div>
+      <ParticleSpread />
 
       {/* Particle Shape */}
       <div className="control-group">
@@ -285,49 +112,6 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
           <option value="star">Star</option>
         </select>
       </div>
-
-      {/* Start Particle Angle */}
-      <div className="control-group">
-        <label htmlFor="startParticleAngle">Start Particle Angle (°):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="-360"
-            max="360"
-            value={controlState.startParticleAngle}
-            onChange={(e) => handleControlChange('startParticleAngle', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="-360"
-            max="360"
-            value={controlState.startParticleAngle}
-            onChange={(e) => handleControlChange('startParticleAngle', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      {/* End Particle Angle */}
-      <div className="control-group">
-        <label htmlFor="endParticleAngle">End Particle Angle (°):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="-360"
-            max="360"
-            value={controlState.endParticleAngle}
-            onChange={(e) => handleControlChange('endParticleAngle', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="-360"
-            max="360"
-            value={controlState.endParticleAngle}
-            onChange={(e) => handleControlChange('endParticleAngle', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
       {/* Particle Origin */}
       <div className="control-group">
         <label htmlFor="particleOrigin">Particle Origin Type:</label>

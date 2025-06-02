@@ -6,7 +6,6 @@ import {WorkerContext} from '../../contexts/WorkerContext';
 import {FunctionSelectorModal} from '../FunctionSelectorModal/FunctionSelectorModal';
 import {editor} from 'monaco-editor';
 import {MultiColorPicker} from './MultiColorPicker';
-import {PulseColorSettings} from './PulseColorSettings';
 import {TimeDistortionSettings} from './TimeDistortionSettings';
 import {ElasticPlopSettings} from './ElasticPlopSettings';
 import {TextSettings} from './TextSettings';
@@ -74,10 +73,6 @@ export const Settings = ({
             }}
           />
         </div>
-
-        {appProps.selectedMovementFunction === 'pulseColorCycle' && (
-          <PulseColorSettings />
-        )}
         {appProps.selectedMovementFunction === 'timeDistortion' && (
           <TimeDistortionSettings />
         )}
