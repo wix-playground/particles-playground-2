@@ -1,4 +1,4 @@
-(function(){"use strict";const S="random",b="DEV_EXAMPLE",B="WIX 🤠",R="#ffffff",F=["#ff0000","#00ff00","#0000ff"],X={fontFamily:"Arial",fontSize:90,italic:!0,weight:400,letterSpacing:0},U=`// This function will be called twice for each particle, because all particles reach the target in two frames.
+(function(){"use strict";const X="random",b="DEV_EXAMPLE",k="WIX 🤠",Y="#ffffff",B=["#ff0000","#00ff00","#0000ff"],R={fontFamily:"Arial",fontSize:90,italic:!0,weight:400,letterSpacing:0},F=`// This function will be called twice for each particle, because all particles reach the target in two frames.
 return (particle, animationStartTime, currentTime, canvasDimensions) => {
     if (particle.x === 0 && particle.y === 0) {
         particle.x = particle.targetX;
@@ -28,7 +28,7 @@ return (particle, animationStartTime, currentTime, canvasDimensions) => {
  * @param {number} animationDuration - The duration of the animation.
  * @returns {Function} A function to be called on each animation frame to update the particle's position.
  */
-`,Y=`${f}
+`,U=`${f}
 return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
     /**
     * Write your movement animation code here to incrementally update particle position.
@@ -311,7 +311,7 @@ return (particle, animationStartTime, currentTime, canvasDimensions, animationDu
 
     // Opacity pulses oppositely to scale
     particle.opacity = 0.4 + 0.6 * (1 - Math.abs(pulseWave));
-}`,W=`return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
+}`,H=`return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
     const progress = Math.min((currentTime - animationStartTime) / animationDuration, 1);
 
     // Initialize properties if not set
@@ -413,10 +413,145 @@ return (particle, animationStartTime, currentTime, canvasDimensions, animationDu
     lightness = Math.max(0, Math.min(100, lightness + shimmer * particle.chronoField));
 
     particle.color = \`hsl(\${hue}, \${saturation}%, \${lightness}%)\`;
-}`,H=()=>Object.assign({},{[b]:{code:`${f}${Y}`},DEV_TWO_FRAMES:{code:`${f}${U}`},bezier:{code:`${f}${N}`},pulseColorCycle:{code:`${f}${q}`},timeDistortion:{code:`${f}${W}`}},...L.map(({name:e,comment:a,definition:l})=>({[e]:{code:`${f}return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
+}`,W=`return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
+    const progress = Math.min((currentTime - animationStartTime) / animationDuration, 1);
+
+    // Initialize elastic properties
+    if (!particle.hasInit) {
+        particle.hasInit = true;
+        particle.elasticity = 0.6 + Math.random() * 0.3; // Bounce factor
+        particle.damping = 0.95 + Math.random() * 0.04; // Energy loss per bounce
+        particle.bounceCount = 0;
+        particle.originalScale = particle.scale;
+        particle.lastUpdateTime = animationStartTime;
+
+        // Calculate initial velocity toward target (pixels per second)
+        const dx = particle.targetX - particle.initialX;
+        const dy = particle.targetY - particle.initialY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        particle.velocityX = (dx / distance) * 480; // pixels per second
+        particle.velocityY = (dy / distance) * 480; // pixels per second
+
+        // Create invisible barriers
+        particle.barriers = [
+            {x: particle.initialX + dx * 0.3, y: particle.initialY + dy * 0.3, normal: {x: 1, y: 0}},
+            {x: particle.initialX + dx * 0.6, y: particle.initialY + dy * 0.6, normal: {x: 0, y: 1}},
+            {x: particle.initialX + dx * 0.8, y: particle.initialY + dy * 0.8, normal: {x: -1, y: 1}}
+        ];
+
+        particle.currentX = particle.initialX;
+        particle.currentY = particle.initialY;
+        particle.bounceCooldown = {};
+    }
+
+    // Calculate actual deltaTime from the time parameters
+    const deltaTime = (currentTime - particle.lastUpdateTime) / 1000; // Convert to seconds
+    particle.lastUpdateTime = currentTime;
+
+    if (progress < 0.95) {
+        // Update position using actual deltaTime
+        particle.currentX += particle.velocityX * deltaTime;
+        particle.currentY += particle.velocityY * deltaTime;
+
+        // Check for barrier collisions
+        particle.barriers.forEach((barrier, index) => {
+            const distanceToBarrier = Math.abs(
+                (particle.currentX - barrier.x) * barrier.normal.x +
+                (particle.currentY - barrier.y) * barrier.normal.y
+            );
+
+            // Use time-based bounce prevention instead of frame-based
+            const bounceKey = \`bounce_\${index}\`;
+            const cooldownDuration = 50; // 50ms cooldown
+
+            if (distanceToBarrier < 15 && (!particle.bounceCooldown[bounceKey] || currentTime - particle.bounceCooldown[bounceKey] > cooldownDuration)) {
+                // Calculate reflection
+                const dotProduct = particle.velocityX * barrier.normal.x + particle.velocityY * barrier.normal.y;
+                particle.velocityX -= 2 * dotProduct * barrier.normal.x * particle.elasticity;
+                particle.velocityY -= 2 * dotProduct * barrier.normal.y * particle.elasticity;
+
+                // Apply damping
+                particle.velocityX *= particle.damping;
+                particle.velocityY *= particle.damping;
+
+                particle.bounceCount++;
+                particle.bounceCooldown[bounceKey] = currentTime; // Store the time of bounce
+            }
+        });
+
+        // Stronger gravity toward target as we approach the end
+        const targetDx = particle.targetX - particle.currentX;
+        const targetDy = particle.targetY - particle.currentY;
+        const targetDistance = Math.sqrt(targetDx * targetDx + targetDy * targetDy);
+
+        if (targetDistance > 5) {
+            // Increase attraction strength as we approach the end of animation (pixels per second squared)
+            const attractionStrength = (60 + (progress * 180)) * deltaTime; // Time-based acceleration
+            particle.velocityX += (targetDx / targetDistance) * attractionStrength;
+            particle.velocityY += (targetDy / targetDistance) * attractionStrength;
+        }
+
+        particle.x = particle.currentX;
+        particle.y = particle.currentY;
+    } else {
+        // Smooth transition to target in final 5%
+        const finalProgress = (progress - 0.95) / 0.05;
+        const smoothFinal = finalProgress * finalProgress * (3 - 2 * finalProgress); // Smooth step
+
+        particle.x = particle.currentX + (particle.targetX - particle.currentX) * smoothFinal;
+        particle.y = particle.currentY + (particle.targetY - particle.currentY) * smoothFinal;
+
+        // Gradually reduce velocity
+        particle.velocityX *= (1 - smoothFinal);
+        particle.velocityY *= (1 - smoothFinal);
+    }
+
+    // Check if particle has reached target (within 2 pixels)
+    const distanceToTarget = Math.sqrt(
+        Math.pow(particle.x - particle.targetX, 2) +
+        Math.pow(particle.y - particle.targetY, 2)
+    );
+
+    if (distanceToTarget < 2) {
+        // Snap to exact target position
+        particle.x = particle.targetX;
+        particle.y = particle.targetY;
+        particle.currentX = particle.targetX;
+        particle.currentY = particle.targetY;
+        particle.velocityX = 0;
+        particle.velocityY = 0;
+    }
+
+    // Visual effects based on bouncing
+    const speed = Math.sqrt(particle.velocityX * particle.velocityX + particle.velocityY * particle.velocityY);
+
+    // Scale increases with speed and bounces
+    const speedScale = 1 + speed * 0.0001; // Adjusted for pixels per second
+    const bounceScale = 1 + particle.bounceCount * 0.1;
+    particle.scale = Math.max(particle.originalScale * (speedScale * bounceScale) / 4, 1);
+
+    // Color changes with energy (speed) and bounce count
+    const energyHue = Math.min(speed * 0.5, 120); // Adjusted for pixels per second
+    const bounceHue = (particle.bounceCount * 60) % 360;
+    const hue = (energyHue + bounceHue) % 360;
+    const saturation = 70 + Math.min(speed * 0.01, 30); // Adjusted for pixels per second
+    const lightness = 40 + Math.min(speed * 0.008, 40); // Adjusted for pixels per second
+
+    particle.color = \`hsl(\${hue}, \${saturation}%, \${lightness}%)\`;
+
+    // Opacity based on energy
+    particle.opacity = 0.5 + Math.min(speed * 0.002, 0.5); // Adjusted for pixels per second
+
+    // Trail effect after bounces
+    if (particle.bounceCount > 0) {
+        const trailIntensity = Math.min(particle.bounceCount * 0.2, 1);
+        particle.opacity = Math.max(particle.opacity, 0.3 + trailIntensity * 0.7);
+    }
+}`,$=()=>Object.assign({},{[b]:{code:`${f}${U}`},DEV_TWO_FRAMES:{code:`${f}${F}`},bezier:{code:`${f}${N}`},pulseColorCycle:{code:`${f}${q}`},timeDistortion:{code:`${f}${H}`},elasticPlop:{code:`${f}${W}`}},...L.map(({name:e,comment:a,definition:c})=>({[e]:{code:`${f}return (particle, animationStartTime, currentTime, canvasDimensions, animationDuration) => {
     // This is obviously inefficient because the same constant will be recalculated for every particle, but this is a playground and its not that expensive.
     ${a}
-    ${l}
+    ${c}
     const lerp = (start, end, t) => start + t * (end - start);
 
     const totalElapsedTime = currentTime - animationStartTime;
@@ -433,4 +568,4 @@ return (particle, animationStartTime, currentTime, canvasDimensions, animationDu
         particle.x = particle.targetX;
         particle.y = particle.targetY;
     }
-};`}}))),v=(e,a)=>{const{width:n,height:r,data:o}=e,c=Math.ceil(n/a),m=Math.ceil(r/a),i=new Uint8Array(Math.ceil(n/a)*Math.ceil(r/a));let s=0;for(let p=0;p<r;p+=a)for(let h=0;h<n;h+=a){let g=!1;for(let A=0;A<a&&!g;A++)for(let x=0;x<a&&!g;x++){const k=h+x,w=p+A;if(k<n&&w<r){const J=(w*n+k)*4;o[J+3]>10&&(g=!0)}}i[s++]=g?1:0}return{validBlocks:i,blockWidth:c,blockHeight:m}},M=(e,a,l)=>e+l*(a-e),y=e=>{e=e.replace(/^#/,"");const a=parseInt(e,16),l=a>>16&255,n=a>>8&255,r=a&255;return{r:l,g:n,b:r}},$=(e,a,l)=>"#"+((1<<24)+(e<<16)+(a<<8)+l).toString(16).slice(1),I=(e,a)=>{if(!(e!=null&&e.length))return"#ffffff";if(e.length===1)return e[0];const n=Math.max(0,Math.min(1,a))*(e.length-1),r=Math.floor(n);if(r===e.length-1)return e[e.length-1];const o=n-r,c=y(e[r]),m=y(e[r+1]),i=Math.round(M(c.r,m.r,o)),s=Math.round(M(c.g,m.g,o)),p=Math.round(M(c.b,m.b,o));return $(i,s,p)},_=({dimensions:{width:e,height:a}})=>({top:()=>({x:Math.random()*e,y:0}),center:()=>({x:Math.round(e/2),y:Math.round(a/2)}),bottom:()=>({x:Math.random()*e,y:a}),random:()=>({x:Math.random()*e,y:Math.random()*a}),left:()=>({x:0,y:Math.random()*a}),right:()=>({x:e,y:Math.random()*a}),"top-left":()=>({x:Math.random()*(e/5),y:Math.random()*(a/5)}),"top-right":()=>({x:e,y:Math.random()*(a/5)}),"bottom-left":()=>({x:Math.random()*(e/5),y:a-Math.random()*(a/5)}),"bottom-right":()=>({x:e-Math.random()*(e/5),y:a-Math.random()*(a/5)})});let D;const O={particleRadius:5,startPosition:S,selectedMovementFunction:b,movementFunctionCode:H()[b].code,text:B,font:X,particleColors:F,animationDuration:3e3,enableBubbles:!1},t={workerParticles:[],bubbleParticles:[],imageBitmap:null,animationFrameId:0,frameCanvas:null,frameContext:null,mainCanvas:null,mainContext:null,validBlocks:null,blockHeight:0,blockWidth:0,appProps:O,revealProgress:0};let P;const j=async e=>{t.mainCanvas=e,t.mainContext=t.mainCanvas.getContext("bitmaprenderer"),t.frameCanvas=new OffscreenCanvas(t.mainCanvas.width,t.mainCanvas.height),t.frameContext=t.frameCanvas.getContext("2d",{willReadFrequently:!0})},Q=e=>{const{imageBitmap:a,canvas:l,dimensions:n,appProps:r}=e;t.imageBitmap=a,Object.keys(r).length&&(t.appProps={...O,...r}),j(l),t.frameContext.drawImage(t.imageBitmap,0,0);const{validBlocks:o,blockHeight:c,blockWidth:m}=v(t.frameContext.getImageData(0,0,t.mainCanvas.width,t.mainCanvas.height),t.appProps.particleRadius);t.validBlocks=o,t.blockHeight=c,t.blockWidth=m,P=_({dimensions:n}),t.workerParticles=E({validBlocks:t.validBlocks,radius:t.appProps.particleRadius,blockHeight:t.blockHeight,blockWidth:t.blockWidth,startPosition:t.appProps.startPosition})},V=(e,a,l,n,r=5)=>{const o=[];for(let c=0;c<r;c++){const m=Math.random()*Math.PI*2,i=.5+Math.random()*2;o.push({x:e,y:a,dx:Math.cos(m)*i,dy:Math.sin(m)*i-1,radius:2+Math.random()*5,color:l,opacity:.7+Math.random()*.3,createdAt:n,lifetime:C})}return o},E=({validBlocks:e,radius:a,blockHeight:l,blockWidth:n,startPosition:r})=>{const o=[];for(let c=0;c<l;c++)for(let m=0;m<n;m++){const i=c*n+m;if(e[i]){const s=m*a,p=c*a,{x:h,y:g}=P[r]();o.push({targetX:s,targetY:p,x:h,y:g,initialX:h,initialY:g,scale:1,opacity:1,color:R,revealProgress:0,revealThreshold:.97+Math.random()*.02,reachedTarget:!1,emittedBubbles:!1})}}return o},Z=(e,a)=>{if(a>(e.revealThreshold||.99))return 1;if(a>.85&&Math.sqrt(Math.pow(e.x-e.targetX,2)+Math.pow(e.y-e.targetY,2))<=5){const r=(e.revealThreshold||.99)-.02,o=Math.max(0,(a-r)/.02);return Math.min(1,o)}return 0},T=(e,a)=>{let l=!0;t.frameContext.clearRect(0,0,t.frameCanvas.width,t.frameCanvas.height);const n=a-e;t.revealProgress=Math.min(1,n/t.appProps.animationDuration);for(let i=t.bubbleParticles.length-1;i>=0;i--){const s=t.bubbleParticles[i];s.x+=s.dx,s.y+=s.dy,s.dx+=(Math.random()-.5)*.1,s.dy-=.02;const p=a-s.createdAt,h=Math.min(1,p/s.lifetime),g=s.opacity*(1-h);t.frameContext.beginPath(),t.frameContext.arc(Math.floor(s.x),Math.floor(s.y),s.radius,0,Math.PI*2),t.frameContext.fillStyle=I(t.appProps.particleColors,h),t.frameContext.globalAlpha=g,t.frameContext.fill(),p>=s.lifetime&&t.bubbleParticles.splice(i,1)}t.frameContext.globalAlpha=1,t.workerParticles.forEach(i=>{D(i,e,a,{width:t.mainCanvas.width,height:t.mainCanvas.height},t.appProps.animationDuration);const s=Z(i,t.revealProgress);if(s>0&&s<1){const p=Math.floor(t.appProps.particleRadius*(i.scale||1));t.frameContext.globalAlpha=(i.opacity||1)*(1-s),t.frameContext.beginPath(),t.frameContext.arc(Math.floor(i.x)+p/2,Math.floor(i.y)+p/2,p/2,0,2*Math.PI),t.frameContext.fillStyle=t.appProps.particleColors.length?I(t.appProps.particleColors,t.revealProgress):i.color,t.frameContext.fill(),t.frameContext.globalAlpha=s,t.frameContext.drawImage(t.imageBitmap,i.targetX,i.targetY,t.appProps.particleRadius,t.appProps.particleRadius,Math.floor(i.x),Math.floor(i.y),t.appProps.particleRadius,t.appProps.particleRadius)}else if(s>=1)t.frameContext.globalAlpha=1,t.frameContext.drawImage(t.imageBitmap,i.targetX,i.targetY,t.appProps.particleRadius,t.appProps.particleRadius,Math.floor(i.x),Math.floor(i.y),t.appProps.particleRadius,t.appProps.particleRadius);else{const p=Math.floor(t.appProps.particleRadius*(i.scale||1));t.frameContext.globalAlpha=i.opacity||1,t.frameContext.beginPath(),t.frameContext.arc(Math.floor(i.x)+p/2,Math.floor(i.y)+p/2,p/2,0,2*Math.PI),t.frameContext.fillStyle=t.appProps.particleColors.length?I(t.appProps.particleColors,t.revealProgress):i.color,t.frameContext.fill()}if(!i.emittedBubbles&&t.appProps.enableBubbles&&i.x===i.targetX&&i.y===i.targetY){i.emittedBubbles=!0;const p=V(i.x,i.y,i.color,a,2+Math.floor(Math.random()*3));t.bubbleParticles.push(...p)}(i.x!==i.targetX||i.y!==i.targetY||t.revealProgress<.99)&&(l=!1)});const r=t.frameCanvas.transferToImageBitmap();t.mainContext.transferFromImageBitmap(r);const o=l&&t.revealProgress>=1,c=t.appProps.animationDuration+(t.appProps.enableBubbles?C:0);o&&n>=c?t.animationFrameId&&(cancelAnimationFrame(t.animationFrameId),t.bubbleParticles=[],t.frameContext.drawImage(t.imageBitmap,0,0)):t.animationFrameId=requestAnimationFrame(i=>T(e,i))},z=()=>{D=new Function(t.appProps.movementFunctionCode)();const e=performance.now();t.revealProgress=0,t.bubbleParticles=[],t.workerParticles.forEach(a=>{a.emittedBubbles=!1}),T(e,e)};self.onmessage=e=>{const{payload:a,type:l}=e.data;switch(l){case u.INITIALIZE:{Q(a),self.postMessage({type:d.INITIALIZED,data:t.appProps});break}case u.PLAY:{t.animationFrameId&&cancelAnimationFrame(t.animationFrameId),t.bubbleParticles=[],z();break}case u.RESET:{t.animationFrameId&&cancelAnimationFrame(t.animationFrameId),t.workerParticles=t.workerParticles.map(r=>{const o=P[t.appProps.startPosition]();return{x:o.x,y:o.y,initialX:o.x,initialY:o.y,targetX:r.targetX,targetY:r.targetY,scale:1,opacity:1,color:r.color,revealProgress:0,revealThreshold:r.revealThreshold}}),t.frameContext.clearRect(0,0,t.frameCanvas.width,t.frameCanvas.height);const n=t.frameCanvas.transferToImageBitmap();t.mainContext.transferFromImageBitmap(n),t.animationFrameId&&cancelAnimationFrame(t.animationFrameId);break}case u.RESIZE_PARTICLE_RADIUS:{t.appProps.particleRadius=a,t.frameContext.drawImage(t.imageBitmap,0,0);const{validBlocks:n,blockHeight:r,blockWidth:o}=v(t.frameContext.getImageData(0,0,t.mainCanvas.width,t.mainCanvas.height),t.appProps.particleRadius);if(t.validBlocks=n,t.blockHeight=r,t.blockWidth=o,t.workerParticles=E({validBlocks:t.validBlocks,radius:t.appProps.particleRadius,blockHeight:t.blockHeight,blockWidth:t.blockWidth,startPosition:t.appProps.startPosition}),self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps}),t.animationFrameId){cancelAnimationFrame(t.animationFrameId);const c=performance.now();T(c,c)}break}case u.UPDATE_START_POSITION:{if(t.appProps.startPosition=a,t.workerParticles.length){if(t.workerParticles.forEach(n=>{const r=P[t.appProps.startPosition]();n.initialX=r.x,n.initialY=r.y,n.x=r.x,n.y=r.y}),self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps}),t.animationFrameId){cancelAnimationFrame(t.animationFrameId);const n=performance.now();T(n,n)}}else console.error("updateStartPosition failed, particles were not initialized",{workerParticles:t.workerParticles});break}case u.UPDATE_SELECTED_MOVEMENT_FUNCTION:{const{key:n,movementFunctionCode:r}=a??{};n&&(t.appProps.selectedMovementFunction=n),r!=null&&(t.appProps.movementFunctionCode=r),self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps});break}case u.UPDATE_TEXT:{t.appProps.text=a,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps});break}case u.UPDATE_FONT:{t.appProps.font=a,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps});break}case u.UPDATE_PARTICLE_COLORS:{if(t.appProps.particleColors=a,a.length>0,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps}),t.animationFrameId){cancelAnimationFrame(t.animationFrameId);const n=performance.now();T(n,n)}break}case u.UPDATE_BITMAP:{if(t.imageBitmap=a,t.frameCanvas&&t.mainCanvas){t.frameCanvas.width=t.imageBitmap.width,t.frameCanvas.height=t.imageBitmap.height,t.mainCanvas.width=t.imageBitmap.width,t.mainCanvas.height=t.imageBitmap.height,t.frameContext.drawImage(t.imageBitmap,0,0);const{validBlocks:n,blockHeight:r,blockWidth:o}=v(t.frameContext.getImageData(0,0,t.mainCanvas.width,t.mainCanvas.height),t.appProps.particleRadius);t.validBlocks=n,t.blockHeight=r,t.blockWidth=o,P=_({dimensions:{width:t.mainCanvas.width,height:t.mainCanvas.height}}),t.workerParticles=E({validBlocks:t.validBlocks,radius:t.appProps.particleRadius,blockHeight:t.blockHeight,blockWidth:t.blockWidth,startPosition:t.appProps.startPosition})}break}case u.UPDATE_ANIMATION_DURATION:{t.appProps.animationDuration=a,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps}),t.animationFrameId&&(t.bubbleParticles=[]);break}case u.UPDATE_ENABLE_BUBBLES:{t.appProps.enableBubbles=a,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps});break}}}})();
+};`}}))),v=(e,a)=>{const{width:r,height:n,data:o}=e,l=Math.ceil(r/a),m=Math.ceil(n/a),i=new Uint8Array(Math.ceil(r/a)*Math.ceil(n/a));let s=0;for(let p=0;p<n;p+=a)for(let h=0;h<r;h+=a){let g=!1;for(let x=0;x<a&&!g;x++)for(let E=0;E<a&&!g;E++){const w=h+E,O=p+x;if(w<r&&O<n){const G=(O*r+w)*4;o[G+3]>10&&(g=!0)}}i[s++]=g?1:0}return{validBlocks:i,blockWidth:l,blockHeight:m}},M=(e,a,c)=>e+c*(a-e),A=e=>{e=e.replace(/^#/,"");const a=parseInt(e,16),c=a>>16&255,r=a>>8&255,n=a&255;return{r:c,g:r,b:n}},j=(e,a,c)=>"#"+((1<<24)+(e<<16)+(a<<8)+c).toString(16).slice(1),y=(e,a)=>{if(!(e!=null&&e.length))return"#ffffff";if(e.length===1)return e[0];const r=Math.max(0,Math.min(1,a))*(e.length-1),n=Math.floor(r);if(n===e.length-1)return e[e.length-1];const o=r-n,l=A(e[n]),m=A(e[n+1]),i=Math.round(M(l.r,m.r,o)),s=Math.round(M(l.g,m.g,o)),p=Math.round(M(l.b,m.b,o));return j(i,s,p)},D=({dimensions:{width:e,height:a}})=>({top:()=>({x:Math.random()*e,y:0}),center:()=>({x:Math.round(e/2),y:Math.round(a/2)}),bottom:()=>({x:Math.random()*e,y:a}),random:()=>({x:Math.random()*e,y:Math.random()*a}),left:()=>({x:0,y:Math.random()*a}),right:()=>({x:e,y:Math.random()*a}),"top-left":()=>({x:Math.random()*(e/5),y:Math.random()*(a/5)}),"top-right":()=>({x:e,y:Math.random()*(a/5)}),"bottom-left":()=>({x:Math.random()*(e/5),y:a-Math.random()*(a/5)}),"bottom-right":()=>({x:e-Math.random()*(e/5),y:a-Math.random()*(a/5)})});let _;const S={particleRadius:5,startPosition:X,selectedMovementFunction:b,movementFunctionCode:$()[b].code,text:k,font:R,particleColors:B,animationDuration:3e3,enableBubbles:!1},t={workerParticles:[],bubbleParticles:[],imageBitmap:null,animationFrameId:0,frameCanvas:null,frameContext:null,mainCanvas:null,mainContext:null,validBlocks:null,blockHeight:0,blockWidth:0,appProps:S,revealProgress:0};let P;const Q=async e=>{t.mainCanvas=e,t.mainContext=t.mainCanvas.getContext("bitmaprenderer"),t.frameCanvas=new OffscreenCanvas(t.mainCanvas.width,t.mainCanvas.height),t.frameContext=t.frameCanvas.getContext("2d",{willReadFrequently:!0})},V=e=>{const{imageBitmap:a,canvas:c,dimensions:r,appProps:n}=e;t.imageBitmap=a,Object.keys(n).length&&(t.appProps={...S,...n}),Q(c),t.frameContext.drawImage(t.imageBitmap,0,0);const{validBlocks:o,blockHeight:l,blockWidth:m}=v(t.frameContext.getImageData(0,0,t.mainCanvas.width,t.mainCanvas.height),t.appProps.particleRadius);t.validBlocks=o,t.blockHeight=l,t.blockWidth=m,P=D({dimensions:r}),t.workerParticles=I({validBlocks:t.validBlocks,radius:t.appProps.particleRadius,blockHeight:t.blockHeight,blockWidth:t.blockWidth,startPosition:t.appProps.startPosition})},Z=(e,a,c,r,n=5)=>{const o=[];for(let l=0;l<n;l++){const m=Math.random()*Math.PI*2,i=.5+Math.random()*2;o.push({x:e,y:a,dx:Math.cos(m)*i,dy:Math.sin(m)*i-1,radius:2+Math.random()*5,color:c,opacity:.7+Math.random()*.3,createdAt:r,lifetime:C})}return o},I=({validBlocks:e,radius:a,blockHeight:c,blockWidth:r,startPosition:n})=>{const o=[];for(let l=0;l<c;l++)for(let m=0;m<r;m++){const i=l*r+m;if(e[i]){const s=m*a,p=l*a,{x:h,y:g}=P[n]();o.push({targetX:s,targetY:p,x:h,y:g,initialX:h,initialY:g,scale:1,opacity:1,color:Y,revealProgress:0,revealThreshold:.97+Math.random()*.02,reachedTarget:!1,emittedBubbles:!1})}}return o},K=(e,a)=>{if(a>(e.revealThreshold||.99))return 1;if(a>.85&&Math.sqrt(Math.pow(e.x-e.targetX,2)+Math.pow(e.y-e.targetY,2))<=5){const n=(e.revealThreshold||.99)-.02,o=Math.max(0,(a-n)/.02);return Math.min(1,o)}return 0},T=(e,a)=>{let c=!0;t.frameContext.clearRect(0,0,t.frameCanvas.width,t.frameCanvas.height);const r=a-e;t.revealProgress=Math.min(1,r/t.appProps.animationDuration);for(let i=t.bubbleParticles.length-1;i>=0;i--){const s=t.bubbleParticles[i];s.x+=s.dx,s.y+=s.dy,s.dx+=(Math.random()-.5)*.1,s.dy-=.02;const p=a-s.createdAt,h=Math.min(1,p/s.lifetime),g=s.opacity*(1-h);t.frameContext.beginPath(),t.frameContext.arc(Math.floor(s.x),Math.floor(s.y),s.radius,0,Math.PI*2),t.frameContext.fillStyle=y(t.appProps.particleColors,h),t.frameContext.globalAlpha=g,t.frameContext.fill(),p>=s.lifetime&&t.bubbleParticles.splice(i,1)}t.frameContext.globalAlpha=1,t.workerParticles.forEach(i=>{_(i,e,a,{width:t.mainCanvas.width,height:t.mainCanvas.height},t.appProps.animationDuration);const s=K(i,t.revealProgress);if(s>0&&s<1){const p=Math.floor(t.appProps.particleRadius*(i.scale||1));t.frameContext.globalAlpha=(i.opacity||1)*(1-s),t.frameContext.beginPath(),t.frameContext.arc(Math.floor(i.x)+p/2,Math.floor(i.y)+p/2,p/2,0,2*Math.PI),t.frameContext.fillStyle=t.appProps.particleColors.length?y(t.appProps.particleColors,t.revealProgress):i.color,t.frameContext.fill(),t.frameContext.globalAlpha=s,t.frameContext.drawImage(t.imageBitmap,i.targetX,i.targetY,t.appProps.particleRadius,t.appProps.particleRadius,Math.floor(i.x),Math.floor(i.y),t.appProps.particleRadius,t.appProps.particleRadius)}else if(s>=1)t.frameContext.globalAlpha=1,t.frameContext.drawImage(t.imageBitmap,i.targetX,i.targetY,t.appProps.particleRadius,t.appProps.particleRadius,Math.floor(i.x),Math.floor(i.y),t.appProps.particleRadius,t.appProps.particleRadius);else{const p=Math.floor(t.appProps.particleRadius*(i.scale||1));t.frameContext.globalAlpha=i.opacity||1,t.frameContext.beginPath(),t.frameContext.arc(Math.floor(i.x)+p/2,Math.floor(i.y)+p/2,p/2,0,2*Math.PI),t.frameContext.fillStyle=t.appProps.particleColors.length?y(t.appProps.particleColors,t.revealProgress):i.color,t.frameContext.fill()}if(!i.emittedBubbles&&t.appProps.enableBubbles&&i.x===i.targetX&&i.y===i.targetY){i.emittedBubbles=!0;const p=Z(i.x,i.y,i.color,a,2+Math.floor(Math.random()*3));t.bubbleParticles.push(...p)}(i.x!==i.targetX||i.y!==i.targetY||t.revealProgress<.99)&&(c=!1)});const n=t.frameCanvas.transferToImageBitmap();t.mainContext.transferFromImageBitmap(n);const o=c&&t.revealProgress>=1,l=t.appProps.animationDuration+(t.appProps.enableBubbles?C:0);o&&r>=l?t.animationFrameId&&(cancelAnimationFrame(t.animationFrameId),t.bubbleParticles=[],t.frameContext.drawImage(t.imageBitmap,0,0)):t.animationFrameId=requestAnimationFrame(i=>T(e,i))},z=()=>{_=new Function(t.appProps.movementFunctionCode)();const e=performance.now();t.revealProgress=0,t.bubbleParticles=[],t.workerParticles.forEach(a=>{a.emittedBubbles=!1}),T(e,e)};self.onmessage=e=>{const{payload:a,type:c}=e.data;switch(c){case u.INITIALIZE:{V(a),self.postMessage({type:d.INITIALIZED,data:t.appProps});break}case u.PLAY:{t.animationFrameId&&cancelAnimationFrame(t.animationFrameId),t.bubbleParticles=[],z();break}case u.RESET:{t.animationFrameId&&cancelAnimationFrame(t.animationFrameId),t.workerParticles=t.workerParticles.map(n=>{const o=P[t.appProps.startPosition]();return{x:o.x,y:o.y,initialX:o.x,initialY:o.y,targetX:n.targetX,targetY:n.targetY,scale:1,opacity:1,color:n.color,revealProgress:0,revealThreshold:n.revealThreshold}}),t.frameContext.clearRect(0,0,t.frameCanvas.width,t.frameCanvas.height);const r=t.frameCanvas.transferToImageBitmap();t.mainContext.transferFromImageBitmap(r),t.animationFrameId&&cancelAnimationFrame(t.animationFrameId);break}case u.RESIZE_PARTICLE_RADIUS:{t.appProps.particleRadius=a,t.frameContext.drawImage(t.imageBitmap,0,0);const{validBlocks:r,blockHeight:n,blockWidth:o}=v(t.frameContext.getImageData(0,0,t.mainCanvas.width,t.mainCanvas.height),t.appProps.particleRadius);if(t.validBlocks=r,t.blockHeight=n,t.blockWidth=o,t.workerParticles=I({validBlocks:t.validBlocks,radius:t.appProps.particleRadius,blockHeight:t.blockHeight,blockWidth:t.blockWidth,startPosition:t.appProps.startPosition}),self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps}),t.animationFrameId){cancelAnimationFrame(t.animationFrameId);const l=performance.now();T(l,l)}break}case u.UPDATE_START_POSITION:{if(t.appProps.startPosition=a,t.workerParticles.length){if(t.workerParticles.forEach(r=>{const n=P[t.appProps.startPosition]();r.initialX=n.x,r.initialY=n.y,r.x=n.x,r.y=n.y}),self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps}),t.animationFrameId){cancelAnimationFrame(t.animationFrameId);const r=performance.now();T(r,r)}}else console.error("updateStartPosition failed, particles were not initialized",{workerParticles:t.workerParticles});break}case u.UPDATE_SELECTED_MOVEMENT_FUNCTION:{const{key:r,movementFunctionCode:n}=a??{};r&&(t.appProps.selectedMovementFunction=r),n!=null&&(t.appProps.movementFunctionCode=n),self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps});break}case u.UPDATE_TEXT:{t.appProps.text=a,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps});break}case u.UPDATE_FONT:{t.appProps.font=a,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps});break}case u.UPDATE_PARTICLE_COLORS:{if(t.appProps.particleColors=a,a.length>0,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps}),t.animationFrameId){cancelAnimationFrame(t.animationFrameId);const r=performance.now();T(r,r)}break}case u.UPDATE_BITMAP:{if(t.imageBitmap=a,t.frameCanvas&&t.mainCanvas){t.frameCanvas.width=t.imageBitmap.width,t.frameCanvas.height=t.imageBitmap.height,t.mainCanvas.width=t.imageBitmap.width,t.mainCanvas.height=t.imageBitmap.height,t.frameContext.drawImage(t.imageBitmap,0,0);const{validBlocks:r,blockHeight:n,blockWidth:o}=v(t.frameContext.getImageData(0,0,t.mainCanvas.width,t.mainCanvas.height),t.appProps.particleRadius);t.validBlocks=r,t.blockHeight=n,t.blockWidth=o,P=D({dimensions:{width:t.mainCanvas.width,height:t.mainCanvas.height}}),t.workerParticles=I({validBlocks:t.validBlocks,radius:t.appProps.particleRadius,blockHeight:t.blockHeight,blockWidth:t.blockWidth,startPosition:t.appProps.startPosition})}break}case u.UPDATE_ANIMATION_DURATION:{t.appProps.animationDuration=a,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps}),t.animationFrameId&&(t.bubbleParticles=[]);break}case u.UPDATE_ENABLE_BUBBLES:{t.appProps.enableBubbles=a,self.postMessage({type:d.UPDATE_APP_PROPS,data:t.appProps});break}}}})();
