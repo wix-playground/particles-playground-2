@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: #ffffffde;
-  background-color: #242424;
+  background-color: #1A1A2E;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -36,8 +36,8 @@ a {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  background-color: #1A1A2E;
+  color: #E0E7FF;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -139,7 +139,7 @@ button.iconButton.selected {
   max-width: 1280px;
   position: absolute;
   z-index: 10000;
-  background-color: #242424;
+  background-color: #1A1A2E;
 
   span {
     display: flex;

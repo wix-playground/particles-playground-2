@@ -2,8 +2,6 @@ import FontFaceObserver from 'fontfaceobserver';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import './App.css';
 import {DEFAULT_FONT_STATE, SNIPPET_QUERY_PARAM} from './constants';
-import {editor} from 'monaco-editor';
-import {Settings} from './components/Settings/Settings';
 import {
   AppProps,
   getInitializeMessage,
@@ -15,15 +13,14 @@ import {
 import {useImageLoader} from './hooks/useImageLoader';
 import {AppContext} from './contexts/AppContext';
 import {WorkerContext} from './contexts/WorkerContext';
-import {Editor} from './components/Editor/Editor';
 import {loadJsonFromSnippet} from './snippet';
 import {getFontString} from './utils';
+import {EffectControls} from './components/EffectControls';
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const canvasInitialized = useRef<boolean>(false);
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [appProps, setAppProps] = useState<AppProps | null>(null);
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -126,18 +123,7 @@ const App = () => {
     initializeWorker();
   }, [bitmap]);
 
-  const handleEditorDidMount = useCallback(
-    async (editor: editor.IStandaloneCodeEditor) => {
-      editorRef.current = editor;
-    },
-    []
-  );
-
   const play = useCallback(() => {
-    if (editorRef.current) {
-      editorRef.current.getAction('editor.action.formatDocument')?.run();
-    }
-
     workerRef.current?.postMessage(getPlayMessage());
   }, []);
 
@@ -153,53 +139,22 @@ const App = () => {
             <span>Loading...</span>
           </div>
         ) : null}
-        <div style={{display: 'flex', gap: '24px', flexDirection: 'column'}}>
-          <div
-            className="layout"
-            style={{display: 'flex', flexDirection: 'column'}}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: '8px',
-              }}
-            >
-              <Settings editorRef={editorRef} />
-              <div className="card" style={{flex: 3}}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                  }}
-                >
-                  <div>
-                    <span className="cardTitle">Canvas</span>
-                  </div>
-                  <div style={{display: 'flex', gap: '4px'}}>
-                    <button onClick={play}>Play animation</button>
-                    <button onClick={reset}>Reset particles</button>
-                  </div>
-                </div>
-                <div
-                  className="card noPadding"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  <canvas
-                    ref={canvasRef}
-                    style={{width: '100%', height: '100%'}}
-                  />
-                </div>
-              </div>
-            </div>
-            <Editor onMount={handleEditorDidMount} />
-          </div>
-        </div>
+
+        <EffectControls onPlay={play} onReset={reset} />
+
+        <canvas
+          ref={canvasRef}
+          id="mainCanvas"
+          style={{
+            border: '1px solid #4A5568',
+            backgroundColor: '#1F2937',
+            borderRadius: '12px',
+            marginTop: '20px',
+            width: '100%',
+            maxWidth: '1000px',
+            height: '600px'
+          }}
+        />
       </WorkerContext.Provider>
     </AppContext.Provider>
   );

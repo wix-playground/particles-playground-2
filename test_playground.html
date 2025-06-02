@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Particle Text Reveal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #1A1A2E;
+            color: #E0E7FF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        #mainCanvas {
+            border: 1px solid #4A5568;
+            background-color: #1F2937;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        .controls-container {
+            background-color: #1F2937;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            width: 95%;
+            max-width: 1400px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .control-group label {
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            color: #9CA3AF;
+            font-weight: 500;
+        }
+        .control-group input[type="text"],
+        .control-group input[type="number"],
+        .control-group select,
+        .control-group input[type="color"],
+        .control-group textarea {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #4A5568;
+            background-color: #2D3748;
+            color: #E0E7FF;
+            font-size: 0.875rem;
+            min-height: 42px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .control-group input[type="color"] {
+            padding: 5px;
+            min-height: 42px;
+            height: 42px;
+        }
+        .control-group input[type="number"] {
+            width: 80px;
+            text-align: right;
+            padding-right: 8px;
+        }
+        .control-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .slider-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .slider-input-group input[type="range"] {
+            flex-grow: 1;
+        }
+        .control-group input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #4A5568;
+            outline: none;
+            opacity: 0.8;
+            transition: opacity .2s;
+            border-radius: 3px;
+            margin-top: 4px;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #B2A4FF;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #1F2937;
+            box-shadow: 0 0 5px rgba(178, 164, 255, 0.5);
+        }
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #B2A4FF;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #1F2937;
+            box-shadow: 0 0 5px rgba(178, 164, 255, 0.5);
+        }
+        .control-group button {
+            padding: 10px 18px;
+            background-color: #B2A4FF;
+            color: #1A1A2E;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .control-group button:hover {
+            background-color: #9989E5;
+            transform: translateY(-1px);
+        }
+         .control-group button:active {
+            transform: translateY(0px);
+        }
+        .control-group button#shuffleButton {
+            background-color: #FFACC7;
+            color: #1A1A2E;
+        }
+        .control-group button#shuffleButton:hover {
+            background-color: #E598B0;
+        }
+        .hidden-control {
+            display: none !important;
+        }
+        .effects-preset-group { /* Style for the new dropdown group */
+            grid-column: 1 / -1; /* Span full width */
+            margin-bottom: 10px; /* Add some space below it */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls-container">
+        <div class="control-group effects-preset-group">
+            <label for="effectsPreset">Effects Preset:</label>
+            <select id="effectsPreset">
+                <option value="custom">Custom (No Preset)</option>
+                <option value="snow">Snow</option>
+                <option value="smoke">Smoke</option>
+                <option value="fire">Fire</option>
+                <option value="neon">Neon Glow</option>
+                <option value="matrix">Matrix Code</option>
+            </select>
+        </div>
+
+        <div class="control-group" style="grid-column: span 2;">
+            <label for="textInput">Text (Paragraphs allowed):</label>
+            <textarea id="textInput">Shuffle\nMe!</textarea>
+        </div>
+        <div class="control-group">
+            <label for="fontFamily">Font Family:</label>
+            <select id="fontFamily">
+                <option value="Inter, Arial, sans-serif">Inter (sans-serif)</option>
+                <option value="Arial, Helvetica, sans-serif">Arial (sans-serif)</option>
+                <option value="Verdana, Geneva, sans-serif">Verdana (sans-serif)</option>
+                <option value="Tahoma, Geneva, sans-serif">Tahoma (sans-serif)</option>
+                <option value="'Times New Roman', Times, serif">Times New Roman (serif)</option>
+                <option value="Georgia, serif">Georgia (serif)</option>
+                <option value="'Courier New', Courier, monospace">Courier New (monospace)</option>
+                <option value="'Lucida Console', Monaco, monospace">Lucida Console (monospace)</option>
+                <option value="'Comic Sans MS', cursive, sans-serif">Comic Sans MS (cursive)</option>
+                <option value="Impact, Charcoal, sans-serif">Impact (fantasy)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label for="fontSize">Font Size (px):</label>
+            <div class="slider-input-group">
+                <input type="range" id="fontSizeRange" min="10" max="300" value="70">
+                <input type="number" id="fontSizeNumber" min="10" max="300" value="70">
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="finalTextAngle">Final Text Angle (°):</label>
+            <div class="slider-input-group">
+                <input type="range" id="finalTextAngleRange" min="-180" max="180" value="0">
+                <input type="number" id="finalTextAngleNumber" min="-180" max="180" value="0">
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="leading">Leading (Line Height Mult):</label>
+            <div class="slider-input-group">
+                <input type="range" id="leadingRange" min="0.5" max="3" step="0.1" value="1.2">
+                <input type="number" id="leadingNumber" min="0.5" max="3" step="0.1" value="1.2">
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="letterSpacing">Letter Spacing (px):</label>
+            <div class="slider-input-group">
+                <input type="range" id="letterSpacingRange" min="-10" max="30" value="0">
+                <input type="number" id="letterSpacingNumber" min="-10" max="30" value="0">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="particleDensity">Particle Density:</label>
+            <div class="slider-input-group">
+                <input type="range" id="particleDensityRange" min="1" max="20" value="3">
+                <input type="number" id="particleDensityNumber" min="1" max="20" value="3">
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="particleShape">Particle Shape:</label>
+            <select id="particleShape">
+                <option value="circle">Circle</option>
+                <option value="square">Square</option>
+                <option value="triangle">Triangle</option>
+                <option value="line">Line</option>
+                <option value="star">Star</option>
+            </select>
+        </div>
+         <div class="control-group">
+            <label for="startParticleAngle">Start Particle Angle (°):</label>
+            <div class="slider-input-group">
+                <input type="range" id="startParticleAngleRange" min="-360" max="360" value="0">
+                <input type="number" id="startParticleAngleNumber" min="-360" max="360" value="0">
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="endParticleAngle">End Particle Angle (°):</label>
+            <div class="slider-input-group">
+                <input type="range" id="endParticleAngleRange" min="-360" max="360" value="0">
+                <input type="number" id="endParticleAngleNumber" min="-360" max="360" value="0">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="particleOrigin">Particle Origin Type:</label>
+            <select id="particleOrigin">
+                <option value="random">Random Spread</option>
+                <option value="canvasEdges">From Canvas Edges</option>
+                <option value="center">From Canvas Center</option>
+                <option value="topLeft">From Top-Left</option>
+                <option value="emitterPoint">Emitter: Point</option>
+                <option value="emitterCircle">Emitter: Circle</option>
+                <option value="emitterSquare">Emitter: Square</option>
+                <option value="emitterHLine">Emitter: Horizontal Line</option>
+                <option value="emitterVLine">Emitter: Vertical Line</option>
+                <option value="enterTopTextWidth">Text Aligned: Top Edge</option>
+                <option value="enterBottomTextWidth">Text Aligned: Bottom Edge</option>
+                <option value="enterLeftTextHeight">Text Aligned: Left Edge</option>
+                <option value="enterRightTextHeight">Text Aligned: Right Edge</option>
+            </select>
+        </div>
+         <div class="control-group">
+            <label for="sourceCloudAngle">Source Cloud/Emitter Angle (°):</label>
+            <div class="slider-input-group">
+                <input type="range" id="sourceCloudAngleRange" min="-360" max="360" value="0">
+                <input type="number" id="sourceCloudAngleNumber" min="-360" max="360" value="0">
+            </div>
+        </div>
+        <div class="control-group hidden-control" id="emitterXGroup">
+            <label for="emitterX">Emitter X Position:</label>
+            <div class="slider-input-group">
+                <input type="range" id="emitterXRange" min="0" max="1000" value="500">
+                <input type="number" id="emitterXNumber" min="0" max="1000" value="500">
+            </div>
+        </div>
+        <div class="control-group hidden-control" id="emitterYGroup">
+            <label for="emitterY">Emitter Y Position:</label>
+            <div class="slider-input-group">
+                <input type="range" id="emitterYRange" min="0" max="600" value="300">
+                <input type="number" id="emitterYNumber" min="0" max="600" value="300">
+            </div>
+        </div>
+        <div class="control-group hidden-control" id="emitterSizeGroup">
+            <label for="emitterSize" id="emitterSizeLabel">Emitter Radius:</label>
+            <div class="slider-input-group">
+                <input type="range" id="emitterSizeRange" min="1" max="300" value="100">
+                <input type="number" id="emitterSizeNumber" min="1" max="300" value="100">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="startParticleColor">Start Particle Color:</label>
+            <input type="color" id="startParticleColor" value="#B2A4FF"> </div>
+        <div class="control-group">
+            <label for="endParticleColor">End Particle Color:</label>
+            <input type="color" id="endParticleColor" value="#FFACC7"> </div>
+        <div class="control-group">
+            <label for="startParticleSize">Start Particle Size (px):</label>
+            <div class="slider-input-group">
+                <input type="range" id="startParticleSizeRange" min="0.1" max="30" step="0.1" value="1">
+                <input type="number" id="startParticleSizeNumber" min="0.1" max="30" step="0.1" value="1">
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="endParticleSize">End Particle Size (px):</label>
+            <div class="slider-input-group">
+                <input type="range" id="endParticleSizeRange" min="0.1" max="30" step="0.1" value="5">
+                <input type="number" id="endParticleSizeNumber" min="0.1" max="30" step="0.1" value="5">
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="startParticleOpacity">Start Particle Opacity (0-1):</label>
+            <div class="slider-input-group">
+                <input type="range" id="startParticleOpacityRange" min="0" max="1" step="0.01" value="0.2">
+                <input type="number" id="startParticleOpacityNumber" min="0" max="1" step="0.01" value="0.2">
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="endParticleOpacity">End Particle Opacity (0-1):</label>
+            <div class="slider-input-group">
+                <input type="range" id="endParticleOpacityRange" min="0" max="1" step="0.01" value="1">
+                <input type="number" id="endParticleOpacityNumber" min="0" max="1" step="0.01" value="1">
+            </div>
+        </div>
+         <div class="control-group">
+            <label for="animationSpeed">Animation Speed:</label>
+            <div class="slider-input-group">
+                <input type="range" id="animationSpeedRange" min="0.01" max="0.2" step="0.01" value="0.07">
+                <input type="number" id="animationSpeedNumber" min="0.01" max="0.2" step="0.01" value="0.07">
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="maxDelay">Max Particle Delay (ms):</label>
+            <div class="slider-input-group">
+                <input type="range" id="maxDelayRange" min="0" max="5000" step="50" value="700">
+                <input type="number" id="maxDelayNumber" min="0" max="5000" value="700">
+            </div>
+        </div>
+
+        <div class="control-group" style="grid-column: 1 / -1; display: flex; flex-direction: row; justify-content: space-around; gap: 20px;">
+            <button id="generateButton" style="flex-grow:1;">Generate / Update Text</button>
+            <button id="shuffleButton" style="flex-grow:1;">Shuffle Settings</button>
+        </div>
+    </div>
+
+    <canvas id="mainCanvas"></canvas>
+    <canvas id="hiddenCanvas" style="display:none;"></canvas>
+</body>
+</html>
