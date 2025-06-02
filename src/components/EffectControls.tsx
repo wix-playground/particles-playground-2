@@ -1,4 +1,5 @@
 import {useCallback, useState} from 'react';
+import {TextInput} from './Settings/TextSettings/TextInput';
 
 interface EffectControlsProps {
   onPlay: () => void;
@@ -7,7 +8,6 @@ interface EffectControlsProps {
 
 interface ControlState {
   effectsPreset: string;
-  text: string;
   fontFamily: string;
   fontSize: number;
   finalTextAngle: number;
@@ -35,7 +35,6 @@ interface ControlState {
 export const EffectControls = ({onPlay}: EffectControlsProps) => {
   const [controlState, setControlState] = useState<ControlState>({
     effectsPreset: 'custom',
-    text: 'Shuffle\nMe!',
     fontFamily: 'Inter, Arial, sans-serif',
     fontSize: 70,
     finalTextAngle: 0,
@@ -103,12 +102,8 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
 
       {/* Text Input */}
       <div className="control-group" style={{gridColumn: 'span 2'}}>
-        <label htmlFor="textInput">Text (Paragraphs allowed):</label>
-        <textarea
-          id="textInput"
-          value={controlState.text}
-          onChange={(e) => handleControlChange('text', e.target.value)}
-        />
+        <label htmlFor="textInput">Text</label>
+        <TextInput />
       </div>
 
       {/* Font Family */}

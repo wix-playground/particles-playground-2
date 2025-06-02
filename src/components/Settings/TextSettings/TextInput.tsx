@@ -25,7 +25,6 @@ export const TextInput = () => {
           fontWeight: fontState.weight,
           fontStyle: fontState.italic ? 'italic' : 'normal',
           letterSpacing: `${fontState.letterSpacing}rem`,
-          maxWidth: '250px',
         }
         : {},
     [fontState]
@@ -36,17 +35,14 @@ export const TextInput = () => {
   }
 
   return (
-    <>
-      <span className="innerTitle">Text</span>
-      <input
-        data-testid={DATA_TEST_IDS.TEXT_INPUT}
-        style={previewStyle}
-        className="userInput"
-        value={appProps.text}
-        onChange={(e) => {
-          handleTextChange(e.target.value);
-        }}
-      />
-    </>
+    <textarea
+      data-testid={DATA_TEST_IDS.TEXT_INPUT}
+      style={previewStyle}
+      className="userInput"
+      value={appProps.text}
+      onChange={(e) => {
+        handleTextChange(e.target.value);
+      }}
+    />
   );
 };

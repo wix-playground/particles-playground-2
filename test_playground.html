@@ -351,5 +351,710 @@
 
     <canvas id="mainCanvas"></canvas>
     <canvas id="hiddenCanvas" style="display:none;"></canvas>
+
+    <script>
+        // --- DOM Elements ---
+        const mainCanvas = document.getElementById('mainCanvas');
+        const mainCtx = mainCanvas.getContext('2d');
+        const hiddenCanvas = document.getElementById('hiddenCanvas');
+        const hiddenCtx = hiddenCanvas.getContext('2d');
+
+        const effectsPresetInput = document.getElementById('effectsPreset');
+        const textInput = document.getElementById('textInput');
+        const fontFamilyInput = document.getElementById('fontFamily');
+
+        const fontSizeRange = document.getElementById('fontSizeRange');
+        const fontSizeNumber = document.getElementById('fontSizeNumber');
+        const sourceCloudAngleRange = document.getElementById('sourceCloudAngleRange');
+        const sourceCloudAngleNumber = document.getElementById('sourceCloudAngleNumber');
+        const finalTextAngleRange = document.getElementById('finalTextAngleRange');
+        const finalTextAngleNumber = document.getElementById('finalTextAngleNumber');
+        const leadingRange = document.getElementById('leadingRange');
+        const leadingNumber = document.getElementById('leadingNumber');
+        const letterSpacingRange = document.getElementById('letterSpacingRange');
+        const letterSpacingNumber = document.getElementById('letterSpacingNumber');
+        const particleDensityRange = document.getElementById('particleDensityRange');
+        const particleDensityNumber = document.getElementById('particleDensityNumber');
+        const startParticleAngleRange = document.getElementById('startParticleAngleRange');
+        const startParticleAngleNumber = document.getElementById('startParticleAngleNumber');
+        const endParticleAngleRange = document.getElementById('endParticleAngleRange');
+        const endParticleAngleNumber = document.getElementById('endParticleAngleNumber');
+        const startParticleSizeRange = document.getElementById('startParticleSizeRange');
+        const startParticleSizeNumber = document.getElementById('startParticleSizeNumber');
+        const endParticleSizeRange = document.getElementById('endParticleSizeRange');
+        const endParticleSizeNumber = document.getElementById('endParticleSizeNumber');
+        const startParticleOpacityRange = document.getElementById('startParticleOpacityRange');
+        const startParticleOpacityNumber = document.getElementById('startParticleOpacityNumber');
+        const endParticleOpacityRange = document.getElementById('endParticleOpacityRange');
+        const endParticleOpacityNumber = document.getElementById('endParticleOpacityNumber');
+        const animationSpeedRange = document.getElementById('animationSpeedRange');
+        const animationSpeedNumber = document.getElementById('animationSpeedNumber');
+        const maxDelayRange = document.getElementById('maxDelayRange');
+        const maxDelayNumber = document.getElementById('maxDelayNumber');
+
+        const particleShapeInput = document.getElementById('particleShape');
+        const particleOriginInput = document.getElementById('particleOrigin');
+        const startParticleColorInput = document.getElementById('startParticleColor');
+        const endParticleColorInput = document.getElementById('endParticleColor');
+
+        const emitterXGroup = document.getElementById('emitterXGroup');
+        const emitterYGroup = document.getElementById('emitterYGroup');
+        const emitterSizeGroup = document.getElementById('emitterSizeGroup');
+        const emitterXRange = document.getElementById('emitterXRange');
+        const emitterXNumber = document.getElementById('emitterXNumber');
+        const emitterYRange = document.getElementById('emitterYRange');
+        const emitterYNumber = document.getElementById('emitterYNumber');
+        const emitterSizeRange = document.getElementById('emitterSizeRange');
+        const emitterSizeNumber = document.getElementById('emitterSizeNumber');
+        const emitterSizeLabel = document.getElementById('emitterSizeLabel');
+
+        const generateButton = document.getElementById('generateButton');
+        const shuffleButton = document.getElementById('shuffleButton');
+
+        // --- Global Variables ---
+        let particles = [];
+        let animationFrameId;
+        const PARTICLE_DETECTION_THRESHOLD = 128;
+
+        // --- Helper Functions ---
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16)
+            } : {r:0, g:0, b:0};
+        }
+
+        function syncInputs(slider, numberInput, isFloat = false, precision = 2) {
+            slider.addEventListener('input', () => {
+                numberInput.value = isFloat ? parseFloat(slider.value).toFixed(precision) : slider.value;
+            });
+            numberInput.addEventListener('input', () => {
+                let value = isFloat ? parseFloat(numberInput.value) : parseInt(numberInput.value);
+                if (isNaN(value)) {
+                    value = parseFloat(slider.value) || parseFloat(slider.min);
+                }
+                value = Math.max(parseFloat(slider.min), Math.min(parseFloat(slider.max), value));
+                slider.value = value;
+                numberInput.value = isFloat ? value.toFixed(precision) : value;
+            });
+            if (numberInput.value !== slider.value) { // Initial sync
+                 numberInput.value = isFloat ? parseFloat(slider.value).toFixed(precision) : slider.value;
+            }
+        }
+
+        function getRandom(min, max, isFloat = false, precision = 2) {
+            if (isFloat) {
+                return parseFloat((Math.random() * (max - min) + min).toFixed(precision));
+            }
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // --- Particle Class ---
+        class Particle {
+             constructor(startX, startY, finalTargetX, finalTargetY, startColor, endColor, startSize, endSize, startOpacity, endOpacity, pStartAngle, pEndAngle, delay, speed, shape) {
+                this.startX = startX;
+                this.startY = startY;
+                this.x = startX;
+                this.y = startY;
+                this.finalTargetX = finalTargetX;
+                this.finalTargetY = finalTargetY;
+                this.startColor = hexToRgb(startColor);
+                this.endColor = hexToRgb(endColor);
+                this.startSize = startSize;
+                this.endSize = endSize;
+                this.startOpacity = startOpacity;
+                this.endOpacity = endOpacity;
+                this.startAngle = pStartAngle * (Math.PI / 180);
+                this.endAngle = pEndAngle * (Math.PI / 180);
+                this.delay = delay;
+                this.progress = 0;
+                this.speed = speed;
+                this.shape = shape;
+                this.initialDist = Math.sqrt(Math.pow(this.finalTargetX - this.startX, 2) + Math.pow(this.finalTargetY - this.startY, 2));
+                if (this.initialDist < 0.01) this.initialDist = 0.01;
+            }
+
+            update() {
+                if (this.delay > 0) {
+                    this.delay -= 16.67;
+                    return;
+                }
+                if (this.progress < 1) {
+                    this.x += (this.finalTargetX - this.x) * this.speed;
+                    this.y += (this.finalTargetY - this.y) * this.speed;
+                    const dx = this.finalTargetX - this.x;
+                    const dy = this.finalTargetY - this.y;
+                    if (Math.sqrt(dx * dx + dy * dy) < 0.5) {
+                        this.x = this.finalTargetX; this.y = this.finalTargetY;
+                        this.progress = 1;
+                    }
+                } else {
+                    this.x = this.finalTargetX; this.y = this.finalTargetY;
+                }
+            }
+
+            draw(ctx) {
+                let animationRatio = 0;
+                if (this.delay <= 0) {
+                    const currentDistToFinalTarget = Math.sqrt(Math.pow(this.finalTargetX - this.x, 2) + Math.pow(this.finalTargetY - this.y, 2));
+                    animationRatio = Math.max(0, Math.min(1, 1 - (currentDistToFinalTarget / this.initialDist)));
+                    if (this.initialDist <= 0.01 || this.progress === 1) animationRatio = 1;
+                }
+
+                const currentOpacity = this.startOpacity + (this.endOpacity - this.startOpacity) * animationRatio;
+                const currentSize = this.startSize + (this.endSize - this.startSize) * animationRatio;
+                const currentParticleAngle = this.startAngle + (this.endAngle - this.startAngle) * animationRatio;
+
+                let r, g, b;
+                if (this.startColor && this.endColor) {
+                    r = Math.round(this.startColor.r + (this.endColor.r - this.startColor.r) * animationRatio);
+                    g = Math.round(this.startColor.g + (this.endColor.g - this.startColor.g) * animationRatio);
+                    b = Math.round(this.startColor.b + (this.endColor.b - this.startColor.b) * animationRatio);
+                } else { r = 0; g = 0; b = 255; }
+                const currentColor = `rgb(${r},${g},${b})`;
+
+                if (currentSize < 0.1 || currentOpacity < 0.01) return;
+
+                ctx.save();
+                ctx.globalAlpha = currentOpacity;
+                ctx.fillStyle = currentColor;
+                ctx.translate(this.x, this.y);
+                ctx.rotate(currentParticleAngle);
+
+                ctx.beginPath();
+                switch (this.shape) {
+                    case 'square':
+                        ctx.fillRect(-currentSize / 2, -currentSize / 2, currentSize, currentSize);
+                        break;
+                    case 'triangle':
+                        ctx.moveTo(0, -currentSize / 2 * 1.15);
+                        ctx.lineTo(-currentSize / 2, currentSize / 2 * 0.85);
+                        ctx.lineTo(currentSize / 2, currentSize / 2 * 0.85);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                    case 'line':
+                        ctx.lineWidth = Math.max(1, currentSize / 4);
+                        ctx.strokeStyle = currentColor;
+                        ctx.moveTo(-currentSize / 2, 0);
+                        ctx.lineTo(currentSize / 2, 0);
+                        ctx.stroke();
+                        break;
+                    case 'star':
+                        const spikes = 5;
+                        const outerRadius = currentSize / 2;
+                        const innerRadius = currentSize / 4;
+                        let rot = Math.PI / 2 * 3;
+                        let step = Math.PI / spikes;
+                        ctx.moveTo(0, -outerRadius);
+                        for (let i = 0; i < spikes; i++) {
+                            ctx.lineTo(Math.cos(rot) * outerRadius, Math.sin(rot) * outerRadius);
+                            rot += step;
+                            ctx.lineTo(Math.cos(rot) * innerRadius, Math.sin(rot) * innerRadius);
+                            rot += step;
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                    case 'circle':
+                    default:
+                        ctx.arc(0, 0, currentSize / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                }
+                ctx.restore();
+            }
+        }
+
+        // --- Setup and Text Rasterization ---
+        function setupCanvas() {
+            mainCanvas.width = Math.max(1, Math.min(window.innerWidth * 0.95, 900));
+            mainCanvas.height = Math.max(1, Math.min(window.innerHeight * 0.55, 450));
+
+            emitterXRange.max = mainCanvas.width;
+            emitterXNumber.max = mainCanvas.width;
+            emitterYRange.max = mainCanvas.height;
+            emitterYNumber.max = mainCanvas.height;
+            if (parseFloat(emitterXNumber.value) > mainCanvas.width) emitterXNumber.value = mainCanvas.width;
+            if (parseFloat(emitterYNumber.value) > mainCanvas.height) emitterYNumber.value = mainCanvas.height;
+            emitterXRange.value = emitterXNumber.value;
+            emitterYRange.value = emitterYNumber.value;
+        }
+
+        function toggleEmitterControls() {
+            const originType = particleOriginInput.value;
+            const showEmitterPos = originType.startsWith('emitter');
+            const showEmitterSize = ['emitterCircle', 'emitterSquare', 'emitterHLine', 'emitterVLine'].includes(originType);
+
+            emitterXGroup.classList.toggle('hidden-control', !showEmitterPos);
+            emitterYGroup.classList.toggle('hidden-control', !showEmitterPos);
+            emitterSizeGroup.classList.toggle('hidden-control', !showEmitterSize);
+
+            if (showEmitterSize) {
+                if (originType === 'emitterCircle') emitterSizeLabel.textContent = 'Emitter Radius:';
+                else if (originType === 'emitterSquare') emitterSizeLabel.textContent = 'Emitter Square Size:';
+                else if (originType === 'emitterHLine' || originType === 'emitterVLine') emitterSizeLabel.textContent = 'Emitter Line Length:';
+            }
+        }
+
+        function generateParticles() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            particles = [];
+
+            const text = textInput.value;
+            const fontFamily = fontFamilyInput.value;
+            const fontSize = parseInt(fontSizeNumber.value);
+            const pSourceCloudAngle_rad = parseFloat(sourceCloudAngleNumber.value) * (Math.PI / 180);
+            const pFinalTextAngle_rad = parseFloat(finalTextAngleNumber.value) * (Math.PI / 180);
+            const leading = parseFloat(leadingNumber.value);
+            const letterSpacing = parseFloat(letterSpacingNumber.value);
+
+            const density = parseInt(particleDensityNumber.value);
+            const particleShape = particleShapeInput.value;
+            const pParticleStartAngle = parseFloat(startParticleAngleNumber.value);
+            const pParticleEndAngle = parseFloat(endParticleAngleNumber.value);
+            const originType = particleOriginInput.value;
+
+            const pStartColor = startParticleColorInput.value;
+            const pEndColor = endParticleColorInput.value;
+            const pStartSize = parseFloat(startParticleSizeNumber.value);
+            const pEndSize = parseFloat(endParticleSizeNumber.value);
+            const pStartOpacity = parseFloat(startParticleOpacityNumber.value);
+            const pEndOpacity = parseFloat(endParticleOpacityNumber.value);
+
+            const pAnimationSpeed = parseFloat(animationSpeedNumber.value);
+            const pMaxDelay = parseInt(maxDelayNumber.value);
+
+            const emX = parseFloat(emitterXNumber.value);
+            const emY = parseFloat(emitterYNumber.value);
+            const emSize = parseFloat(emitterSizeNumber.value);
+
+            const hcWidth = Math.max(1, mainCanvas.width * 1.5);
+            const hcHeight = Math.max(1, mainCanvas.height * 1.5);
+            hiddenCanvas.width = hcWidth;
+            hiddenCanvas.height = hcHeight;
+
+            hiddenCtx.font = `bold ${fontSize}px ${fontFamily}`;
+            hiddenCtx.fillStyle = '#ffffff';
+            hiddenCtx.textAlign = 'center';
+            hiddenCtx.textBaseline = 'middle';
+            if (typeof hiddenCtx.letterSpacing === 'string') {
+                 hiddenCtx.letterSpacing = `${letterSpacing}px`;
+            }
+
+            hiddenCtx.clearRect(0, 0, hcWidth, hcHeight);
+            hiddenCtx.save();
+            hiddenCtx.translate(hcWidth / 2, hcHeight / 2);
+            hiddenCtx.rotate(pFinalTextAngle_rad);
+
+            const lines = text.split('\n');
+            const lineHeight = fontSize * leading;
+            const totalTextHeight = (lines.length - 1) * lineHeight;
+
+            lines.forEach((line, i) => {
+                hiddenCtx.fillText(line, 0, -totalTextHeight / 2 + i * lineHeight);
+            });
+            hiddenCtx.restore();
+
+            const imageData = hiddenCtx.getImageData(0, 0, hcWidth, hcHeight);
+            const data = imageData.data;
+            const finalTargetCoords = [];
+
+            const offsetX_hc_to_mc = (mainCanvas.width - hcWidth) / 2;
+            const offsetY_hc_to_mc = (mainCanvas.height - hcHeight) / 2;
+
+            for (let y_hc = 0; y_hc < hcHeight; y_hc += density) {
+                for (let x_hc = 0; x_hc < hcWidth; x_hc += density) {
+                    const alphaIndex = (y_hc * hcWidth + x_hc) * 4 + 3;
+                    if (data[alphaIndex] > PARTICLE_DETECTION_THRESHOLD) {
+                        finalTargetCoords.push({
+                            x: x_hc + offsetX_hc_to_mc,
+                            y: y_hc + offsetY_hc_to_mc
+                        });
+                    }
+                }
+            }
+
+            let bbUnrotatedMinX = mainCanvas.width, bbUnrotatedMaxX = 0, bbUnrotatedMinY = mainCanvas.height, bbUnrotatedMaxY = 0;
+            if (originType.includes("TextWidth") || originType.includes("TextHeight")) {
+                hiddenCtx.clearRect(0,0,hcWidth, hcHeight);
+                hiddenCtx.font = `bold ${fontSize}px ${fontFamily}`;
+                if (typeof hiddenCtx.letterSpacing === 'string') hiddenCtx.letterSpacing = `${letterSpacing}px`;
+                hiddenCtx.textAlign = 'center'; hiddenCtx.textBaseline = 'middle';
+                let maxLineWidth = 0;
+                lines.forEach(line => { maxLineWidth = Math.max(maxLineWidth, hiddenCtx.measureText(line).width); });
+                const totalActualTextHeight = lines.length * fontSize + (lines.length > 1 ? (lines.length -1) * (lineHeight - fontSize) : 0) ;
+                bbUnrotatedMinX = mainCanvas.width/2 - maxLineWidth/2;
+                bbUnrotatedMaxX = mainCanvas.width/2 + maxLineWidth/2;
+                bbUnrotatedMinY = mainCanvas.height/2 - totalActualTextHeight/2;
+                bbUnrotatedMaxY = mainCanvas.height/2 + totalActualTextHeight/2;
+            }
+
+            const mainCanvasCenterX = mainCanvas.width / 2;
+            const mainCanvasCenterY = mainCanvas.height / 2;
+            const cosSrc = Math.cos(pSourceCloudAngle_rad);
+            const sinSrc = Math.sin(pSourceCloudAngle_rad);
+
+            finalTargetCoords.forEach(target => {
+                let rawStartX, rawStartY;
+                let originCenterX = mainCanvasCenterX;
+                let originCenterY = mainCanvasCenterY;
+
+                switch (originType) {
+                    case 'emitterPoint':
+                        rawStartX = emX; rawStartY = emY;
+                        originCenterX = emX; originCenterY = emY;
+                        break;
+                    case 'emitterCircle':
+                        const angleC = Math.random() * 2 * Math.PI;
+                        const radiusC = Math.random() * emSize;
+                        rawStartX = emX + radiusC * Math.cos(angleC);
+                        rawStartY = emY + radiusC * Math.sin(angleC);
+                        originCenterX = emX; originCenterY = emY;
+                        break;
+                    case 'emitterSquare':
+                        rawStartX = emX + (Math.random() - 0.5) * emSize;
+                        rawStartY = emY + (Math.random() - 0.5) * emSize;
+                        originCenterX = emX; originCenterY = emY;
+                        break;
+                    case 'emitterHLine':
+                        rawStartX = emX + (Math.random() - 0.5) * emSize;
+                        rawStartY = emY;
+                        originCenterX = emX; originCenterY = emY;
+                        break;
+                    case 'emitterVLine':
+                        rawStartX = emX;
+                        rawStartY = emY + (Math.random() - 0.5) * emSize;
+                        originCenterX = emX; originCenterY = emY;
+                        break;
+                    case 'canvasEdges':
+                        const edge = Math.floor(Math.random() * 4);
+                        if (edge === 0) { rawStartX = Math.random() * mainCanvas.width; rawStartY = 0; }
+                        else if (edge === 1) { rawStartX = Math.random() * mainCanvas.width; rawStartY = mainCanvas.height; }
+                        else if (edge === 2) { rawStartX = 0; rawStartY = Math.random() * mainCanvas.height; }
+                        else { rawStartX = mainCanvas.width; rawStartY = Math.random() * mainCanvas.height; }
+                        break;
+                    case 'topLeft': rawStartX = 0; rawStartY = 0; break;
+                    case 'topCenter': rawStartX = mainCanvasCenterX; rawStartY = 0; break;
+                    case 'topRight': rawStartX = mainCanvas.width; rawStartY = 0; break;
+                    case 'centerLeft': rawStartX = 0; rawStartY = mainCanvasCenterY; break;
+                    case 'center': rawStartX = mainCanvasCenterX; rawStartY = mainCanvasCenterY; break;
+                    case 'centerRight': rawStartX = mainCanvas.width; rawStartY = mainCanvasCenterY; break;
+                    case 'bottomLeft': rawStartX = 0; rawStartY = mainCanvas.height; break;
+                    case 'bottomCenter': rawStartX = mainCanvasCenterX; rawStartY = mainCanvas.height; break;
+                    case 'bottomRight': rawStartX = mainCanvas.width; rawStartY = mainCanvas.height; break;
+                    case 'enterTopTextWidth':
+                        rawStartX = bbUnrotatedMinX + Math.random() * (bbUnrotatedMaxX - bbUnrotatedMinX);
+                        rawStartY = bbUnrotatedMinY;
+                        break;
+                    case 'enterBottomTextWidth':
+                        rawStartX = bbUnrotatedMinX + Math.random() * (bbUnrotatedMaxX - bbUnrotatedMinX);
+                        rawStartY = bbUnrotatedMaxY;
+                        break;
+                    case 'enterLeftTextHeight':
+                        rawStartX = bbUnrotatedMinX;
+                        rawStartY = bbUnrotatedMinY + Math.random() * (bbUnrotatedMaxY - bbUnrotatedMinY);
+                        break;
+                    case 'enterRightTextHeight':
+                        rawStartX = bbUnrotatedMaxX;
+                        rawStartY = bbUnrotatedMinY + Math.random() * (bbUnrotatedMaxY - bbUnrotatedMinY);
+                        break;
+                    case 'random': default:
+                        rawStartX = Math.random() * mainCanvas.width;
+                        rawStartY = Math.random() * mainCanvas.height;
+                        break;
+                }
+
+                const relRawStartX = rawStartX - originCenterX;
+                const relRawStartY = rawStartY - originCenterY;
+
+                const actualStartX = originCenterX + (relRawStartX * cosSrc - relRawStartY * sinSrc);
+                const actualStartY = originCenterY + (relRawStartX * sinSrc + relRawStartY * cosSrc);
+
+                const delay = Math.random() * pMaxDelay;
+                const speedVariation = pAnimationSpeed * (0.75 + Math.random() * 0.5);
+
+                particles.push(new Particle(actualStartX, actualStartY, target.x, target.y, pStartColor, pEndColor, pStartSize, pEndSize, pStartOpacity, pEndOpacity, pParticleStartAngle, pParticleEndAngle, delay, speedVariation, particleShape));
+            });
+            animate();
+        }
+
+        // --- Animation Loop ---
+        function animate() {
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            let allParticlesSettledOrDelayed = true;
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw(mainCtx);
+                if (particle.progress < 1 && particle.delay <=0) {
+                    allParticlesSettledOrDelayed = false;
+                }
+            });
+
+            if (particles.length === 0 || !allParticlesSettledOrDelayed) {
+                 animationFrameId = requestAnimationFrame(animate);
+            } else if (particles.some(p => p.delay > 0)) {
+                 animationFrameId = requestAnimationFrame(animate);
+            } else {
+                 animationFrameId = requestAnimationFrame(animate);
+            }
+        }
+
+        // --- Apply Effect Preset ---
+        function applyEffectPreset(effectName) {
+            let preset = {};
+            switch (effectName) {
+                case 'snow':
+                    preset = {
+                        text: "SNOWY\nDAY",
+                        fontFamily: "'Times New Roman', Times, serif",
+                        fontSize: 80,
+                        finalTextAngle: 0,
+                        leading: 1.1,
+                        letterSpacing: 2,
+                        particleDensity: 4,
+                        particleShape: 'star', // Changed to star for snow flake
+                        startParticleAngle: -90,
+                        endParticleAngle: 90,
+                        particleOrigin: 'canvasEdges',
+                        sourceCloudAngle: 0,
+                        startParticleColor: '#E0E7FF',
+                        endParticleColor: '#FFFFFF',
+                        startParticleSize: 1,
+                        endParticleSize: 5,
+                        startParticleOpacity: 0.4,
+                        endParticleOpacity: 0.9,
+                        animationSpeed: 0.02,
+                        maxDelay: 3000,
+                    };
+                    break;
+                case 'smoke':
+                    preset = {
+                        text: "SMOKE",
+                        fontFamily: "Impact, Charcoal, sans-serif",
+                        fontSize: 120,
+                        finalTextAngle: 0,
+                        leading: 1.0,
+                        letterSpacing: 5,
+                        particleDensity: 2,
+                        particleShape: 'circle',
+                        startParticleAngle: 0,
+                        endParticleAngle: 180,
+                        particleOrigin: 'emitterCircle',
+                        emitterX: mainCanvas.width / 2,
+                        emitterY: mainCanvas.height - 40,
+                        emitterSize: 20, // Radius
+                        sourceCloudAngle: 0,
+                        startParticleColor: '#4A5568', // Darker gray
+                        endParticleColor: '#CBD5E0', // Lighter gray
+                        startParticleSize: 3,
+                        endParticleSize: 40,
+                        startParticleOpacity: 0.5,
+                        endParticleOpacity: 0,
+                        animationSpeed: 0.015,
+                        maxDelay: 1500,
+                    };
+                    break;
+                case 'fire':
+                    preset = {
+                        text: "FIRE!",
+                        fontFamily: "Impact, Charcoal, sans-serif",
+                        fontSize: 130,
+                        finalTextAngle: 0,
+                        leading: 0.9,
+                        letterSpacing: 1,
+                        particleDensity: 2,
+                        particleShape: 'triangle',
+                        startParticleAngle: -45,
+                        endParticleAngle: 45,
+                        particleOrigin: 'emitterHLine',
+                        emitterX: mainCanvas.width / 2,
+                        emitterY: mainCanvas.height - 20,
+                        emitterSize: mainCanvas.width / 4, // Length
+                        sourceCloudAngle: 0,
+                        startParticleColor: '#FF4500', // OrangeRed
+                        endParticleColor: '#FFFF00', // Yellow
+                        startParticleSize: 2,
+                        endParticleSize: 15,
+                        startParticleOpacity: 0.9,
+                        endParticleOpacity: 0.1,
+                        animationSpeed: 0.06,
+                        maxDelay: 600,
+                    };
+                    break;
+                case 'neon':
+                    preset = {
+                        text: "NEON\nGLOW",
+                        fontFamily: "'Courier New', Courier, monospace",
+                        fontSize: 90,
+                        finalTextAngle: 0,
+                        leading: 1.1,
+                        letterSpacing: 3,
+                        particleDensity: 3,
+                        particleShape: 'line',
+                        startParticleAngle: 0,
+                        endParticleAngle: 0,
+                        particleOrigin: 'random',
+                        sourceCloudAngle: 0,
+                        startParticleColor: '#FFACC7', // Pink
+                        endParticleColor: '#B2A4FF',   // Lilac
+                        startParticleSize: 1,
+                        endParticleSize: 3,
+                        startParticleOpacity: 0.3,
+                        endParticleOpacity: 0.8,
+                        animationSpeed: 0.04,
+                        maxDelay: 1200,
+                    };
+                    break;
+                case 'matrix':
+                     preset = {
+                        text: "MATRIX\n10101",
+                        fontFamily: "'Lucida Console', Monaco, monospace",
+                        fontSize: 60,
+                        finalTextAngle: 0,
+                        leading: 1.0,
+                        letterSpacing: 4,
+                        particleDensity: 2,
+                        particleShape: 'square', // Or line
+                        startParticleAngle: 0,
+                        endParticleAngle: 0,
+                        particleOrigin: 'enterTopTextWidth',
+                        sourceCloudAngle: 0,
+                        startParticleColor: '#32CD32', // Lime Green
+                        endParticleColor: '#006400',   // Dark Green
+                        startParticleSize: 3,
+                        endParticleSize: 3,
+                        startParticleOpacity: 0.9,
+                        endParticleOpacity: 0.2,
+                        animationSpeed: 0.015, // Slower for dripping effect
+                        maxDelay: 4000, // Very staggered
+                    };
+                    break;
+                case 'custom':
+                default:
+                    // Do nothing, or could reset to some default if desired
+                    return; // Exit if custom, no changes to apply
+            }
+
+            // Apply preset values
+            if (preset.text !== undefined) textInput.value = preset.text;
+            if (preset.fontFamily !== undefined) fontFamilyInput.value = preset.fontFamily;
+            if (preset.fontSize !== undefined) { fontSizeNumber.value = preset.fontSize; fontSizeRange.value = preset.fontSize; }
+            if (preset.finalTextAngle !== undefined) { finalTextAngleNumber.value = preset.finalTextAngle; finalTextAngleRange.value = preset.finalTextAngle; }
+            if (preset.leading !== undefined) { leadingNumber.value = preset.leading.toFixed(1); leadingRange.value = preset.leading; }
+            if (preset.letterSpacing !== undefined) { letterSpacingNumber.value = preset.letterSpacing; letterSpacingRange.value = preset.letterSpacing; }
+            if (preset.particleDensity !== undefined) { particleDensityNumber.value = preset.particleDensity; particleDensityRange.value = preset.particleDensity; }
+            if (preset.particleShape !== undefined) particleShapeInput.value = preset.particleShape;
+            if (preset.startParticleAngle !== undefined) { startParticleAngleNumber.value = preset.startParticleAngle; startParticleAngleRange.value = preset.startParticleAngle; }
+            if (preset.endParticleAngle !== undefined) { endParticleAngleNumber.value = preset.endParticleAngle; endParticleAngleRange.value = preset.endParticleAngle; }
+            if (preset.particleOrigin !== undefined) { particleOriginInput.value = preset.particleOrigin; toggleEmitterControls(); } // Toggle after setting
+            if (preset.sourceCloudAngle !== undefined) { sourceCloudAngleNumber.value = preset.sourceCloudAngle; sourceCloudAngleRange.value = preset.sourceCloudAngle; }
+
+            if (preset.emitterX !== undefined) { emitterXNumber.value = preset.emitterX; emitterXRange.value = preset.emitterX; }
+            if (preset.emitterY !== undefined) { emitterYNumber.value = preset.emitterY; emitterYRange.value = preset.emitterY; }
+            if (preset.emitterSize !== undefined) { emitterSizeNumber.value = preset.emitterSize; emitterSizeRange.value = preset.emitterSize; }
+
+            if (preset.startParticleColor !== undefined) startParticleColorInput.value = preset.startParticleColor;
+            if (preset.endParticleColor !== undefined) endParticleColorInput.value = preset.endParticleColor;
+            if (preset.startParticleSize !== undefined) { startParticleSizeNumber.value = preset.startParticleSize.toFixed(1); startParticleSizeRange.value = preset.startParticleSize; }
+            if (preset.endParticleSize !== undefined) { endParticleSizeNumber.value = preset.endParticleSize.toFixed(1); endParticleSizeRange.value = preset.endParticleSize; }
+            if (preset.startParticleOpacity !== undefined) { startParticleOpacityNumber.value = preset.startParticleOpacity.toFixed(2); startParticleOpacityRange.value = preset.startParticleOpacity; }
+            if (preset.endParticleOpacity !== undefined) { endParticleOpacityNumber.value = preset.endParticleOpacity.toFixed(2); endParticleOpacityRange.value = preset.endParticleOpacity; }
+            if (preset.animationSpeed !== undefined) { animationSpeedNumber.value = preset.animationSpeed.toFixed(2); animationSpeedRange.value = preset.animationSpeed; }
+            if (preset.maxDelay !== undefined) { maxDelayNumber.value = preset.maxDelay; maxDelayRange.value = preset.maxDelay; }
+
+            generateParticles();
+        }
+
+        // --- Shuffle Settings ---
+        function shuffleSettings() {
+            effectsPresetInput.value = "custom"; // Reset preset dropdown
+            const texts = ["Shuffle!", "Particles", "Creative\nCode", "Hello\nWorld", "Canvas\nMagic", "Text\nReveal", "Explore\nEffects", "Random\nFun"];
+            textInput.value = texts[getRandom(0, texts.length - 1)];
+            fontFamilyInput.selectedIndex = getRandom(0, fontFamilyInput.options.length - 1);
+            fontSizeNumber.value = getRandom(30, 130); fontSizeRange.value = fontSizeNumber.value;
+            sourceCloudAngleNumber.value = getRandom(-180, 180); sourceCloudAngleRange.value = sourceCloudAngleNumber.value;
+            finalTextAngleNumber.value = getRandom(-30, 30); finalTextAngleRange.value = finalTextAngleNumber.value;
+            leadingNumber.value = getRandom(0.8, 2.2, true, 1); leadingRange.value = leadingNumber.value;
+            letterSpacingNumber.value = getRandom(-3, 12); letterSpacingRange.value = letterSpacingNumber.value;
+
+            particleDensityNumber.value = getRandom(2, 10); particleDensityRange.value = particleDensityNumber.value;
+            particleShapeInput.selectedIndex = getRandom(0, particleShapeInput.options.length - 1);
+            particleOriginInput.selectedIndex = getRandom(0, particleOriginInput.options.length - 1);
+            toggleEmitterControls();
+
+            if (particleOriginInput.value.startsWith('emitter')) {
+                emitterXNumber.value = getRandom(Math.round(mainCanvas.width*0.2), Math.round(mainCanvas.width*0.8)); emitterXRange.value = emitterXNumber.value;
+                emitterYNumber.value = getRandom(Math.round(mainCanvas.height*0.2), Math.round(mainCanvas.height*0.8)); emitterYRange.value = emitterYNumber.value;
+                emitterSizeNumber.value = getRandom(30, Math.min(mainCanvas.width, mainCanvas.height) / 3);
+                emitterSizeRange.value = emitterSizeNumber.value;
+            }
+
+            startParticleColorInput.value = `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`;
+            endParticleColorInput.value = `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`;
+            startParticleSizeNumber.value = getRandom(0.1, 8, true, 1); startParticleSizeRange.value = startParticleSizeNumber.value;
+            endParticleSizeNumber.value = getRandom(1, 12, true, 1); endParticleSizeRange.value = endParticleSizeNumber.value;
+            startParticleOpacityNumber.value = getRandom(0, 0.6, true, 2); startParticleOpacityRange.value = startParticleOpacityNumber.value;
+            endParticleOpacityNumber.value = getRandom(0.5, 1, true, 2); endParticleOpacityRange.value = endParticleOpacityNumber.value;
+            startParticleAngleNumber.value = getRandom(-180, 180); startParticleAngleRange.value = startParticleAngleNumber.value;
+            endParticleAngleNumber.value = getRandom(-180, 180); endParticleAngleRange.value = endParticleAngleNumber.value;
+
+            animationSpeedNumber.value = getRandom(0.02, 0.12, true, 2); animationSpeedRange.value = animationSpeedNumber.value;
+            maxDelayNumber.value = getRandom(100, 2500); maxDelayRange.value = maxDelayNumber.value;
+
+            generateParticles();
+        }
+
+        // --- Event Listeners & UI Updates ---
+        function setupEventListeners() {
+            generateButton.addEventListener('click', generateParticles);
+            shuffleButton.addEventListener('click', shuffleSettings);
+            effectsPresetInput.addEventListener('change', (e) => applyEffectPreset(e.target.value));
+
+            syncInputs(fontSizeRange, fontSizeNumber);
+            syncInputs(sourceCloudAngleRange, sourceCloudAngleNumber);
+            syncInputs(finalTextAngleRange, finalTextAngleNumber);
+            syncInputs(leadingRange, leadingNumber, true, 1);
+            syncInputs(letterSpacingRange, letterSpacingNumber);
+            syncInputs(particleDensityRange, particleDensityNumber);
+            syncInputs(startParticleAngleRange, startParticleAngleNumber);
+            syncInputs(endParticleAngleRange, endParticleAngleNumber);
+            syncInputs(startParticleSizeRange, startParticleSizeNumber, true, 1);
+            syncInputs(endParticleSizeRange, endParticleSizeNumber, true, 1);
+            syncInputs(startParticleOpacityRange, startParticleOpacityNumber, true, 2);
+            syncInputs(endParticleOpacityRange, endParticleOpacityNumber, true, 2);
+            syncInputs(animationSpeedRange, animationSpeedNumber, true, 2);
+            syncInputs(maxDelayRange, maxDelayNumber);
+
+            syncInputs(emitterXRange, emitterXNumber);
+            syncInputs(emitterYRange, emitterYNumber);
+            syncInputs(emitterSizeRange, emitterSizeNumber);
+
+            particleOriginInput.addEventListener('change', toggleEmitterControls);
+        }
+
+        // --- Initial Setup ---
+        window.addEventListener('load', () => {
+            setupCanvas();
+            setupEventListeners();
+            document.querySelectorAll('.slider-input-group').forEach(group => {
+                const slider = group.querySelector('input[type="range"]');
+                const numberInput = group.querySelector('input[type="number"]');
+                if (slider && numberInput) {
+                    const isFloat = slider.step.includes('.');
+                    const precision = isFloat ? slider.step.split('.')[1].length : 0;
+                    numberInput.value = isFloat ? parseFloat(slider.value).toFixed(precision) : slider.value;
+                }
+            });
+            toggleEmitterControls();
+            generateParticles();
+        });
+
+        window.addEventListener('resize', () => {
+            setupCanvas();
+            generateParticles();
+        });
+
+    </script>
 </body>
 </html>
