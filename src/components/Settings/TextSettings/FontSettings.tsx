@@ -1,8 +1,9 @@
-import React, {useCallback, useContext} from 'react';
+import React, {useCallback, useContext, useMemo} from 'react';
 import {FontFamily, FontState} from '../../../interfaces';
 import {AppContext} from '../../../contexts/AppContext';
 import {useWorkerActions} from '../../../hooks/useWorkerActions';
 import {DATA_TEST_IDS, DEFAULT_FONT_STATE} from '../../../constants';
+import {getSettingsConfig} from '../../../settings-config';
 
 const fontConfig: Record<
   FontFamily,
@@ -29,6 +30,7 @@ const fontConfig: Record<
 export const FontSettings = () => {
   const appProps = useContext(AppContext);
   const workerActions = useWorkerActions();
+  const {min: MIN_FONT_SIZE, max: MAX_FONT_SIZE, step: FONT_SIZE_STEP} = useMemo(() => getSettingsConfig().fontSize, []);
 
   const fontState = appProps?.font ?? DEFAULT_FONT_STATE;
 
@@ -88,20 +90,6 @@ export const FontSettings = () => {
     setFontState({
       fontSize: parseInt(e.target.value),
     });
-  };
-
-  // Handle letter spacing change
-  const handleLetterSpacingChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFontState({letterSpacing: Number(e.target.value)});
-  };
-
-  // Handle line height change
-  const handleLineHeightChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFontState({lineHeight: Number(e.target.value)});
   };
 
   if (!fontState) {
@@ -166,8 +154,9 @@ export const FontSettings = () => {
         <div className="slider-input-group">
           <input
             type="range"
-            min="8"
-            max="140"
+            min={MIN_FONT_SIZE}
+            max={MAX_FONT_SIZE}
+            step={FONT_SIZE_STEP}
             value={fontState.fontSize}
             onChange={handleFontSizeChange}
           />
@@ -177,58 +166,9 @@ export const FontSettings = () => {
             id="font-size"
             value={fontState.fontSize}
             onChange={handleFontSizeChange}
-            min="8"
-            max="140"
-          />
-        </div>
-      </div>
-
-      {/* Letter Spacing */}
-      <div className="control-group">
-        <label htmlFor="letter-spacing">Letter Spacing (rem):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="-5"
-            max="20"
-            step="0.1"
-            value={fontState.letterSpacing}
-            onChange={handleLetterSpacingChange}
-          />
-          <input
-            data-testid={DATA_TEST_IDS.LETTER_SPACING_INPUT}
-            type="number"
-            id="letter-spacing"
-            value={fontState.letterSpacing}
-            onChange={handleLetterSpacingChange}
-            step="0.1"
-            min="-5"
-            max="20"
-          />
-        </div>
-      </div>
-
-      {/* Line Height */}
-      <div className="control-group">
-        <label htmlFor="line-height">Line Height:</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="0.5"
-            max="3"
-            step="0.1"
-            value={fontState.lineHeight}
-            onChange={handleLineHeightChange}
-          />
-          <input
-            data-testid={DATA_TEST_IDS.LINE_HEIGHT_INPUT}
-            type="number"
-            id="line-height"
-            value={fontState.lineHeight}
-            onChange={handleLineHeightChange}
-            step="0.1"
-            min="0.5"
-            max="3"
+            min={MIN_FONT_SIZE}
+            max={MAX_FONT_SIZE}
+            step={FONT_SIZE_STEP}
           />
         </div>
       </div>

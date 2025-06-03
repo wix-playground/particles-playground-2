@@ -1,11 +1,16 @@
-import {useCallback, useContext} from 'react';
+import {useCallback, useContext, useMemo} from 'react';
 import {StartPositionType} from '../../interfaces';
 import {AppContext} from '../../contexts/AppContext';
 import {useWorkerActions} from '../../hooks/useWorkerActions';
+import {getSettingsConfig} from '../../settings-config';
 
 export const ParticleOrigin = () => {
   const appProps = useContext(AppContext);
   const workerActions = useWorkerActions();
+  const {min: MIN_X, max: MAX_X, step: STEP_X} = useMemo(() => getSettingsConfig().emitterX, []);
+  const {min: MIN_Y, max: MAX_Y, step: STEP_Y} = useMemo(() => getSettingsConfig().emitterY, []);
+  const {min: MIN_SIZE, max: MAX_SIZE, step: STEP_SIZE} = useMemo(() => getSettingsConfig().emitterSize, []);
+  const {min: MIN_ANGLE, max: MAX_ANGLE, step: STEP_ANGLE} = useMemo(() => getSettingsConfig().emitterAngle, []);
 
   const handleOriginChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -85,15 +90,17 @@ export const ParticleOrigin = () => {
               <input
                 type="range"
                 id="emitterX"
-                min="0"
-                max="1000"
+                min={MIN_X}
+                max={MAX_X}
+                step={STEP_X}
                 value={appProps.emitterX || 500}
                 onChange={handleEmitterXChange}
               />
               <input
                 type="number"
-                min="0"
-                max="1000"
+                min={MIN_X}
+                max={MAX_X}
+                step={STEP_X}
                 value={appProps.emitterX || 500}
                 onChange={handleEmitterXChange}
               />
@@ -106,15 +113,17 @@ export const ParticleOrigin = () => {
               <input
                 type="range"
                 id="emitterY"
-                min="0"
-                max="600"
+                min={MIN_Y}
+                max={MAX_Y}
+                step={STEP_Y}
                 value={appProps.emitterY || 300}
                 onChange={handleEmitterYChange}
               />
               <input
                 type="number"
-                min="0"
-                max="600"
+                min={MIN_Y}
+                max={MAX_Y}
+                step={STEP_Y}
                 value={appProps.emitterY || 300}
                 onChange={handleEmitterYChange}
               />
@@ -128,15 +137,17 @@ export const ParticleOrigin = () => {
                 <input
                   type="range"
                   id="emitterSize"
-                  min="1"
-                  max="300"
+                  min={MIN_SIZE}
+                  max={MAX_SIZE}
+                  step={STEP_SIZE}
                   value={appProps.emitterSize || 100}
                   onChange={handleEmitterSizeChange}
                 />
                 <input
                   type="number"
-                  min="1"
-                  max="300"
+                  min={MIN_SIZE}
+                  max={MAX_SIZE}
+                  step={STEP_SIZE}
                   value={appProps.emitterSize || 100}
                   onChange={handleEmitterSizeChange}
                 />
@@ -151,15 +162,17 @@ export const ParticleOrigin = () => {
                 <input
                   type="range"
                   id="emitterAngle"
-                  min="-360"
-                  max="360"
+                  min={MIN_ANGLE}
+                  max={MAX_ANGLE}
+                  step={STEP_ANGLE}
                   value={appProps.emitterAngle || 0}
                   onChange={handleEmitterAngleChange}
                 />
                 <input
                   type="number"
-                  min="-360"
-                  max="360"
+                  min={MIN_ANGLE}
+                  max={MAX_ANGLE}
+                  step={STEP_ANGLE}
                   value={appProps.emitterAngle || 0}
                   onChange={handleEmitterAngleChange}
                 />

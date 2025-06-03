@@ -23,8 +23,6 @@ export const DEFAULT_FONT_STATE: FontState = {
     fontSize: 64,
     italic: false,
     weight: 600,
-    letterSpacing: 0,
-    lineHeight: 1.2,
 }
 
 export const COPY_AI_PROMPT_TEXT = 'Copy AI prompt';
@@ -108,8 +106,6 @@ export const DATA_TEST_IDS = {
     FONT_FAMILY_SELECT: 'font-family-select',
     FONT_WEIGHT_SELECT: 'font-weight-select',
     FONT_SIZE_INPUT: 'font-size-input',
-    LETTER_SPACING_INPUT: 'letter-spacing-input',
-    LINE_HEIGHT_INPUT: 'line-height-input',
     FONT_ITALIC_CHECKBOX: 'font-italic-checkbox',
     TEXT_INPUT: 'text-input',
 }

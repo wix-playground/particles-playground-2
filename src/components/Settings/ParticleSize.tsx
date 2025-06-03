@@ -1,11 +1,8 @@
-import {useCallback, useContext} from 'react';
+import {useCallback, useContext, useMemo} from 'react';
 import {AppContext} from '../../contexts/AppContext';
 import {useWorkerActions} from '../../hooks/useWorkerActions';
+import {getSettingsConfig} from '../../settings-config';
 // import {ParticleSizeEasingType} from '../../interfaces';
-
-const STEP = 0.5;
-const MIN = 0.5;
-const MAX = 10;
 
 // const EASING_OPTIONS: Array<{value: ParticleSizeEasingType; label: string}> = [
 //   {value: 'bell', label: 'Bell Curve'},
@@ -16,6 +13,8 @@ const MAX = 10;
 export const ParticleSize = () => {
   const appProps = useContext(AppContext);
   const workerActions = useWorkerActions();
+  const {min: START_MIN, max: START_MAX, step: START_STEP} = useMemo(() => getSettingsConfig().startParticleSize, []);
+  const {min: END_MIN, max: END_MAX, step: END_STEP} = useMemo(() => getSettingsConfig().endParticleSize, []);
 
   const handleSizeChange = useCallback((type: 'start' | 'end', value: number) => {
     if (type === 'start') {
@@ -40,17 +39,17 @@ export const ParticleSize = () => {
         <div className="slider-input-group">
           <input
             type="range"
-            min={MIN}
-            max={MAX}
-            step={STEP}
+            min={START_MIN}
+            max={START_MAX}
+            step={START_STEP}
             value={appProps.startParticleSize}
             onChange={(e) => handleSizeChange('start', Number(e.target.value))}
           />
           <input
             type="number"
-            min={MIN}
-            max={MAX}
-            step={STEP}
+            min={START_MIN}
+            max={START_MAX}
+            step={START_STEP}
             value={appProps.startParticleSize}
             onChange={(e) => handleSizeChange('start', Number(e.target.value))}
           />
@@ -62,17 +61,17 @@ export const ParticleSize = () => {
         <div className="slider-input-group">
           <input
             type="range"
-            min={MIN}
-            max={MAX}
-            step={STEP}
+            min={END_MIN}
+            max={END_MAX}
+            step={END_STEP}
             value={appProps.endParticleSize}
             onChange={(e) => handleSizeChange('end', Number(e.target.value))}
           />
           <input
             type="number"
-            min={MIN}
-            max={MAX}
-            step={STEP}
+            min={END_MIN}
+            max={END_MAX}
+            step={END_STEP}
             value={appProps.endParticleSize}
             onChange={(e) => handleSizeChange('end', Number(e.target.value))}
           />

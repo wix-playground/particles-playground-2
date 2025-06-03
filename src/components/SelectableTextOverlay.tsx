@@ -11,18 +11,15 @@ export const SelectableTextOverlay: React.FC<{textRef: React.RefObject<HTMLDivEl
   const fontString = getFontString(fontState);
 
   return (
-
     <div
       ref={textRef}
       className="selectable-text"
       style={{
         font: fontString,
-        letterSpacing: fontState.letterSpacing ? `${fontState.letterSpacing}rem` : 'normal',
         fontStyle: fontState.italic ? 'italic' : 'normal',
         fontWeight: fontState.weight,
         fontFamily: fontState.fontFamily,
         fontSize: `${fontState.fontSize}px`,
-        lineHeight: fontState.lineHeight,
         whiteSpace: 'pre-line',
         textAlign: 'center',
       }}

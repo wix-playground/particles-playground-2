@@ -53,10 +53,8 @@ const App = () => {
     height: dimensions.height,
     text: appProps?.text ?? '',
     font: getFontString(appProps?.font ?? DEFAULT_FONT_STATE),
-    letterSpacing: appProps?.font ? appProps.font.letterSpacing : 0,
     fontLoaded,
     canvasScale,
-    lineHeight: appProps?.font ? appProps.font.lineHeight : DEFAULT_FONT_STATE.lineHeight,
   });
 
   useEffect(() => {

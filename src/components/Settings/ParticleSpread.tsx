@@ -1,15 +1,14 @@
-import {useCallback, useContext} from 'react';
+import {useCallback, useContext, useMemo} from 'react';
 import {AppContext} from '../../contexts/AppContext';
 import {useWorkerActions} from '../../hooks/useWorkerActions';
 import {DEFAULT_PARTICLE_SPREAD} from '../../constants';
-
-const MIN_SPREAD = 1;
-const MAX_SPREAD = 5;
+import {getSettingsConfig} from '../../settings-config';
 
 export const ParticleSpread = () => {
   const appProps = useContext(AppContext);
   const particleSpread = appProps?.particleSpread || DEFAULT_PARTICLE_SPREAD;
   const workerActions = useWorkerActions();
+  const {min: MIN_SPREAD, max: MAX_SPREAD, step: STEP} = useMemo(() => getSettingsConfig().particleSpread, []);
 
   const handleUpdateSpread = useCallback(
     (spread: number) => {
@@ -29,7 +28,7 @@ export const ParticleSpread = () => {
         type="range"
         min={MIN_SPREAD}
         max={MAX_SPREAD}
-        step="0.5"
+        step={STEP}
         value={particleSpread}
         onChange={(e) => handleUpdateSpread(Number(e.target.value))}
       />
@@ -37,7 +36,7 @@ export const ParticleSpread = () => {
         type="number"
         min={MIN_SPREAD}
         max={MAX_SPREAD}
-        step="0.5"
+        step={STEP}
         value={particleSpread}
         onChange={(e) => handleUpdateSpread(Number(e.target.value))}
       />

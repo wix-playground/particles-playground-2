@@ -68,10 +68,6 @@ describe('TextSettings', () => {
     const fontSizeInput = screen.getByTestId(DATA_TEST_IDS.FONT_SIZE_INPUT) as HTMLInputElement;
     expect(Number(fontSizeInput.value)).toBe(DEFAULT_FONT_STATE.fontSize);
 
-    // Check if letter spacing input has the default value
-    const letterSpacingInput = screen.getByTestId(DATA_TEST_IDS.LETTER_SPACING_INPUT) as HTMLInputElement;
-    expect(Number(letterSpacingInput.value)).toBe(DEFAULT_FONT_STATE.letterSpacing);
-
     const textInput = screen.getByTestId(DATA_TEST_IDS.TEXT_INPUT) as HTMLInputElement;
     expect(textInput.value).toBe(mockAppProps.text);
   });
@@ -83,8 +79,6 @@ describe('TextSettings', () => {
       weight: 400,
       fontSize: 96,
       fontFamily: "UnifrakturMaguntia",
-      letterSpacing: 0,
-      lineHeight: 1.2,
     }
     const mockAppProps: AppProps = {
       startPosition: 'random',
@@ -132,10 +126,6 @@ describe('TextSettings', () => {
     // Check if font size input has the default value
     const fontSizeInput = screen.getByTestId(DATA_TEST_IDS.FONT_SIZE_INPUT) as HTMLInputElement;
     expect(Number(fontSizeInput.value)).toBe(mockFontState.fontSize);
-
-    // Check if letter spacing input has the default value
-    const letterSpacingInput = screen.getByTestId(DATA_TEST_IDS.LETTER_SPACING_INPUT) as HTMLInputElement;
-    expect(Number(letterSpacingInput.value)).toBe(mockFontState.letterSpacing);
 
   });
 });

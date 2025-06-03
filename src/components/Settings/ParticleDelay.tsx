@@ -1,14 +1,12 @@
 import {useCallback, useContext, useMemo} from 'react';
 import {AppContext} from '../../contexts/AppContext';
 import {useWorkerActions} from '../../hooks/useWorkerActions';
-import {MAX_ANIMATION_DURATION} from '../../constants';
-
-const animationDelayOffset = 100;
-const delayStep = 100;
+import {getSettingsConfig} from '../../settings-config';
 
 export const ParticleDelay = () => {
   const appProps = useContext(AppContext);
   const workerActions = useWorkerActions();
+  const {min: MIN_DELAY, max: MAX_DELAY, step: STEP} = useMemo(() => getSettingsConfig().delay, []);
 
   const handleDelayChange = useCallback(
     (delay: number) => {
@@ -17,31 +15,33 @@ export const ParticleDelay = () => {
     [workerActions]
   );
 
-  const maxDelay = useMemo(() => (appProps?.animationDuration ?? MAX_ANIMATION_DURATION) - animationDelayOffset, [appProps?.animationDuration]);
+  // Calculate max delay based on animation duration, but don't exceed the config max
+  const maxDelay = useMemo(() => {
+    const animationBasedMax = (appProps?.animationDuration ?? 5000) - 100;
+    return Math.min(animationBasedMax, MAX_DELAY);
+  }, [appProps?.animationDuration, MAX_DELAY]);
 
   if (!appProps) {
     return;
   }
-
-
 
   return <div className="control-group">
     <label htmlFor="maxDelay">Max Particle Delay (ms):</label>
     <div className="slider-input-group">
       <input
         type="range"
-        min="0"
+        min={MIN_DELAY}
         max={maxDelay}
-        step={delayStep}
+        step={STEP}
         value={appProps.delay}
         onChange={(e) => handleDelayChange(Number(e.target.value))}
       />
       <input
         type="number"
-        min="0"
+        min={MIN_DELAY}
         max={maxDelay}
         value={appProps.delay}
-        step={delayStep}
+        step={STEP}
         onChange={(e) => handleDelayChange(Number(e.target.value))}
       />
     </div>

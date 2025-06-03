@@ -1,7 +1,8 @@
-import {useCallback, useContext} from 'react';
+import {useCallback, useContext, useMemo} from 'react';
 import {AppContext} from '../../contexts/AppContext';
 import {useWorkerActions} from '../../hooks/useWorkerActions';
 import {ParticleOpacityEasingType} from '../../interfaces';
+import {getSettingsConfig} from '../../settings-config';
 
 const EASING_OPTIONS: Array<{value: ParticleOpacityEasingType; label: string}> = [
   {value: 'bell', label: 'Bell Curve'},
@@ -12,6 +13,8 @@ const EASING_OPTIONS: Array<{value: ParticleOpacityEasingType; label: string}> =
 export const ParticleOpacity = () => {
   const appProps = useContext(AppContext);
   const workerActions = useWorkerActions();
+  const {min: START_MIN, max: START_MAX, step: START_STEP} = useMemo(() => getSettingsConfig().startParticleOpacity, []);
+  const {min: END_MIN, max: END_MAX, step: END_STEP} = useMemo(() => getSettingsConfig().endParticleOpacity, []);
 
   const handleOpacityChange = useCallback((type: 'start' | 'end', value: number) => {
     if (type === 'start') {
@@ -36,17 +39,17 @@ export const ParticleOpacity = () => {
         <div className="slider-input-group">
           <input
             type="range"
-            min="0"
-            max="1"
-            step="0.01"
+            min={START_MIN}
+            max={START_MAX}
+            step={START_STEP}
             value={appProps.startParticleOpacity}
             onChange={(e) => handleOpacityChange('start', Number(e.target.value))}
           />
           <input
             type="number"
-            min="0"
-            max="1"
-            step="0.01"
+            min={START_MIN}
+            max={START_MAX}
+            step={START_STEP}
             value={appProps.startParticleOpacity}
             onChange={(e) => handleOpacityChange('start', Number(e.target.value))}
           />
@@ -58,17 +61,17 @@ export const ParticleOpacity = () => {
         <div className="slider-input-group">
           <input
             type="range"
-            min="0"
-            max="1"
-            step="0.01"
+            min={END_MIN}
+            max={END_MAX}
+            step={END_STEP}
             value={appProps.endParticleOpacity}
             onChange={(e) => handleOpacityChange('end', Number(e.target.value))}
           />
           <input
             type="number"
-            min="0"
-            max="1"
-            step="0.01"
+            min={END_MIN}
+            max={END_MAX}
+            step={END_STEP}
             value={appProps.endParticleOpacity}
             onChange={(e) => handleOpacityChange('end', Number(e.target.value))}
           />

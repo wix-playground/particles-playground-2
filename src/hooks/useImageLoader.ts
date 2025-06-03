@@ -9,19 +9,15 @@ export const useImageLoader = ({
   height: _height,
   text,
   font,
-  letterSpacing,
   fontLoaded,
   canvasScale,
-  lineHeight,
 }: {
   width: number;
   height: number;
   text: string;
   font: string;
-  letterSpacing: number;
   fontLoaded: boolean;
   canvasScale: number;
-  lineHeight: number;
 }) => {
   const width = _width * canvasScale;
   const height = _height * canvasScale;
@@ -48,13 +44,12 @@ export const useImageLoader = ({
         ? DEFAULT_DARK_THEME_COLOR
         : DEFAULT_LIGHT_THEME_COLOR;
     analysisContext.font = font;
-    analysisContext.letterSpacing = `${letterSpacing}rem`;
 
     // Handle multiline text
     const lines = text.trim().split('\n');
     const fontSizeMatch = font.match(/(\d+)px/);
     const fontSize = fontSizeMatch ? parseInt(fontSizeMatch[1]) : 64;
-    const lineHeightPx = fontSize * lineHeight;
+    const lineHeightPx = fontSize * 1.2; // Use default line height
     const totalTextHeight = (lines.length - 1) * lineHeightPx;
 
     lines.forEach((line, i) => {
@@ -64,7 +59,7 @@ export const useImageLoader = ({
 
     // Analyze image data without affecting main canvas
     return analysisCanvas.transferToImageBitmap();
-  }, [width, height, text, font, letterSpacing, fontLoaded, canvasScale, lineHeight]);
+  }, [width, height, text, font, fontLoaded, canvasScale]);
 
   return imageData;
 };
