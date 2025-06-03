@@ -4,7 +4,6 @@ export const DEFAULT_PARTICLE_RADIUS = 5;
 export const DEFAULT_PARTICLE_SPREAD = 3;
 export const DEFAULT_DELAY = 0;
 export const DEFAULT_ANIMATION_DURATION = 3000; // 3 seconds in milliseconds
-export const DEFAULT_ENABLE_BUBBLES = false; // Default setting for bubble emission
 export const DEFAULT_START_PARTICLE_OPACITY = 1.0;
 export const DEFAULT_END_PARTICLE_OPACITY = 1.0;
 export const DEFAULT_START_PARTICLE_SIZE = 5.0;
@@ -111,5 +110,3 @@ export const DATA_TEST_IDS = {
     FONT_ITALIC_CHECKBOX: 'font-italic-checkbox',
     TEXT_INPUT: 'text-input',
 }
-
-export const BUBBLE_PARTICLE_LIFETIME = 1300

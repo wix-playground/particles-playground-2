@@ -48,7 +48,6 @@ export enum Action {
   UPDATE_FONT = 'UPDATE_FONT',
   UPDATE_PARTICLE_COLORS = 'UPDATE_PARTICLE_COLORS',
   UPDATE_ANIMATION_DURATION = 'UPDATE_ANIMATION_DURATION',
-  UPDATE_ENABLE_BUBBLES = 'UPDATE_ENABLE_BUBBLES',
   UPDATE_PARTICLE_SPREAD = 'UPDATE_PARTICLE_SPREAD',
   UPDATE_START_PARTICLE_OPACITY = 'UPDATE_START_PARTICLE_OPACITY',
   UPDATE_END_PARTICLE_OPACITY = 'UPDATE_END_PARTICLE_OPACITY',
@@ -72,7 +71,7 @@ export type FontState = {
   lineHeight: number; // line height multiplier
 };
 
-export const getUpdateFontMessage = (payload: FontState) => ({
+export const getUpdateFontMessage = (payload: MessagePayloadMap[Action.UPDATE_FONT]) => ({
   type: Action.UPDATE_FONT as const,
   payload,
 });
@@ -84,7 +83,7 @@ export interface InitializeMessagePayload {
   appProps: AppProps;
 }
 
-export const getInitializeMessage = (payload: InitializeMessagePayload) => ({
+export const getInitializeMessage = (payload: MessagePayloadMap[Action.INITIALIZE]) => ({
   type: Action.INITIALIZE as const,
   payload,
 });
@@ -99,98 +98,139 @@ export const getResetMessage = () => ({
   payload: undefined,
 });
 
-export const getResizeParticleRadiusMessage = (payload: number) => ({
+export const getResizeParticleRadiusMessage = (payload: MessagePayloadMap[Action.RESIZE_PARTICLE_RADIUS]) => ({
   type: Action.RESIZE_PARTICLE_RADIUS as const,
   payload,
 });
 
-export const getUpdateStartPositionMessage = (payload: StartPositionType) => ({
+export const getUpdateStartPositionMessage = (payload: MessagePayloadMap[Action.UPDATE_START_POSITION]) => ({
   type: Action.UPDATE_START_POSITION as const,
   payload,
 });
 
-export const getUpdateSelectedMovementFunctionMessage = (payload: {
+export interface UpdateSelectedMovementFunctionPayload {
   key?: string;
   movementFunctionCode?: string;
-}) => ({
+}
+
+export const getUpdateSelectedMovementFunctionMessage = (payload: MessagePayloadMap[Action.UPDATE_SELECTED_MOVEMENT_FUNCTION]) => ({
   type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION as const,
   payload,
 });
 
-export const getUpdateBitmapMessage = (payload: ImageBitmap) => ({
+export const getUpdateBitmapMessage = (payload: MessagePayloadMap[Action.UPDATE_BITMAP]) => ({
   type: Action.UPDATE_BITMAP as const,
   payload,
 });
 
-export const getUpdateTextMessage = (payload: string) => ({
+export const getUpdateTextMessage = (payload: MessagePayloadMap[Action.UPDATE_TEXT]) => ({
   type: Action.UPDATE_TEXT as const,
   payload,
 });
 
-export const getUpdateParticleColorsMessage = (payload: string[]) => ({
+export const getUpdateParticleColorsMessage = (payload: MessagePayloadMap[Action.UPDATE_PARTICLE_COLORS]) => ({
   type: Action.UPDATE_PARTICLE_COLORS as const,
   payload,
 });
 
-export const getUpdateAnimationDurationMessage = (payload: number) => ({
+export const getUpdateAnimationDurationMessage = (payload: MessagePayloadMap[Action.UPDATE_ANIMATION_DURATION]) => ({
   type: Action.UPDATE_ANIMATION_DURATION as const,
   payload,
 });
 
-export const getUpdateEnableBubblesMessage = (payload: boolean) => ({
-  type: Action.UPDATE_ENABLE_BUBBLES as const,
-  payload,
-});
-
-export const getUpdateParticleSpreadMessage = (payload: number) => ({
+export const getUpdateParticleSpreadMessage = (payload: MessagePayloadMap[Action.UPDATE_PARTICLE_SPREAD]) => ({
   type: Action.UPDATE_PARTICLE_SPREAD as const,
   payload,
 });
 
-export const getUpdateStartParticleOpacityMessage = (payload: number) => ({
+export const getUpdateStartParticleOpacityMessage = (payload: MessagePayloadMap[Action.UPDATE_START_PARTICLE_OPACITY]) => ({
   type: Action.UPDATE_START_PARTICLE_OPACITY as const,
   payload,
 });
 
-export const getUpdateEndParticleOpacityMessage = (payload: number) => ({
+export const getUpdateEndParticleOpacityMessage = (payload: MessagePayloadMap[Action.UPDATE_END_PARTICLE_OPACITY]) => ({
   type: Action.UPDATE_END_PARTICLE_OPACITY as const,
   payload,
 });
 
-export const getUpdateStartParticleSizeMessage = (payload: number) => ({
+export const getUpdateStartParticleSizeMessage = (payload: MessagePayloadMap[Action.UPDATE_START_PARTICLE_SIZE]) => ({
   type: Action.UPDATE_START_PARTICLE_SIZE as const,
   payload,
 });
 
-export const getUpdateEndParticleSizeMessage = (payload: number) => ({
+export const getUpdateEndParticleSizeMessage = (payload: MessagePayloadMap[Action.UPDATE_END_PARTICLE_SIZE]) => ({
   type: Action.UPDATE_END_PARTICLE_SIZE as const,
   payload,
 });
 
-export const getUpdateDelayMessage = (payload: number) => ({
+export const getUpdateDelayMessage = (payload: MessagePayloadMap[Action.UPDATE_DELAY]) => ({
   type: Action.UPDATE_DELAY as const,
   payload,
 });
 
+
+type MessageType =
+  | typeof Action.INITIALIZE
+  | typeof Action.PLAY
+  | typeof Action.RESET
+  | typeof Action.RESIZE_PARTICLE_RADIUS
+  | typeof Action.UPDATE_START_POSITION
+  | typeof Action.UPDATE_SELECTED_MOVEMENT_FUNCTION
+  | typeof Action.UPDATE_BITMAP
+  | typeof Action.UPDATE_TEXT
+  | typeof Action.UPDATE_FONT
+  | typeof Action.UPDATE_PARTICLE_COLORS
+  | typeof Action.UPDATE_ANIMATION_DURATION
+  | typeof Action.UPDATE_PARTICLE_SPREAD
+  | typeof Action.UPDATE_START_PARTICLE_OPACITY
+  | typeof Action.UPDATE_END_PARTICLE_OPACITY
+  | typeof Action.UPDATE_START_PARTICLE_SIZE
+  | typeof Action.UPDATE_END_PARTICLE_SIZE
+  | typeof Action.UPDATE_DELAY;
+
+export type MessagePayloadMap = {
+  [Action.INITIALIZE]: InitializeMessagePayload;
+  [Action.PLAY]: undefined;
+  [Action.RESET]: undefined;
+  [Action.RESIZE_PARTICLE_RADIUS]: number;
+  [Action.UPDATE_START_POSITION]: StartPositionType;
+  [Action.UPDATE_SELECTED_MOVEMENT_FUNCTION]: UpdateSelectedMovementFunctionPayload;
+  [Action.UPDATE_BITMAP]: ImageBitmap;
+  [Action.UPDATE_TEXT]: string;
+  [Action.UPDATE_FONT]: FontState;
+  [Action.UPDATE_PARTICLE_COLORS]: string[];
+  [Action.UPDATE_ANIMATION_DURATION]: number;
+  [Action.UPDATE_PARTICLE_SPREAD]: number;
+  [Action.UPDATE_START_PARTICLE_OPACITY]: number;
+  [Action.UPDATE_END_PARTICLE_OPACITY]: number;
+  [Action.UPDATE_START_PARTICLE_SIZE]: number;
+  [Action.UPDATE_END_PARTICLE_SIZE]: number;
+  [Action.UPDATE_DELAY]: number;
+};
+
+type Message<T extends MessageType> = {
+  type: T;
+  payload: MessagePayloadMap[T];
+};
+
 export type MainThreadMessage =
-  | ReturnType<typeof getUpdateBitmapMessage>
-  | ReturnType<typeof getUpdateTextMessage>
-  | ReturnType<typeof getUpdateSelectedMovementFunctionMessage>
-  | ReturnType<typeof getUpdateStartPositionMessage>
-  | ReturnType<typeof getResizeParticleRadiusMessage>
-  | ReturnType<typeof getResetMessage>
-  | ReturnType<typeof getPlayMessage>
-  | ReturnType<typeof getInitializeMessage>
-  | ReturnType<typeof getUpdateFontMessage>
-  | ReturnType<typeof getUpdateParticleColorsMessage>
-  | ReturnType<typeof getUpdateAnimationDurationMessage>
-  | ReturnType<typeof getUpdateEnableBubblesMessage>
-  | ReturnType<typeof getUpdateParticleSpreadMessage>
-  | ReturnType<typeof getUpdateStartParticleOpacityMessage>
-  | ReturnType<typeof getUpdateEndParticleOpacityMessage>
-  | ReturnType<typeof getUpdateStartParticleSizeMessage>
-  | ReturnType<typeof getUpdateEndParticleSizeMessage>
-  | ReturnType<typeof getUpdateDelayMessage>;
+  | Message<typeof Action.INITIALIZE>
+  | Message<typeof Action.PLAY>
+  | Message<typeof Action.RESET>
+  | Message<typeof Action.RESIZE_PARTICLE_RADIUS>
+  | Message<typeof Action.UPDATE_START_POSITION>
+  | Message<typeof Action.UPDATE_SELECTED_MOVEMENT_FUNCTION>
+  | Message<typeof Action.UPDATE_BITMAP>
+  | Message<typeof Action.UPDATE_TEXT>
+  | Message<typeof Action.UPDATE_FONT>
+  | Message<typeof Action.UPDATE_PARTICLE_COLORS>
+  | Message<typeof Action.UPDATE_ANIMATION_DURATION>
+  | Message<typeof Action.UPDATE_PARTICLE_SPREAD>
+  | Message<typeof Action.UPDATE_START_PARTICLE_OPACITY>
+  | Message<typeof Action.UPDATE_END_PARTICLE_OPACITY>
+  | Message<typeof Action.UPDATE_START_PARTICLE_SIZE>
+  | Message<typeof Action.UPDATE_END_PARTICLE_SIZE>
+  | Message<typeof Action.UPDATE_DELAY>
 
 export const fontFamilies = [
   'Arial',
@@ -222,7 +262,6 @@ export interface AppProps {
   font: FontState;
   particleColors: string[];
   animationDuration: number;
-  enableBubbles: boolean;
   particleSpread: number;
   startParticleOpacity: number;
   endParticleOpacity: number;
