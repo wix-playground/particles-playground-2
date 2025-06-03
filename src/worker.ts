@@ -528,7 +528,6 @@ const handleUpdateAppProps = (payload: MessagePayloadMap[Action.UPDATE_APP_PROPS
   // Update the worker state with the new properties
   Object.assign(workerState.appProps, appProps);
 
-  // Check if we need to regenerate particles based on specific properties
   if (appProps.particleRadius !== undefined) {
     // Particle radius changes require full regeneration with new image data
     workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
@@ -562,18 +561,15 @@ const handleUpdateAppProps = (payload: MessagePayloadMap[Action.UPDATE_APP_PROPS
     });
   }
 
-  // Regenerate particles if needed
-  if (appProps.delay !== undefined) {
-    workerState.workerParticles = generateParticles({
-      validBlocks: workerState.validBlocks ?? new Uint8Array(),
-      radius: workerState.appProps.particleRadius,
-      blockHeight: workerState.blockHeight,
-      blockWidth: workerState.blockWidth,
-      startPosition: workerState.appProps.startPosition,
-      delay: workerState.appProps.delay,
-      animationDuration: workerState.appProps.animationDuration,
-    });
-  }
+  workerState.workerParticles = generateParticles({
+    validBlocks: workerState.validBlocks ?? new Uint8Array(),
+    radius: workerState.appProps.particleRadius,
+    blockHeight: workerState.blockHeight,
+    blockWidth: workerState.blockWidth,
+    startPosition: workerState.appProps.startPosition,
+    delay: workerState.appProps.delay,
+    animationDuration: workerState.appProps.animationDuration,
+  });
 
   // Send updated app props back to main thread
   self.postMessage({

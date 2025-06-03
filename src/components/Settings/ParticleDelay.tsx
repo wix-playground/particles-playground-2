@@ -4,6 +4,7 @@ import {useWorkerActions} from '../../hooks/useWorkerActions';
 import {MAX_ANIMATION_DURATION} from '../../constants';
 
 const animationDelayOffset = 100;
+const delayStep = 100;
 
 export const ParticleDelay = () => {
   const appProps = useContext(AppContext);
@@ -31,7 +32,7 @@ export const ParticleDelay = () => {
         type="range"
         min="0"
         max={maxDelay}
-        step="50"
+        step={delayStep}
         value={appProps.delay}
         onChange={(e) => handleDelayChange(Number(e.target.value))}
       />
@@ -40,6 +41,7 @@ export const ParticleDelay = () => {
         min="0"
         max={maxDelay}
         value={appProps.delay}
+        step={delayStep}
         onChange={(e) => handleDelayChange(Number(e.target.value))}
       />
     </div>
