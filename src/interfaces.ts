@@ -21,6 +21,7 @@ export interface Particle extends Coordinates {
   emittedBubbles?: boolean;
   reachedTarget?: boolean;
   delay: number;
+  lifetime: number;
 }
 
 export type StartPositionType =

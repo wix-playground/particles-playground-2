@@ -158,6 +158,7 @@ const initialize = (data: InitializeMessagePayload) => {
     blockWidth: workerState.blockWidth,
     startPosition: workerState.appProps.startPosition,
     delay: workerState.appProps.delay,
+    animationDuration: workerState.appProps.animationDuration,
   });
 };
 
@@ -196,6 +197,7 @@ const generateParticles = ({
   blockWidth,
   startPosition,
   delay,
+  animationDuration,
 }: {
   validBlocks: Uint8Array<ArrayBuffer>;
   radius: number;
@@ -203,6 +205,7 @@ const generateParticles = ({
   blockWidth: number;
   startPosition: StartPositionType;
   delay: number;
+  animationDuration: number;
 }) => {
   const particles: Array<Particle> = [];
 
@@ -215,6 +218,9 @@ const generateParticles = ({
 
         const {x: initialX, y: initialY} =
           startCoordinatesConfig[startPosition as StartPositionType]();
+
+        const particleDelay = Math.random() * delay;
+        const particleLifetime = animationDuration - particleDelay;
 
         particles.push({
           targetX: x,
@@ -230,7 +236,8 @@ const generateParticles = ({
           revealThreshold: 0.97 + Math.random() * 0.02, // Between 0.97 and 0.99
           reachedTarget: false,
           emittedBubbles: false,
-          delay: Math.random() * delay,
+          delay: particleDelay,
+          lifetime: particleLifetime,
         });
       }
     }
@@ -265,19 +272,19 @@ const getTransitionBlendFactor = (particle: Particle, revealProgress: number): n
 };
 
 // Add function to calculate current particle opacity based on animation progress
-const getCurrentParticleOpacity = (revealProgress: number): number => {
-  // Interpolate between start and end opacity based on animation progress
+const getCurrentParticleOpacity = (particleProgress: number): number => {
+  // Interpolate between start and end opacity based on individual particle progress
   const startOpacity = workerState.appProps.startParticleOpacity;
   const endOpacity = workerState.appProps.endParticleOpacity;
-  return startOpacity + (endOpacity - startOpacity) * revealProgress;
+  return startOpacity + (endOpacity - startOpacity) * particleProgress;
 };
 
 // Add function to calculate current particle size based on animation progress
-const getCurrentParticleSize = (revealProgress: number): number => {
-  // Interpolate between start and end size based on animation progress
+const getCurrentParticleSize = (particleProgress: number): number => {
+  // Interpolate between start and end size based on individual particle progress
   const startSize = workerState.appProps.startParticleSize;
   const endSize = workerState.appProps.endParticleSize;
-  return startSize + (endSize - startSize) * revealProgress;
+  return startSize + (endSize - startSize) * particleProgress;
 };
 
 const renderParticles = (
@@ -347,6 +354,10 @@ const renderParticles = (
       return
     }
 
+    // Calculate individual particle progress
+    const elapsedTimeForParticle = elapsedTime - particle.delay;
+    const individualParticleProgress = Math.max(0, Math.min(1, elapsedTimeForParticle / particle.lifetime));
+
     // Update particles position by calling your movement function here:
     customMovementFunction(
       particle,
@@ -360,14 +371,14 @@ const renderParticles = (
     );
 
     const blendFactor = getTransitionBlendFactor(particle, workerState.revealProgress);
-    const currentOpacity = getCurrentParticleOpacity(workerState.revealProgress);
-    const currentSize = getCurrentParticleSize(workerState.revealProgress);
+    const currentOpacity = getCurrentParticleOpacity(individualParticleProgress);
+    const currentSize = getCurrentParticleSize(individualParticleProgress);
 
     if (blendFactor > 0 && blendFactor < 1) {
       // Blending mode: draw both circle and image with appropriate opacities
-      const radius = Math.floor(
+      const radius =
         workerState.appProps.particleRadius * (currentSize || 1)
-      );
+
 
       // Draw circle with reduced opacity
       workerState.frameContext!.globalAlpha = currentOpacity * (1 - blendFactor);
@@ -417,9 +428,8 @@ const renderParticles = (
       );
     } else {
       // Fully circle
-      const radius = Math.floor(
+      const radius =
         workerState.appProps.particleRadius * (currentSize || 1)
-      );
 
       workerState.frameContext!.globalAlpha = currentOpacity;
       workerState.frameContext!.beginPath();
@@ -541,6 +551,8 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
             startCoordinatesConfig[
               workerState.appProps.startPosition as StartPositionType
             ]();
+          const particleDelay = Math.random() * workerState.appProps.delay;
+          const particleLifetime = workerState.appProps.animationDuration - particleDelay;
           return {
             x: initialCoordinates.x,
             y: initialCoordinates.y,
@@ -553,7 +565,8 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
             color: particle.color,
             revealProgress: 0,
             revealThreshold: particle.revealThreshold,
-            delay: Math.random() * workerState.appProps.delay,
+            delay: particleDelay,
+            lifetime: particleLifetime,
           };
         }
       );
@@ -600,6 +613,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
         blockWidth: workerState.blockWidth,
         startPosition: workerState.appProps.startPosition,
         delay: workerState.appProps.delay,
+        animationDuration: workerState.appProps.animationDuration,
       });
 
       self.postMessage({
@@ -753,6 +767,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
           blockWidth: workerState.blockWidth,
           startPosition: workerState.appProps.startPosition,
           delay: workerState.appProps.delay,
+          animationDuration: workerState.appProps.animationDuration,
         });
       }
       break;
@@ -798,6 +813,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
         blockWidth: workerState.blockWidth,
         startPosition: workerState.appProps.startPosition,
         delay: workerState.appProps.delay,
+        animationDuration: workerState.appProps.animationDuration,
       });
 
       self.postMessage({

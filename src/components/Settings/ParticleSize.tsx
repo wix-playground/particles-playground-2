@@ -3,6 +3,10 @@ import {AppContext} from '../../contexts/AppContext';
 import {WorkerContext} from '../../contexts/WorkerContext';
 import {getUpdateStartParticleSizeMessage, getUpdateEndParticleSizeMessage} from '../../interfaces';
 
+const STEP = 0.5;
+const MIN = 0.5;
+const MAX = 10;
+
 export const ParticleSize = () => {
   const appProps = useContext(AppContext);
   const worker = useContext(WorkerContext);
@@ -28,17 +32,17 @@ export const ParticleSize = () => {
         <div className="slider-input-group">
           <input
             type="range"
-            min="0.1"
-            max="30"
-            step="0.1"
+            min={MIN}
+            max={MAX}
+            step={STEP}
             value={appProps.startParticleSize}
             onChange={(e) => handleSizeChange('start', Number(e.target.value))}
           />
           <input
             type="number"
-            min="0.1"
-            max="30"
-            step="0.1"
+            min={MIN}
+            max={MAX}
+            step={STEP}
             value={appProps.startParticleSize}
             onChange={(e) => handleSizeChange('start', Number(e.target.value))}
           />
@@ -50,17 +54,17 @@ export const ParticleSize = () => {
         <div className="slider-input-group">
           <input
             type="range"
-            min="0.1"
-            max="30"
-            step="0.1"
+            min={MIN}
+            max={MAX}
+            step={STEP}
             value={appProps.endParticleSize}
             onChange={(e) => handleSizeChange('end', Number(e.target.value))}
           />
           <input
             type="number"
-            min="0.1"
-            max="30"
-            step="0.1"
+            min={MIN}
+            max={MAX}
+            step={STEP}
             value={appProps.endParticleSize}
             onChange={(e) => handleSizeChange('end', Number(e.target.value))}
           />
