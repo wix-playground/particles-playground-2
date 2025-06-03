@@ -466,130 +466,6 @@ const handleReset = () => {
 
 }
 
-const handleResizeParticleRadius = (payload: MessagePayloadMap[Action.RESIZE_PARTICLE_RADIUS]) => {
-  workerState.appProps.particleRadius = payload;
-  workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
-  const {
-    validBlocks: _validBlocks,
-    blockHeight: _blockHeight,
-    blockWidth: _blockWidth,
-  } = getValidImageBlocks(
-    workerState.frameContext!.getImageData(
-      0,
-      0,
-      workerState.mainCanvas!.width,
-      workerState.mainCanvas!.height
-    ),
-    workerState.appProps.particleRadius
-  );
-
-  workerState.validBlocks = _validBlocks;
-  workerState.blockHeight = _blockHeight;
-  workerState.blockWidth = _blockWidth;
-
-  workerState.workerParticles = generateParticles({
-    validBlocks: workerState.validBlocks,
-    radius: workerState.appProps.particleRadius,
-    blockHeight: workerState.blockHeight,
-    blockWidth: workerState.blockWidth,
-    startPosition: workerState.appProps.startPosition,
-    delay: workerState.appProps.delay,
-    animationDuration: workerState.appProps.animationDuration,
-  });
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-
-  if (workerState.animationFrameId) {
-    cancelAnimationFrame(workerState.animationFrameId);
-    const startTime = performance.now();
-    renderParticles(startTime, startTime);
-  }
-}
-
-const handleUpdateStartPosition = (payload: MessagePayloadMap[Action.UPDATE_START_POSITION]) => {
-
-  workerState.appProps.startPosition = payload;
-
-  if (workerState.workerParticles.length) {
-    workerState.workerParticles.forEach((particle) => {
-      const initialCoordinates =
-        startCoordinatesConfig[workerState.appProps.startPosition]();
-      particle.initialX = initialCoordinates.x;
-      particle.initialY = initialCoordinates.y;
-      particle.x = initialCoordinates.x;
-      particle.y = initialCoordinates.y;
-    });
-
-    self.postMessage({
-      type: WorkerAction.UPDATE_APP_PROPS,
-      data: workerState.appProps,
-    });
-
-    if (workerState.animationFrameId) {
-      cancelAnimationFrame(workerState.animationFrameId);
-      const startTime = performance.now();
-      renderParticles(startTime, startTime);
-    }
-  } else {
-    console.error(
-      'updateStartPosition failed, particles were not initialized',
-      {
-        workerParticles: workerState.workerParticles,
-      }
-    );
-  }
-}
-
-const handleUpdateSelectedMovementFunction = (payload: MessagePayloadMap[Action.UPDATE_SELECTED_MOVEMENT_FUNCTION]) => {
-
-  const {key, movementFunctionCode} = payload ?? {};
-  if (key) {
-    workerState.appProps.selectedMovementFunction = key;
-  }
-  if (movementFunctionCode !== undefined && movementFunctionCode !== null) {
-    workerState.appProps.movementFunctionCode = movementFunctionCode;
-  }
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-}
-
-const handleUpdateFont = (payload: MessagePayloadMap[Action.UPDATE_FONT]) => {
-  workerState.appProps.font = payload;
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-}
-
-const handleUpdateParticleColors = (payload: MessagePayloadMap[Action.UPDATE_PARTICLE_COLORS]) => {
-
-  workerState.appProps.particleColors = payload;
-
-  // Remove setting particleColor as it doesn't exist in AppProps interface
-  if (payload.length > 0) {
-    // The particleColor property doesn't exist on AppProps
-    // workerState.appProps.particleColor = payload[0];
-  }
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-
-  if (workerState.animationFrameId) {
-    cancelAnimationFrame(workerState.animationFrameId);
-    const startTime = performance.now();
-    renderParticles(startTime, startTime);
-  }
-}
-
 const handleUpdateBitmap = (payload: MessagePayloadMap[Action.UPDATE_BITMAP]) => {
   workerState.imageBitmap = payload;
   if (workerState.frameCanvas && workerState.mainCanvas) {
@@ -646,108 +522,72 @@ const handleUpdateBitmap = (payload: MessagePayloadMap[Action.UPDATE_BITMAP]) =>
   }
 }
 
-const handleUpdateAnimationDuration = (payload: MessagePayloadMap[Action.UPDATE_ANIMATION_DURATION]) => {
+const handleUpdateAppProps = (payload: MessagePayloadMap[Action.UPDATE_APP_PROPS]) => {
+  const {appProps} = payload;
 
-  workerState.appProps.animationDuration = payload;
+  // Update the worker state with the new properties
+  Object.assign(workerState.appProps, appProps);
 
+  // Check if we need to regenerate particles based on specific properties
+  if (appProps.particleRadius !== undefined) {
+    // Particle radius changes require full regeneration with new image data
+    workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
+    const {
+      validBlocks: _validBlocks,
+      blockHeight: _blockHeight,
+      blockWidth: _blockWidth,
+    } = getValidImageBlocks(
+      workerState.frameContext!.getImageData(
+        0,
+        0,
+        workerState.mainCanvas!.width,
+        workerState.mainCanvas!.height
+      ),
+      workerState.appProps.particleRadius
+    );
+
+    workerState.validBlocks = _validBlocks;
+    workerState.blockHeight = _blockHeight;
+    workerState.blockWidth = _blockWidth;
+  }
+
+  if (appProps.startPosition !== undefined && workerState.workerParticles.length) {
+    // Update start position coordinates for existing particles
+    workerState.workerParticles.forEach((particle) => {
+      const initialCoordinates = startCoordinatesConfig[workerState.appProps.startPosition]();
+      particle.initialX = initialCoordinates.x;
+      particle.initialY = initialCoordinates.y;
+      particle.x = initialCoordinates.x;
+      particle.y = initialCoordinates.y;
+    });
+  }
+
+  // Regenerate particles if needed
+  if (appProps.delay !== undefined) {
+    workerState.workerParticles = generateParticles({
+      validBlocks: workerState.validBlocks ?? new Uint8Array(),
+      radius: workerState.appProps.particleRadius,
+      blockHeight: workerState.blockHeight,
+      blockWidth: workerState.blockWidth,
+      startPosition: workerState.appProps.startPosition,
+      delay: workerState.appProps.delay,
+      animationDuration: workerState.appProps.animationDuration,
+    });
+  }
+
+  // Send updated app props back to main thread
   self.postMessage({
     type: WorkerAction.UPDATE_APP_PROPS,
     data: workerState.appProps,
   });
-}
 
-const handleUpdateParticleSpread = (payload: MessagePayloadMap[Action.UPDATE_PARTICLE_SPREAD]) => {
-
-  workerState.appProps.particleSpread = payload;
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-}
-
-const handleUpdateDelay = (payload: MessagePayloadMap[Action.UPDATE_DELAY]) => {
-
-  workerState.appProps.delay = payload;
-  workerState.workerParticles = generateParticles({
-    validBlocks: workerState.validBlocks ?? new Uint8Array(),
-    radius: workerState.appProps.particleRadius,
-    blockHeight: workerState.blockHeight,
-    blockWidth: workerState.blockWidth,
-    startPosition: workerState.appProps.startPosition,
-    delay: workerState.appProps.delay,
-    animationDuration: workerState.appProps.animationDuration,
-  });
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-}
-
-const handleUpdateStartParticleOpacity = (payload: MessagePayloadMap[Action.UPDATE_START_PARTICLE_OPACITY]) => {
-
-  workerState.appProps.startParticleOpacity = payload;
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-
+  // Restart animation if needed
   if (workerState.animationFrameId) {
     cancelAnimationFrame(workerState.animationFrameId);
     const startTime = performance.now();
     renderParticles(startTime, startTime);
   }
-}
-
-const handleUpdateEndParticleOpacity = (payload: MessagePayloadMap[Action.UPDATE_END_PARTICLE_OPACITY]) => {
-
-  workerState.appProps.endParticleOpacity = payload;
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-
-  if (workerState.animationFrameId) {
-    cancelAnimationFrame(workerState.animationFrameId);
-    const startTime = performance.now();
-    renderParticles(startTime, startTime);
-  }
-}
-
-const handleUpdateStartParticleSize = (payload: MessagePayloadMap[Action.UPDATE_START_PARTICLE_SIZE]) => {
-
-  workerState.appProps.startParticleSize = payload;
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-
-  if (workerState.animationFrameId) {
-    cancelAnimationFrame(workerState.animationFrameId);
-    const startTime = performance.now();
-    renderParticles(startTime, startTime);
-  }
-}
-
-const handleUpdateEndParticleSize = (payload: MessagePayloadMap[Action.UPDATE_END_PARTICLE_SIZE]) => {
-
-  workerState.appProps.endParticleSize = payload;
-
-  self.postMessage({
-    type: WorkerAction.UPDATE_APP_PROPS,
-    data: workerState.appProps,
-  });
-
-  if (workerState.animationFrameId) {
-    cancelAnimationFrame(workerState.animationFrameId);
-    const startTime = performance.now();
-    renderParticles(startTime, startTime);
-  }
-}
+};
 
 self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
   const {payload, type} = event.data;
@@ -765,65 +605,12 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
       handleReset();
       break;
     }
-    case Action.RESIZE_PARTICLE_RADIUS: {
-      handleResizeParticleRadius(payload);
-      break;
-    }
-    case Action.UPDATE_START_POSITION: {
-      handleUpdateStartPosition(payload);
-      break;
-    }
-    case Action.UPDATE_SELECTED_MOVEMENT_FUNCTION: {
-      handleUpdateSelectedMovementFunction(payload);
-      break;
-    }
-    case Action.UPDATE_TEXT: {
-      workerState.appProps.text = payload;
-
-      self.postMessage({
-        type: WorkerAction.UPDATE_APP_PROPS,
-        data: workerState.appProps,
-      });
-      break;
-    }
-    case Action.UPDATE_FONT: {
-      handleUpdateFont(payload);
-      break;
-    }
-    case Action.UPDATE_PARTICLE_COLORS: {
-      handleUpdateParticleColors(payload);
+    case Action.UPDATE_APP_PROPS: {
+      handleUpdateAppProps(payload);
       break;
     }
     case Action.UPDATE_BITMAP: {
       handleUpdateBitmap(payload);
-      break;
-    }
-    case Action.UPDATE_ANIMATION_DURATION: {
-      handleUpdateAnimationDuration(payload);
-      break;
-    }
-    case Action.UPDATE_PARTICLE_SPREAD: {
-      handleUpdateParticleSpread(payload);
-      break;
-    }
-    case Action.UPDATE_DELAY: {
-      handleUpdateDelay(payload);
-      break;
-    }
-    case Action.UPDATE_START_PARTICLE_OPACITY: {
-      handleUpdateStartParticleOpacity(payload);
-      break;
-    }
-    case Action.UPDATE_END_PARTICLE_OPACITY: {
-      handleUpdateEndParticleOpacity(payload);
-      break;
-    }
-    case Action.UPDATE_START_PARTICLE_SIZE: {
-      handleUpdateStartParticleSize(payload);
-      break;
-    }
-    case Action.UPDATE_END_PARTICLE_SIZE: {
-      handleUpdateEndParticleSize(payload);
       break;
     }
     default:

@@ -1,6 +1,6 @@
 import {useCallback, useContext} from 'react';
 import {AppContext} from '../../contexts/AppContext';
-import {DEFAULT_ANIMATION_DURATION} from '../../constants';
+import {DEFAULT_ANIMATION_DURATION, MAX_ANIMATION_DURATION} from '../../constants';
 import {useWorkerActions} from '../../hooks/useWorkerActions';
 
 
@@ -26,7 +26,7 @@ export const AnimationDuration = () => {
       <input
         type="range"
         min="500"
-        max="5000"
+        max={MAX_ANIMATION_DURATION}
         step="100"
         value={duration}
         onChange={handleDurationChange}
@@ -34,7 +34,7 @@ export const AnimationDuration = () => {
       <input
         type="number"
         min="500"
-        max="5000"
+        max={MAX_ANIMATION_DURATION}
         step="100"
         value={duration}
         onChange={handleDurationChange}

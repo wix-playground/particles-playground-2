@@ -40,10 +40,11 @@ export enum Action {
   INITIALIZE = 'INITIALIZE',
   PLAY = 'PLAY',
   RESET = 'RESET',
+  UPDATE_APP_PROPS = 'UPDATE_APP_PROPS',
+  UPDATE_BITMAP = 'UPDATE_BITMAP',
   RESIZE_PARTICLE_RADIUS = 'RESIZE_PARTICLE_RADIUS',
   UPDATE_START_POSITION = 'UPDATE_START_POSITION',
   UPDATE_SELECTED_MOVEMENT_FUNCTION = 'UPDATE_SELECTED_MOVEMENT_FUNCTION',
-  UPDATE_BITMAP = 'UPDATE_BITMAP',
   UPDATE_TEXT = 'UPDATE_TEXT',
   UPDATE_FONT = 'UPDATE_FONT',
   UPDATE_PARTICLE_COLORS = 'UPDATE_PARTICLE_COLORS',
@@ -108,15 +109,26 @@ export const getUpdateBitmapMessage = (payload: MessagePayloadMap[Action.UPDATE_
   payload,
 });
 
+export interface UpdateAppPropsPayload {
+  appProps: Partial<AppProps>;
+  shouldRegenerateParticles?: boolean;
+  shouldRestartAnimation?: boolean;
+}
+
+export const getUpdateAppPropsMessage = (payload: MessagePayloadMap[Action.UPDATE_APP_PROPS]) => ({
+  type: Action.UPDATE_APP_PROPS as const,
+  payload,
+});
 
 export type MessagePayloadMap = {
   [Action.INITIALIZE]: InitializeMessagePayload;
   [Action.PLAY]: undefined;
   [Action.RESET]: undefined;
+  [Action.UPDATE_APP_PROPS]: UpdateAppPropsPayload;
+  [Action.UPDATE_BITMAP]: ImageBitmap;
   [Action.RESIZE_PARTICLE_RADIUS]: number;
   [Action.UPDATE_START_POSITION]: StartPositionType;
   [Action.UPDATE_SELECTED_MOVEMENT_FUNCTION]: UpdateSelectedMovementFunctionPayload;
-  [Action.UPDATE_BITMAP]: ImageBitmap;
   [Action.UPDATE_TEXT]: string;
   [Action.UPDATE_FONT]: FontState;
   [Action.UPDATE_PARTICLE_COLORS]: string[];
@@ -132,10 +144,11 @@ export type MainThreadMessage =
   | WorkerMessage<typeof Action.INITIALIZE>
   | WorkerMessage<typeof Action.PLAY>
   | WorkerMessage<typeof Action.RESET>
+  | WorkerMessage<typeof Action.UPDATE_APP_PROPS>
+  | WorkerMessage<typeof Action.UPDATE_BITMAP>
   | WorkerMessage<typeof Action.RESIZE_PARTICLE_RADIUS>
   | WorkerMessage<typeof Action.UPDATE_START_POSITION>
   | WorkerMessage<typeof Action.UPDATE_SELECTED_MOVEMENT_FUNCTION>
-  | WorkerMessage<typeof Action.UPDATE_BITMAP>
   | WorkerMessage<typeof Action.UPDATE_TEXT>
   | WorkerMessage<typeof Action.UPDATE_FONT>
   | WorkerMessage<typeof Action.UPDATE_PARTICLE_COLORS>

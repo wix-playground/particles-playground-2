@@ -59,10 +59,7 @@ export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
   const handleFunctionSelect = useCallback(
     (option: string) => {
       if (workerActions) {
-        workerActions.updateSelectedMovementFunction({
-          key: option,
-          movementFunctionCode: predefinedMovementOptions[option].code,
-        });
+        workerActions.updateSelectedMovementFunction(option, predefinedMovementOptions[option].code);
         if (dialogRef.current) {
           dialogRef.current.close();
         }

@@ -5,8 +5,8 @@ import {StartPosition} from './StartPosition';
 import {FunctionSelectorModal} from '../FunctionSelectorModal/FunctionSelectorModal';
 import {editor} from 'monaco-editor';
 import {MultiColorPicker} from './MultiColorPicker';
-import {TimeDistortionSettings} from './TimeDistortionSettings';
-import {ElasticPlopSettings} from './ElasticPlopSettings';
+// import {TimeDistortionSettings} from './TimeDistortionSettings';
+// import {ElasticPlopSettings} from './ElasticPlopSettings';
 import {TextSettings} from './TextSettings';
 // import {BubbleEffectToggle} from './BubbleEffectToggle'; // Commented out - missing bubble functionality
 // import {ParticleDensity} from './ParticleDensity'; // Unused import
@@ -73,12 +73,12 @@ export const Settings = ({
             }}
           />
         </div>
-        {appProps.selectedMovementFunction === 'timeDistortion' && (
+        {/* {appProps.selectedMovementFunction === 'timeDistortion' && (
           <TimeDistortionSettings />
         )}
         {appProps.selectedMovementFunction === 'elasticPlop' && (
           <ElasticPlopSettings />
-        )}
+        )} */}
         <TextSettings />
       </div>
     </div>

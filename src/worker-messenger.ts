@@ -1,4 +1,4 @@
-import {Action, MessagePayloadMap, WorkerMessage, StartPositionType, FontState, InitializeMessagePayload, UpdateSelectedMovementFunctionPayload} from "./interfaces";
+import {Action, MessagePayloadMap, WorkerMessage, StartPositionType, FontState, InitializeMessagePayload, AppProps} from "./interfaces";
 
 export class WorkerMessenger {
   constructor(private worker: Worker | null) { }
@@ -27,19 +27,32 @@ export class WorkerMessenger {
     this.worker.postMessage(message, transferables);
   }
 
-  // Type-safe convenience methods for common actions
-  updateText = (text: string) => this.send(Action.UPDATE_TEXT, text);
-  updateDelay = (delay: number) => this.send(Action.UPDATE_DELAY, delay);
-  updateParticleColors = (colors: string[]) => this.send(Action.UPDATE_PARTICLE_COLORS, colors);
-  updateAnimationDuration = (duration: number) => this.send(Action.UPDATE_ANIMATION_DURATION, duration);
-  updateStartPosition = (position: StartPositionType) => this.send(Action.UPDATE_START_POSITION, position);
-  updateFont = (font: FontState) => this.send(Action.UPDATE_FONT, font);
-  updateParticleRadius = (radius: number) => this.send(Action.RESIZE_PARTICLE_RADIUS, radius);
-  updateParticleSpread = (spread: number) => this.send(Action.UPDATE_PARTICLE_SPREAD, spread);
-  updateStartParticleOpacity = (opacity: number) => this.send(Action.UPDATE_START_PARTICLE_OPACITY, opacity);
-  updateEndParticleOpacity = (opacity: number) => this.send(Action.UPDATE_END_PARTICLE_OPACITY, opacity);
-  updateStartParticleSize = (size: number) => this.send(Action.UPDATE_START_PARTICLE_SIZE, size);
-  updateEndParticleSize = (size: number) => this.send(Action.UPDATE_END_PARTICLE_SIZE, size);
+  // Single method for updating app properties
+  updateAppProps = (
+    appProps: Partial<AppProps>,
+  ) => this.send(Action.UPDATE_APP_PROPS, {
+    appProps,
+  });
+
+  // Convenience methods that use the unified updateAppProps
+  updateText = (text: string) => this.updateAppProps({text});
+  updateDelay = (delay: number) => this.updateAppProps({delay});
+  updateParticleColors = (particleColors: string[]) => this.updateAppProps({particleColors});
+  updateAnimationDuration = (animationDuration: number) => this.updateAppProps({animationDuration});
+  updateStartPosition = (startPosition: StartPositionType) => this.updateAppProps({startPosition});
+  updateFont = (font: FontState) => this.updateAppProps({font});
+  updateParticleRadius = (particleRadius: number) => this.updateAppProps({particleRadius},);
+  updateParticleSpread = (particleSpread: number) => this.updateAppProps({particleSpread});
+  updateStartParticleOpacity = (startParticleOpacity: number) => this.updateAppProps({startParticleOpacity},);
+  updateEndParticleOpacity = (endParticleOpacity: number) => this.updateAppProps({endParticleOpacity},);
+  updateStartParticleSize = (startParticleSize: number) => this.updateAppProps({startParticleSize},);
+  updateEndParticleSize = (endParticleSize: number) => this.updateAppProps({endParticleSize},);
+
+  updateSelectedMovementFunction = (selectedMovementFunction: string, movementFunctionCode?: string) =>
+    this.updateAppProps({
+      selectedMovementFunction,
+      ...(movementFunctionCode !== undefined && {movementFunctionCode})
+    });
 
   // Lifecycle methods
   play = () => this.send(Action.PLAY, undefined);
@@ -51,7 +64,4 @@ export class WorkerMessenger {
 
   updateBitmap = (bitmap: ImageBitmap) =>
     this.sendWithTransferables(Action.UPDATE_BITMAP, bitmap, [bitmap]);
-
-  updateSelectedMovementFunction = (payload: UpdateSelectedMovementFunctionPayload) =>
-    this.send(Action.UPDATE_SELECTED_MOVEMENT_FUNCTION, payload);
 }

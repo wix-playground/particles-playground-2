@@ -3,7 +3,8 @@ import {FontState, StartPositionType} from './interfaces';
 export const DEFAULT_PARTICLE_RADIUS = 5;
 export const DEFAULT_PARTICLE_SPREAD = 3;
 export const DEFAULT_DELAY = 0;
-export const DEFAULT_ANIMATION_DURATION = 3000; // 3 seconds in milliseconds
+export const DEFAULT_ANIMATION_DURATION = 3000;
+export const MAX_ANIMATION_DURATION = 5000;
 export const DEFAULT_START_PARTICLE_OPACITY = 1.0;
 export const DEFAULT_END_PARTICLE_OPACITY = 1.0;
 export const DEFAULT_START_PARTICLE_SIZE = 5.0;

@@ -1,6 +1,9 @@
-import {useCallback, useContext} from 'react';
+import {useCallback, useContext, useMemo} from 'react';
 import {AppContext} from '../../contexts/AppContext';
 import {useWorkerActions} from '../../hooks/useWorkerActions';
+import {MAX_ANIMATION_DURATION} from '../../constants';
+
+const animationDelayOffset = 100;
 
 export const ParticleDelay = () => {
   const appProps = useContext(AppContext);
@@ -13,9 +16,12 @@ export const ParticleDelay = () => {
     [workerActions]
   );
 
+  const maxDelay = useMemo(() => (appProps?.animationDuration ?? MAX_ANIMATION_DURATION) - animationDelayOffset, [appProps?.animationDuration]);
+
   if (!appProps) {
     return;
   }
+
 
 
   return <div className="control-group">
@@ -24,16 +30,16 @@ export const ParticleDelay = () => {
       <input
         type="range"
         min="0"
-        max="5000"
+        max={maxDelay}
         step="50"
-        value={appProps?.delay}
+        value={appProps.delay}
         onChange={(e) => handleDelayChange(Number(e.target.value))}
       />
       <input
         type="number"
         min="0"
-        max="5000"
-        value={appProps?.delay}
+        max={maxDelay}
+        value={appProps.delay}
         onChange={(e) => handleDelayChange(Number(e.target.value))}
       />
     </div>
