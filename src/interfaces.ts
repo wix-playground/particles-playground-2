@@ -192,6 +192,16 @@ export const fontFamilies = [
 
 export type FontFamily = (typeof fontFamilies)[number];
 
+export type ParticleSizeEasingType =
+  | 'bell'
+  | 'linear'
+  | 'multiPulse';
+
+export type ParticleOpacityEasingType =
+  | 'bell'
+  | 'linear'
+  | 'multiPulse';
+
 export interface AppProps {
   particleRadius: number;
   startPosition: StartPositionType;
@@ -206,6 +216,8 @@ export interface AppProps {
   endParticleOpacity: number;
   startParticleSize: number;
   endParticleSize: number;
+  particleSizeEasing: ParticleSizeEasingType;
+  particleOpacityEasing: ParticleOpacityEasingType;
   delay: number;
   emitterX: number;
   emitterY: number;

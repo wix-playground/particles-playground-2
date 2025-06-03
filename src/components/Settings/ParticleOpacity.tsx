@@ -1,6 +1,13 @@
 import {useCallback, useContext} from 'react';
 import {AppContext} from '../../contexts/AppContext';
 import {useWorkerActions} from '../../hooks/useWorkerActions';
+import {ParticleOpacityEasingType} from '../../interfaces';
+
+const EASING_OPTIONS: Array<{value: ParticleOpacityEasingType; label: string}> = [
+  {value: 'bell', label: 'Bell Curve'},
+  {value: 'linear', label: 'Linear'},
+  {value: 'multiPulse', label: 'Multi-Pulse'},
+];
 
 export const ParticleOpacity = () => {
   const appProps = useContext(AppContext);
@@ -12,6 +19,10 @@ export const ParticleOpacity = () => {
     } else {
       workerActions?.updateEndParticleOpacity(value);
     }
+  }, [workerActions]);
+
+  const handleEasingChange = useCallback((value: ParticleOpacityEasingType) => {
+    workerActions?.updateParticleOpacityEasing(value);
   }, [workerActions]);
 
   if (!appProps) {
@@ -62,6 +73,21 @@ export const ParticleOpacity = () => {
             onChange={(e) => handleOpacityChange('end', Number(e.target.value))}
           />
         </div>
+      </div>
+
+      <div className="control-group">
+        <label htmlFor="particleOpacityEasing">Opacity Easing Pattern:</label>
+        <select
+          id="particleOpacityEasing"
+          value={appProps.particleOpacityEasing}
+          onChange={(e) => handleEasingChange(e.target.value as ParticleOpacityEasingType)}
+        >
+          {EASING_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
     </>
   );

@@ -12,6 +12,8 @@ import {
   DEFAULT_END_PARTICLE_OPACITY,
   DEFAULT_START_PARTICLE_SIZE,
   DEFAULT_END_PARTICLE_SIZE,
+  DEFAULT_PARTICLE_SIZE_EASING,
+  DEFAULT_PARTICLE_OPACITY_EASING,
   DEFAULT_DELAY,
   DEFAULT_EMITTER_X,
   DEFAULT_EMITTER_Y,
@@ -59,6 +61,8 @@ const defaultAppProps: AppProps = {
   endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
   startParticleSize: DEFAULT_START_PARTICLE_SIZE,
   endParticleSize: DEFAULT_END_PARTICLE_SIZE,
+  particleSizeEasing: DEFAULT_PARTICLE_SIZE_EASING,
+  particleOpacityEasing: DEFAULT_PARTICLE_OPACITY_EASING,
   delay: DEFAULT_DELAY,
   emitterX: DEFAULT_EMITTER_X,
   emitterY: DEFAULT_EMITTER_Y,
@@ -247,18 +251,86 @@ const getTransitionBlendFactor = (particle: Particle, revealProgress: number): n
 
 // Add function to calculate current particle opacity based on animation progress
 const getCurrentParticleOpacity = (particleProgress: number): number => {
-  // Interpolate between start and end opacity based on individual particle progress
   const startOpacity = workerState.appProps.startParticleOpacity;
   const endOpacity = workerState.appProps.endParticleOpacity;
-  return startOpacity + (endOpacity - startOpacity) * particleProgress;
+
+  // Get the easing multiplier based on the selected pattern
+  const easingMultiplier = getParticleOpacityEasingMultiplier(
+    particleProgress,
+    workerState.appProps.particleOpacityEasing
+  );
+
+  if (workerState.appProps.particleOpacityEasing !== 'linear') {
+    const baseOpacity = Math.min(startOpacity, endOpacity);
+    const maxOpacity = Math.max(startOpacity, endOpacity);
+    return baseOpacity + (maxOpacity - baseOpacity) * easingMultiplier;
+  }
+  return startOpacity + (endOpacity - startOpacity) * easingMultiplier;
+};
+
+// Custom easing functions for particle opacity
+const getParticleOpacityEasingMultiplier = (progress: number, easingType: string): number => {
+  switch (easingType) {
+    case 'bell':
+      // Bell curve: starts low, peaks in middle, ends low
+      // Using a sin function shifted to create a bell shape
+      return Math.sin(progress * Math.PI);
+
+    case 'linear':
+      return progress;
+
+    case 'multiPulse':
+      // Multiple pulses: creates 5 pulses over the lifetime
+      const pulseCount = 5;
+      const pulseProgress = (progress * pulseCount) % 1;
+
+      return Math.sin(pulseProgress * Math.PI);
+
+    default:
+      return 1; // fallback to constant opacity
+  }
+};
+
+// Custom easing functions based on the patterns in the image
+const getParticleSizeEasingMultiplier = (progress: number, easingType: string): number => {
+  switch (easingType) {
+    case 'bell':
+      // Bell curve: starts low, peaks in middle, ends low
+      // Using a sin function shifted to create a bell shape
+      return Math.sin(progress * Math.PI);
+
+    case 'linear':
+      return progress;
+
+    case 'multiPulse':
+      // Multiple pulses: creates 5 pulses over the lifetime
+      const pulseCount = 5;
+      const pulseProgress = (progress * pulseCount) % 1;
+
+      return Math.sin(pulseProgress * Math.PI);
+
+    default:
+      return 1; // fallback to constant size
+  }
 };
 
 // Add function to calculate current particle size based on animation progress
 const getCurrentParticleSize = (particleProgress: number): number => {
-  // Interpolate between start and end size based on individual particle progress
   const startSize = workerState.appProps.startParticleSize;
   const endSize = workerState.appProps.endParticleSize;
-  return startSize + (endSize - startSize) * particleProgress;
+
+  // Get the easing multiplier based on the selected pattern
+  const easingMultiplier = getParticleSizeEasingMultiplier(
+    particleProgress,
+    workerState.appProps.particleSizeEasing
+  );
+
+  if (workerState.appProps.particleSizeEasing !== 'linear') {
+    const baseSize = Math.min(startSize, endSize);
+    const maxSize = Math.max(startSize, endSize);
+    return baseSize + (maxSize - baseSize) * easingMultiplier;
+  }
+  return startSize + (endSize - startSize) * easingMultiplier;
 };
 
 const renderParticles = (
@@ -312,7 +384,7 @@ const renderParticles = (
     if (blendFactor > 0 && blendFactor < 1) {
       // Blending mode: draw both circle and image with appropriate opacities
       const radius =
-        workerState.appProps.particleRadius * (currentSize || 1)
+        workerState.appProps.particleRadius * (currentSize || 1);
 
 
       // Draw circle with reduced opacity
@@ -364,7 +436,7 @@ const renderParticles = (
     } else {
       // Fully circle
       const radius =
-        workerState.appProps.particleRadius * (currentSize || 1)
+        workerState.appProps.particleRadius * (currentSize || 1);
 
       workerState.frameContext!.globalAlpha = currentOpacity;
       workerState.frameContext!.beginPath();
@@ -402,7 +474,7 @@ const renderParticles = (
 
   const totalAnimationTime = workerState.appProps.animationDuration;
   const shouldStopAnimation = animationComplete &&
-    elapsedTime >= totalAnimationTime
+    elapsedTime >= totalAnimationTime;
 
   if (!shouldStopAnimation) {
     workerState.animationFrameId = requestAnimationFrame(
@@ -477,8 +549,7 @@ const handleReset = () => {
   if (workerState.animationFrameId) {
     cancelAnimationFrame(workerState.animationFrameId);
   }
-
-}
+};
 
 const handleUpdateBitmap = (payload: MessagePayloadMap[Action.UPDATE_BITMAP]) => {
   workerState.imageBitmap = payload;

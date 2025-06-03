@@ -1,10 +1,17 @@
 import {useCallback, useContext} from 'react';
 import {AppContext} from '../../contexts/AppContext';
 import {useWorkerActions} from '../../hooks/useWorkerActions';
+// import {ParticleSizeEasingType} from '../../interfaces';
 
 const STEP = 0.5;
 const MIN = 0.5;
 const MAX = 10;
+
+// const EASING_OPTIONS: Array<{value: ParticleSizeEasingType; label: string}> = [
+//   {value: 'bell', label: 'Bell Curve'},
+//   {value: 'linear', label: 'Linear'},
+//   {value: 'multiPulse', label: 'Multi-Pulse'},
+// ];
 
 export const ParticleSize = () => {
   const appProps = useContext(AppContext);
@@ -17,6 +24,10 @@ export const ParticleSize = () => {
       workerActions?.updateEndParticleSize(value);
     }
   }, [workerActions]);
+
+  // const handleEasingChange = useCallback((value: ParticleSizeEasingType) => {
+  //   workerActions?.updateParticleSizeEasing(value);
+  // }, [workerActions]);
 
   if (!appProps) {
     return null;
@@ -67,6 +78,21 @@ export const ParticleSize = () => {
           />
         </div>
       </div>
+
+      {/* <div className="control-group">
+        <label htmlFor="particleSizeEasing">Size Easing Pattern:</label>
+        <select
+          id="particleSizeEasing"
+          value={appProps.particleSizeEasing}
+          onChange={(e) => handleEasingChange(e.target.value as ParticleSizeEasingType)}
+        >
+          {EASING_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div> */}
     </>
   );
 };

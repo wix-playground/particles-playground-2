@@ -1,4 +1,4 @@
-import {FontState, StartPositionType} from './interfaces';
+import {FontState, StartPositionType, ParticleSizeEasingType, ParticleOpacityEasingType} from './interfaces';
 
 export const DEFAULT_PARTICLE_RADIUS = 5;
 export const DEFAULT_PARTICLE_SPREAD = 3;
@@ -9,6 +9,8 @@ export const DEFAULT_START_PARTICLE_OPACITY = 1.0;
 export const DEFAULT_END_PARTICLE_OPACITY = 1.0;
 export const DEFAULT_START_PARTICLE_SIZE = 5.0;
 export const DEFAULT_END_PARTICLE_SIZE = 1.0;
+export const DEFAULT_PARTICLE_SIZE_EASING: ParticleSizeEasingType = 'linear';
+export const DEFAULT_PARTICLE_OPACITY_EASING: ParticleOpacityEasingType = 'linear';
 export const DEFAULT_START_POSITION: StartPositionType = 'random';
 export const DEFAULT_MOVEMENT_FUNCTION_KEY = 'backInOut';
 export const DEFAULT_DARK_THEME_COLOR = '#FFFFFF';
