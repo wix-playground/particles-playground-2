@@ -541,13 +541,12 @@ const handleUpdateBitmap = (payload: MessagePayloadMap[Action.UPDATE_BITMAP]) =>
 }
 
 const handleUpdateAppProps = (payload: MessagePayloadMap[Action.UPDATE_APP_PROPS]) => {
-  const {appProps} = payload;
+  const {appProps, shouldUpdateStartCoordinatesConfig, shouldRegenerateImageBlocks} = payload;
 
   // Update the worker state with the new properties
   Object.assign(workerState.appProps, appProps);
 
-  if (appProps.particleRadius !== undefined) {
-    // Particle radius changes require full regeneration with new image data
+  if (shouldRegenerateImageBlocks) {
     workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
     const {
       validBlocks: _validBlocks,
@@ -568,23 +567,7 @@ const handleUpdateAppProps = (payload: MessagePayloadMap[Action.UPDATE_APP_PROPS
     workerState.blockWidth = _blockWidth;
   }
 
-  if (appProps.startPosition !== undefined && workerState.workerParticles.length) {
-    // Update start position coordinates for existing particles
-    workerState.workerParticles.forEach((particle) => {
-      const initialCoordinates = startCoordinatesConfig[workerState.appProps.startPosition]();
-      particle.initialX = initialCoordinates.x;
-      particle.initialY = initialCoordinates.y;
-      particle.x = initialCoordinates.x;
-      particle.y = initialCoordinates.y;
-    });
-  }
-
-  // Update startCoordinatesConfig if any emitter properties or start position changed
-  if (appProps.startPosition !== undefined ||
-    appProps.emitterX !== undefined ||
-    appProps.emitterY !== undefined ||
-    appProps.emitterSize !== undefined ||
-    appProps.emitterAngle !== undefined) {
+  if (shouldUpdateStartCoordinatesConfig) {
     startCoordinatesConfig = getStartCoordinatesConfig({
       dimensions: {
         width: workerState.mainCanvas!.width,

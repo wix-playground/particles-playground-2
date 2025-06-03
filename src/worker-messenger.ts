@@ -1,5 +1,4 @@
 import {Action, MessagePayloadMap, WorkerMessage, StartPositionType, FontState, InitializeMessagePayload, AppProps} from "./interfaces";
-
 export class WorkerMessenger {
   constructor(private worker: Worker | null) { }
 
@@ -30,9 +29,13 @@ export class WorkerMessenger {
   // Single method for updating app properties
   updateAppProps = (
     appProps: Partial<AppProps>,
-  ) => this.send(Action.UPDATE_APP_PROPS, {
-    appProps,
-  });
+  ) => {
+    this.send(Action.UPDATE_APP_PROPS, {
+      appProps,
+      shouldUpdateStartCoordinatesConfig: shouldUpdateStartCoordinatesConfig(appProps),
+      shouldRegenerateImageBlocks: shouldRegenerateImageBlocks(appProps),
+    });
+  };
 
   // Convenience methods that use the unified updateAppProps
   updateText = (text: string) => this.updateAppProps({text});
@@ -65,3 +68,16 @@ export class WorkerMessenger {
   updateBitmap = (bitmap: ImageBitmap) =>
     this.sendWithTransferables(Action.UPDATE_BITMAP, bitmap, [bitmap]);
 }
+
+const shouldUpdateStartCoordinatesConfig = (appProps: Partial<AppProps>): boolean =>
+  Boolean(
+    appProps.startPosition !== undefined ||
+    appProps.emitterX !== undefined ||
+    appProps.emitterY !== undefined ||
+    appProps.emitterSize !== undefined ||
+    appProps.emitterAngle !== undefined
+  );
+
+const shouldRegenerateImageBlocks = (appProps: Partial<AppProps>): boolean => appProps.particleRadius !== undefined ||
+  appProps.particleSpread !== undefined ||
+  appProps.text !== undefined;

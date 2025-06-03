@@ -122,8 +122,8 @@ export const getUpdateBitmapMessage = (payload: MessagePayloadMap[Action.UPDATE_
 
 export interface UpdateAppPropsPayload {
   appProps: Partial<AppProps>;
-  shouldRegenerateParticles?: boolean;
-  shouldRestartAnimation?: boolean;
+  shouldUpdateStartCoordinatesConfig?: boolean;
+  shouldRegenerateImageBlocks?: boolean;
 }
 
 export const getUpdateAppPropsMessage = (payload: MessagePayloadMap[Action.UPDATE_APP_PROPS]) => ({
