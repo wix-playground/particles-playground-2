@@ -6,7 +6,6 @@ import {
   AppProps,
   getInitializeMessage,
   getPlayMessage,
-  getResetMessage,
   getUpdateBitmapMessage,
   WorkerAction,
 } from './interfaces';
@@ -120,10 +119,6 @@ const App = () => {
     workerRef.current?.postMessage(getPlayMessage());
   }, []);
 
-  const reset = useCallback(() => {
-    workerRef.current?.postMessage(getResetMessage());
-  }, []);
-
   return (
     <AppContext.Provider value={appProps}>
       <WorkerContext.Provider value={workerRef.current}>
@@ -133,7 +128,7 @@ const App = () => {
           </div>
         ) : null}
 
-        <EffectControls onPlay={play} onReset={reset} />
+        <EffectControls onPlay={play} />
         <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
           <div className='root-component'>
             <canvas
