@@ -20,6 +20,7 @@ export interface Particle extends Coordinates {
   revealThreshold?: number;
   emittedBubbles?: boolean;
   reachedTarget?: boolean;
+  delay: number;
 }
 
 export type StartPositionType =
@@ -52,6 +53,7 @@ export enum Action {
   UPDATE_END_PARTICLE_OPACITY = 'UPDATE_END_PARTICLE_OPACITY',
   UPDATE_START_PARTICLE_SIZE = 'UPDATE_START_PARTICLE_SIZE',
   UPDATE_END_PARTICLE_SIZE = 'UPDATE_END_PARTICLE_SIZE',
+  UPDATE_DELAY = 'UPDATE_DELAY',
 }
 
 export enum WorkerAction {
@@ -164,6 +166,11 @@ export const getUpdateEndParticleSizeMessage = (payload: number) => ({
   payload,
 });
 
+export const getUpdateDelayMessage = (payload: number) => ({
+  type: Action.UPDATE_DELAY as const,
+  payload,
+});
+
 export type MainThreadMessage =
   | ReturnType<typeof getUpdateBitmapMessage>
   | ReturnType<typeof getUpdateTextMessage>
@@ -181,7 +188,8 @@ export type MainThreadMessage =
   | ReturnType<typeof getUpdateStartParticleOpacityMessage>
   | ReturnType<typeof getUpdateEndParticleOpacityMessage>
   | ReturnType<typeof getUpdateStartParticleSizeMessage>
-  | ReturnType<typeof getUpdateEndParticleSizeMessage>;
+  | ReturnType<typeof getUpdateEndParticleSizeMessage>
+  | ReturnType<typeof getUpdateDelayMessage>;
 
 export const fontFamilies = [
   'Arial',
@@ -219,4 +227,5 @@ export interface AppProps {
   endParticleOpacity: number;
   startParticleSize: number;
   endParticleSize: number;
+  delay: number
 }

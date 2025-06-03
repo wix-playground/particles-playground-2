@@ -9,6 +9,7 @@ import {ParticleOpacity} from './Settings/ParticleOpacity';
 import {ParticleSize} from './Settings/ParticleSize';
 import {AnimationDuration} from './Settings/AnimationDuration';
 import {ShareButton} from './ShareButton';
+import {ParticleDelay} from './Settings/ParticleDelay';
 
 interface EffectControlsProps {
   onPlay: () => void;
@@ -205,28 +206,7 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
         </>
       )}
       <ParticleSize />
-      {/* Max Delay */}
-      <div className="control-group">
-        <label htmlFor="maxDelay">Max Particle Delay (ms):</label>
-        <div className="slider-input-group">
-          <input
-            type="range"
-            min="0"
-            max="5000"
-            step="50"
-            value={controlState.maxDelay}
-            onChange={(e) => handleControlChange('maxDelay', Number(e.target.value))}
-          />
-          <input
-            type="number"
-            min="0"
-            max="5000"
-            value={controlState.maxDelay}
-            onChange={(e) => handleControlChange('maxDelay', Number(e.target.value))}
-          />
-        </div>
-      </div>
-
+      <ParticleDelay />
       <ParticleOpacity />
       <AnimationDuration />
 

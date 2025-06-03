@@ -14,6 +14,7 @@ import {
   DEFAULT_START_PARTICLE_SIZE,
   DEFAULT_END_PARTICLE_SIZE,
   BUBBLE_PARTICLE_LIFETIME,
+  DEFAULT_DELAY,
 } from './constants';
 import {
   Particle,
@@ -69,6 +70,7 @@ const defaultAppProps: AppProps = {
   endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
   startParticleSize: DEFAULT_START_PARTICLE_SIZE,
   endParticleSize: DEFAULT_END_PARTICLE_SIZE,
+  delay: DEFAULT_DELAY,
 };
 
 const workerState: {
@@ -155,6 +157,7 @@ const initialize = (data: InitializeMessagePayload) => {
     blockHeight: workerState.blockHeight,
     blockWidth: workerState.blockWidth,
     startPosition: workerState.appProps.startPosition,
+    delay: workerState.appProps.delay,
   });
 };
 
@@ -192,12 +195,14 @@ const generateParticles = ({
   blockHeight,
   blockWidth,
   startPosition,
+  delay,
 }: {
   validBlocks: Uint8Array<ArrayBuffer>;
   radius: number;
   blockHeight: number;
   blockWidth: number;
   startPosition: StartPositionType;
+  delay: number;
 }) => {
   const particles: Array<Particle> = [];
 
@@ -225,6 +230,7 @@ const generateParticles = ({
           revealThreshold: 0.97 + Math.random() * 0.02, // Between 0.97 and 0.99
           reachedTarget: false,
           emittedBubbles: false,
+          delay: Math.random() * delay,
         });
       }
     }
@@ -336,6 +342,11 @@ const renderParticles = (
 
 
   workerState.workerParticles.forEach((particle) => {
+
+    if (particle.delay > requestAnimationFrameTime - animationStartTime) {
+      return
+    }
+
     // Update particles position by calling your movement function here:
     customMovementFunction(
       particle,
@@ -542,6 +553,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
             color: particle.color,
             revealProgress: 0,
             revealThreshold: particle.revealThreshold,
+            delay: Math.random() * workerState.appProps.delay,
           };
         }
       );
@@ -587,6 +599,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
         blockHeight: workerState.blockHeight,
         blockWidth: workerState.blockWidth,
         startPosition: workerState.appProps.startPosition,
+        delay: workerState.appProps.delay,
       });
 
       self.postMessage({
@@ -739,6 +752,7 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
           blockHeight: workerState.blockHeight,
           blockWidth: workerState.blockWidth,
           startPosition: workerState.appProps.startPosition,
+          delay: workerState.appProps.delay,
         });
       }
       break;
@@ -768,6 +782,23 @@ self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
     }
     case Action.UPDATE_PARTICLE_SPREAD: {
       workerState.appProps.particleSpread = payload;
+
+      self.postMessage({
+        type: WorkerAction.UPDATE_APP_PROPS,
+        data: workerState.appProps,
+      });
+      break;
+    }
+    case Action.UPDATE_DELAY: {
+      workerState.appProps.delay = payload;
+      workerState.workerParticles = generateParticles({
+        validBlocks: workerState.validBlocks ?? new Uint8Array(),
+        radius: workerState.appProps.particleRadius,
+        blockHeight: workerState.blockHeight,
+        blockWidth: workerState.blockWidth,
+        startPosition: workerState.appProps.startPosition,
+        delay: workerState.appProps.delay,
+      });
 
       self.postMessage({
         type: WorkerAction.UPDATE_APP_PROPS,
