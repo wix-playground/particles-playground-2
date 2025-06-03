@@ -98,95 +98,16 @@ export const getResetMessage = () => ({
   payload: undefined,
 });
 
-export const getResizeParticleRadiusMessage = (payload: MessagePayloadMap[Action.RESIZE_PARTICLE_RADIUS]) => ({
-  type: Action.RESIZE_PARTICLE_RADIUS as const,
-  payload,
-});
-
-export const getUpdateStartPositionMessage = (payload: MessagePayloadMap[Action.UPDATE_START_POSITION]) => ({
-  type: Action.UPDATE_START_POSITION as const,
-  payload,
-});
-
 export interface UpdateSelectedMovementFunctionPayload {
   key?: string;
   movementFunctionCode?: string;
 }
-
-export const getUpdateSelectedMovementFunctionMessage = (payload: MessagePayloadMap[Action.UPDATE_SELECTED_MOVEMENT_FUNCTION]) => ({
-  type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION as const,
-  payload,
-});
 
 export const getUpdateBitmapMessage = (payload: MessagePayloadMap[Action.UPDATE_BITMAP]) => ({
   type: Action.UPDATE_BITMAP as const,
   payload,
 });
 
-export const getUpdateTextMessage = (payload: MessagePayloadMap[Action.UPDATE_TEXT]) => ({
-  type: Action.UPDATE_TEXT as const,
-  payload,
-});
-
-export const getUpdateParticleColorsMessage = (payload: MessagePayloadMap[Action.UPDATE_PARTICLE_COLORS]) => ({
-  type: Action.UPDATE_PARTICLE_COLORS as const,
-  payload,
-});
-
-export const getUpdateAnimationDurationMessage = (payload: MessagePayloadMap[Action.UPDATE_ANIMATION_DURATION]) => ({
-  type: Action.UPDATE_ANIMATION_DURATION as const,
-  payload,
-});
-
-export const getUpdateParticleSpreadMessage = (payload: MessagePayloadMap[Action.UPDATE_PARTICLE_SPREAD]) => ({
-  type: Action.UPDATE_PARTICLE_SPREAD as const,
-  payload,
-});
-
-export const getUpdateStartParticleOpacityMessage = (payload: MessagePayloadMap[Action.UPDATE_START_PARTICLE_OPACITY]) => ({
-  type: Action.UPDATE_START_PARTICLE_OPACITY as const,
-  payload,
-});
-
-export const getUpdateEndParticleOpacityMessage = (payload: MessagePayloadMap[Action.UPDATE_END_PARTICLE_OPACITY]) => ({
-  type: Action.UPDATE_END_PARTICLE_OPACITY as const,
-  payload,
-});
-
-export const getUpdateStartParticleSizeMessage = (payload: MessagePayloadMap[Action.UPDATE_START_PARTICLE_SIZE]) => ({
-  type: Action.UPDATE_START_PARTICLE_SIZE as const,
-  payload,
-});
-
-export const getUpdateEndParticleSizeMessage = (payload: MessagePayloadMap[Action.UPDATE_END_PARTICLE_SIZE]) => ({
-  type: Action.UPDATE_END_PARTICLE_SIZE as const,
-  payload,
-});
-
-export const getUpdateDelayMessage = (payload: MessagePayloadMap[Action.UPDATE_DELAY]) => ({
-  type: Action.UPDATE_DELAY as const,
-  payload,
-});
-
-
-type MessageType =
-  | typeof Action.INITIALIZE
-  | typeof Action.PLAY
-  | typeof Action.RESET
-  | typeof Action.RESIZE_PARTICLE_RADIUS
-  | typeof Action.UPDATE_START_POSITION
-  | typeof Action.UPDATE_SELECTED_MOVEMENT_FUNCTION
-  | typeof Action.UPDATE_BITMAP
-  | typeof Action.UPDATE_TEXT
-  | typeof Action.UPDATE_FONT
-  | typeof Action.UPDATE_PARTICLE_COLORS
-  | typeof Action.UPDATE_ANIMATION_DURATION
-  | typeof Action.UPDATE_PARTICLE_SPREAD
-  | typeof Action.UPDATE_START_PARTICLE_OPACITY
-  | typeof Action.UPDATE_END_PARTICLE_OPACITY
-  | typeof Action.UPDATE_START_PARTICLE_SIZE
-  | typeof Action.UPDATE_END_PARTICLE_SIZE
-  | typeof Action.UPDATE_DELAY;
 
 export type MessagePayloadMap = {
   [Action.INITIALIZE]: InitializeMessagePayload;
@@ -207,30 +128,24 @@ export type MessagePayloadMap = {
   [Action.UPDATE_END_PARTICLE_SIZE]: number;
   [Action.UPDATE_DELAY]: number;
 };
-
-type Message<T extends MessageType> = {
-  type: T;
-  payload: MessagePayloadMap[T];
-};
-
 export type MainThreadMessage =
-  | Message<typeof Action.INITIALIZE>
-  | Message<typeof Action.PLAY>
-  | Message<typeof Action.RESET>
-  | Message<typeof Action.RESIZE_PARTICLE_RADIUS>
-  | Message<typeof Action.UPDATE_START_POSITION>
-  | Message<typeof Action.UPDATE_SELECTED_MOVEMENT_FUNCTION>
-  | Message<typeof Action.UPDATE_BITMAP>
-  | Message<typeof Action.UPDATE_TEXT>
-  | Message<typeof Action.UPDATE_FONT>
-  | Message<typeof Action.UPDATE_PARTICLE_COLORS>
-  | Message<typeof Action.UPDATE_ANIMATION_DURATION>
-  | Message<typeof Action.UPDATE_PARTICLE_SPREAD>
-  | Message<typeof Action.UPDATE_START_PARTICLE_OPACITY>
-  | Message<typeof Action.UPDATE_END_PARTICLE_OPACITY>
-  | Message<typeof Action.UPDATE_START_PARTICLE_SIZE>
-  | Message<typeof Action.UPDATE_END_PARTICLE_SIZE>
-  | Message<typeof Action.UPDATE_DELAY>
+  | WorkerMessage<typeof Action.INITIALIZE>
+  | WorkerMessage<typeof Action.PLAY>
+  | WorkerMessage<typeof Action.RESET>
+  | WorkerMessage<typeof Action.RESIZE_PARTICLE_RADIUS>
+  | WorkerMessage<typeof Action.UPDATE_START_POSITION>
+  | WorkerMessage<typeof Action.UPDATE_SELECTED_MOVEMENT_FUNCTION>
+  | WorkerMessage<typeof Action.UPDATE_BITMAP>
+  | WorkerMessage<typeof Action.UPDATE_TEXT>
+  | WorkerMessage<typeof Action.UPDATE_FONT>
+  | WorkerMessage<typeof Action.UPDATE_PARTICLE_COLORS>
+  | WorkerMessage<typeof Action.UPDATE_ANIMATION_DURATION>
+  | WorkerMessage<typeof Action.UPDATE_PARTICLE_SPREAD>
+  | WorkerMessage<typeof Action.UPDATE_START_PARTICLE_OPACITY>
+  | WorkerMessage<typeof Action.UPDATE_END_PARTICLE_OPACITY>
+  | WorkerMessage<typeof Action.UPDATE_START_PARTICLE_SIZE>
+  | WorkerMessage<typeof Action.UPDATE_END_PARTICLE_SIZE>
+  | WorkerMessage<typeof Action.UPDATE_DELAY>
 
 export const fontFamilies = [
   'Arial',
@@ -268,4 +183,9 @@ export interface AppProps {
   startParticleSize: number;
   endParticleSize: number;
   delay: number
+}
+
+export interface WorkerMessage<T extends Action = Action> {
+  type: T;
+  payload: MessagePayloadMap[T];
 }

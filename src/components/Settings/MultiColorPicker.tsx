@@ -1,20 +1,17 @@
 import {useCallback, useContext, useState} from 'react';
-import {getUpdateParticleColorsMessage} from '../../interfaces';
-import {WorkerContext} from '../../contexts/WorkerContext';
 import {AppContext} from '../../contexts/AppContext';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 
 export const MultiColorPicker = () => {
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
   const appProps = useContext(AppContext);
   const [newColor, setNewColor] = useState('#ffffff');
 
   const handleColorsChange = useCallback(
     (colors: string[]) => {
-      if (worker) {
-        worker.postMessage(getUpdateParticleColorsMessage(colors));
-      }
+      workerActions?.updateParticleColors(colors);
     },
-    [worker]
+    [workerActions]
   );
 
   const particleColors = appProps?.particleColors || [];

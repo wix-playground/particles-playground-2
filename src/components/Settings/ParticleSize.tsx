@@ -1,7 +1,6 @@
 import {useCallback, useContext} from 'react';
 import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
-import {getUpdateStartParticleSizeMessage, getUpdateEndParticleSizeMessage} from '../../interfaces';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 
 const STEP = 0.5;
 const MIN = 0.5;
@@ -9,17 +8,15 @@ const MAX = 10;
 
 export const ParticleSize = () => {
   const appProps = useContext(AppContext);
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
 
   const handleSizeChange = useCallback((type: 'start' | 'end', value: number) => {
-    if (!worker) return;
-
     if (type === 'start') {
-      worker.postMessage(getUpdateStartParticleSizeMessage(value));
+      workerActions?.updateStartParticleSize(value);
     } else {
-      worker.postMessage(getUpdateEndParticleSizeMessage(value));
+      workerActions?.updateEndParticleSize(value);
     }
-  }, [worker]);
+  }, [workerActions]);
 
   if (!appProps) {
     return null;

@@ -1,29 +1,31 @@
 import {useCallback, useContext} from 'react';
-import {StartPosition} from './StartPosition';
-import {getResizeParticleRadiusMessage} from '../../interfaces';
 import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
+import {StartPosition} from './StartPosition';
 import {FunctionSelectorModal} from '../FunctionSelectorModal/FunctionSelectorModal';
 import {editor} from 'monaco-editor';
 import {MultiColorPicker} from './MultiColorPicker';
 import {TimeDistortionSettings} from './TimeDistortionSettings';
 import {ElasticPlopSettings} from './ElasticPlopSettings';
 import {TextSettings} from './TextSettings';
-import {BubbleEffectToggle} from './BubbleEffectToggle';
+// import {BubbleEffectToggle} from './BubbleEffectToggle'; // Commented out - missing bubble functionality
+// import {ParticleDensity} from './ParticleDensity'; // Unused import
+// import {Tooltip} from './Tooltip'; // Missing module
+import './Settings.css';
 
 export const Settings = ({
   editorRef,
 }: {
   editorRef: React.RefObject<editor.IStandaloneCodeEditor | null>;
 }) => {
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
   const appProps = useContext(AppContext);
 
   const handleResizeParticleRadius = useCallback(
     (radius: number) => {
-      if (worker) worker.postMessage(getResizeParticleRadiusMessage(radius));
+      workerActions?.updateParticleRadius(radius);
     },
-    [worker]
+    [workerActions]
   );
 
   if (!appProps) {
@@ -55,7 +57,7 @@ export const Settings = ({
               }
             }}
           />
-          <BubbleEffectToggle />
+          {/* <BubbleEffectToggle /> */}
         </div>
         <MultiColorPicker />
         <StartPosition />

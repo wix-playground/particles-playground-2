@@ -1,7 +1,6 @@
 import {useCallback, useContext} from 'react';
 import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
-import {getUpdateParticleSpreadMessage} from '../../interfaces';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 import {DEFAULT_PARTICLE_SPREAD} from '../../constants';
 
 const MIN_SPREAD = 1;
@@ -10,13 +9,13 @@ const MAX_SPREAD = 5;
 export const ParticleSpread = () => {
   const appProps = useContext(AppContext);
   const particleSpread = appProps?.particleSpread || DEFAULT_PARTICLE_SPREAD;
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
 
   const handleUpdateSpread = useCallback(
     (spread: number) => {
-      if (worker) worker.postMessage(getUpdateParticleSpreadMessage(spread));
+      workerActions?.updateParticleSpread(spread);
     },
-    [worker]
+    [workerActions]
   );
 
   if (!appProps) {

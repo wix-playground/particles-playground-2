@@ -1,17 +1,16 @@
 import {useCallback, useContext} from 'react';
 import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
-import {getUpdateDelayMessage} from '../../interfaces';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 
 export const ParticleDelay = () => {
   const appProps = useContext(AppContext);
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
 
   const handleDelayChange = useCallback(
     (delay: number) => {
-      if (worker) worker.postMessage(getUpdateDelayMessage(delay));
+      workerActions?.updateDelay(delay);
     },
-    [worker]
+    [workerActions]
   );
 
   if (!appProps) {

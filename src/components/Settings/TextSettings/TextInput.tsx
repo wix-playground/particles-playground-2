@@ -1,19 +1,18 @@
 import {useContext, useCallback, useMemo} from 'react';
 import {AppContext} from '../../../contexts/AppContext';
-import {WorkerContext} from '../../../contexts/WorkerContext';
-import {getUpdateTextMessage} from '../../../interfaces';
+import {useWorkerActions} from '../../../hooks/useWorkerActions';
 import {DATA_TEST_IDS} from '../../../constants';
 export const TextInput = () => {
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
   const appProps = useContext(AppContext);
 
   const fontState = appProps?.font;
 
   const handleTextChange = useCallback(
     (value: string) => {
-      if (worker) worker.postMessage(getUpdateTextMessage(value ?? ''));
+      workerActions?.updateText(value ?? '');
     },
-    [worker]
+    [workerActions]
   );
 
   const previewStyle = useMemo(

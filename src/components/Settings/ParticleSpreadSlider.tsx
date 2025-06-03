@@ -1,19 +1,16 @@
 import {useCallback, useContext} from 'react';
-import {getUpdateParticleSpreadMessage} from '../../interfaces';
 import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 
 export const ParticleSpreadSlider = () => {
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
   const appProps = useContext(AppContext);
 
   const handleParticleSpreadChange = useCallback(
     (value: number) => {
-      if (worker) {
-        worker.postMessage(getUpdateParticleSpreadMessage(value));
-      }
+      workerActions?.updateParticleSpread(value);
     },
-    [worker]
+    [workerActions]
   );
 
   if (!appProps) return null;

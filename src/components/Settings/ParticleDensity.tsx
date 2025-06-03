@@ -1,7 +1,6 @@
 import {useCallback, useContext} from 'react';
 import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
-import {getResizeParticleRadiusMessage} from '../../interfaces';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 
 const MAX_DENSITY = 10;
 const MIN_DENSITY = 1;
@@ -14,13 +13,13 @@ export const ParticleDensity = () => {
   }, []);
 
   const calculatedDensity = Math.max(1, MAX_DENSITY - particleRadius);
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
 
   const handleUpdateDensity = useCallback(
     (density: number) => {
-      if (worker) worker.postMessage(getResizeParticleRadiusMessage(getParticleRadius(density)));
+      workerActions?.updateParticleRadius(getParticleRadius(density));
     },
-    [worker]
+    [workerActions, getParticleRadius]
   );
 
   if (!appProps) {

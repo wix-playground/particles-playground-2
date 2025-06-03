@@ -1,8 +1,7 @@
 import {useCallback, useContext, useMemo, useRef} from 'react';
 import './FunctionSelectorModal.css';
-import {getUpdateSelectedMovementFunctionMessage} from '../../interfaces';
 import {getPredefinedMovementOptions} from '../../movement';
-import {WorkerContext} from '../../contexts/WorkerContext';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 import {
   SineIn,
   SineOut,
@@ -40,7 +39,7 @@ import {
 import {AppContext} from '../../contexts/AppContext';
 export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
   const appProps = useContext(AppContext);
 
   const predefinedMovementOptions = useMemo(
@@ -59,13 +58,11 @@ export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
 
   const handleFunctionSelect = useCallback(
     (option: string) => {
-      if (worker) {
-        worker.postMessage(
-          getUpdateSelectedMovementFunctionMessage({
-            key: option,
-            movementFunctionCode: predefinedMovementOptions[option].code,
-          })
-        );
+      if (workerActions) {
+        workerActions.updateSelectedMovementFunction({
+          key: option,
+          movementFunctionCode: predefinedMovementOptions[option].code,
+        });
         if (dialogRef.current) {
           dialogRef.current.close();
         }
@@ -73,7 +70,7 @@ export const FunctionSelectorModal = ({onSelect}: {onSelect: () => void}) => {
       onSelect();
     },
 
-    [predefinedMovementOptions, worker, onSelect]
+    [predefinedMovementOptions, workerActions, onSelect]
   );
 
   const illustrationConfig: Record<string, React.ReactNode> = useMemo(

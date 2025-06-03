@@ -1,21 +1,18 @@
 import {useCallback, useContext} from 'react';
 import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
-import {getUpdateStartParticleOpacityMessage, getUpdateEndParticleOpacityMessage} from '../../interfaces';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 
 export const ParticleOpacity = () => {
   const appProps = useContext(AppContext);
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
 
   const handleOpacityChange = useCallback((type: 'start' | 'end', value: number) => {
-    if (!worker) return;
-
     if (type === 'start') {
-      worker.postMessage(getUpdateStartParticleOpacityMessage(value));
+      workerActions?.updateStartParticleOpacity(value);
     } else {
-      worker.postMessage(getUpdateEndParticleOpacityMessage(value));
+      workerActions?.updateEndParticleOpacity(value);
     }
-  }, [worker]);
+  }, [workerActions]);
 
   if (!appProps) {
     return null;

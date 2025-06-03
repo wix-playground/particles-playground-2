@@ -1,7 +1,6 @@
 import {useCallback, useContext, useState} from 'react';
 import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
-import {Action} from '../../interfaces';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 import './TimeDistortionSettings.css';
 
 // Default values from the movement function
@@ -16,7 +15,7 @@ const DEFAULT_DISTORTION_STRENGTH = 15;
 const DEFAULT_TEMPORAL_PHASE_MULTIPLIER = 4;
 
 export const TimeDistortionSettings = () => {
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
   const appProps = useContext(AppContext);
 
   // State for settings - no localStorage persistence
@@ -34,7 +33,7 @@ export const TimeDistortionSettings = () => {
 
   const updateMovementCode = useCallback(
     (settings: Record<string, number>) => {
-      if (!worker || !appProps?.movementFunctionCode) return;
+      if (!workerActions || !appProps?.movementFunctionCode) return;
 
       // Create an updated movement function with the new values
       const updatedCode = `
@@ -142,15 +141,12 @@ return (particle, animationStartTime, currentTime, canvasDimensions, animationDu
     particle.color = \`hsl(\${hue}, \${saturation}%, \${lightness}%)\`;
 }`;
 
-      worker.postMessage({
-        type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-        payload: {
-          key: 'timeDistortion',
-          movementFunctionCode: updatedCode,
-        },
+      workerActions.updateSelectedMovementFunction({
+        key: 'timeDistortion',
+        movementFunctionCode: updatedCode,
       });
     },
-    [worker, appProps]
+    [workerActions, appProps]
   );
 
   const handleSettingChange = useCallback(

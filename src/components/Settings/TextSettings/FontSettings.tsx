@@ -1,7 +1,7 @@
 import React, {useCallback, useContext} from 'react';
-import {FontFamily, FontState, getUpdateFontMessage} from '../../../interfaces';
+import {FontFamily, FontState} from '../../../interfaces';
 import {AppContext} from '../../../contexts/AppContext';
-import {WorkerContext} from '../../../contexts/WorkerContext';
+import {useWorkerActions} from '../../../hooks/useWorkerActions';
 import {DATA_TEST_IDS, DEFAULT_FONT_STATE} from '../../../constants';
 
 const fontConfig: Record<
@@ -28,18 +28,15 @@ const fontConfig: Record<
 
 export const FontSettings = () => {
   const appProps = useContext(AppContext);
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
 
   const fontState = appProps?.font ?? DEFAULT_FONT_STATE;
 
-
   const setFontState = useCallback(
     (font: Partial<FontState>) => {
-      worker?.postMessage(
-        getUpdateFontMessage({...fontState, ...font} as FontState)
-      );
+      workerActions?.updateFont({...fontState, ...font} as FontState);
     },
-    [worker, appProps]
+    [workerActions, fontState]
   );
 
   // Generate weight options for fonts with weight ranges

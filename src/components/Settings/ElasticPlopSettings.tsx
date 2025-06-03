@@ -1,7 +1,6 @@
 import {useCallback, useContext, useState} from 'react';
 import {AppContext} from '../../contexts/AppContext';
-import {WorkerContext} from '../../contexts/WorkerContext';
-import {Action} from '../../interfaces';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 import './ElasticPlopSettings.css';
 
 // Default values from the movement function
@@ -29,7 +28,7 @@ const DEFAULT_TRAIL_BASE_OPACITY = 0.3;
 const DEFAULT_TRAIL_OPACITY_MULTIPLIER = 0.7;
 
 export const ElasticPlopSettings = () => {
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
   const appProps = useContext(AppContext);
 
   const [settings, setSettings] = useState({
@@ -195,12 +194,10 @@ export const ElasticPlopSettings = () => {
     }
 };`;
 
-    if (worker) {
-      worker.postMessage({
-        type: Action.UPDATE_SELECTED_MOVEMENT_FUNCTION,
-        payload: {
-          key: 'elasticPlop',
-          movementFunctionCode: `/**
+    if (workerActions) {
+      workerActions.updateSelectedMovementFunction({
+        key: 'elasticPlop',
+        movementFunctionCode: `/**
  * @param particle - The particle object to animate
  * @param animationStartTime - The time when the animation started
  * @param currentTime - The current time
@@ -208,10 +205,9 @@ export const ElasticPlopSettings = () => {
  * @param animationDuration - The total duration of the animation
  */
 ${elasticPlopMovementString}`,
-        },
       });
     }
-  }, [worker]);
+  }, [workerActions]);
 
   const handleSettingChange = useCallback((key: keyof typeof settings, value: number) => {
     const newSettings = {...settings, [key]: value};

@@ -1,23 +1,22 @@
 import {useCallback, useContext} from 'react';
-import {getUpdateAnimationDurationMessage} from '../../interfaces';
-import {WorkerContext} from '../../contexts/WorkerContext';
 import {AppContext} from '../../contexts/AppContext';
 import {DEFAULT_ANIMATION_DURATION} from '../../constants';
+import {useWorkerActions} from '../../hooks/useWorkerActions';
 
 
 export const AnimationDuration = () => {
-  const worker = useContext(WorkerContext);
+  const workerActions = useWorkerActions();
   const appProps = useContext(AppContext);
   const duration = appProps?.animationDuration ?? DEFAULT_ANIMATION_DURATION;
 
   const handleDurationChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const duration = parseInt(event.target.value, 10);
-      if (worker && !isNaN(duration)) {
-        worker.postMessage(getUpdateAnimationDurationMessage(duration));
+      if (workerActions && !isNaN(duration)) {
+        workerActions.updateAnimationDuration(duration);
       }
     },
-    [worker]
+    [workerActions]
   );
 
 

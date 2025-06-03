@@ -386,7 +386,7 @@ const renderParticles = (
   // Calculate if we should continue animation
   const animationComplete = particlesReachedTarget && workerState.revealProgress >= 1;
 
-  const totalAnimationTime = workerState.appProps.animationDuration + (workerState.appProps.enableBubbles ? BUBBLE_PARTICLE_LIFETIME : 0);
+  const totalAnimationTime = workerState.appProps.animationDuration;
   const shouldStopAnimation = animationComplete &&
     elapsedTime >= totalAnimationTime
 
@@ -750,7 +750,6 @@ const handleUpdateEndParticleSize = (payload: MessagePayloadMap[Action.UPDATE_EN
 }
 
 self.onmessage = (event: MessageEvent<MainThreadMessage>) => {
-
   const {payload, type} = event.data;
 
   switch (type) {
