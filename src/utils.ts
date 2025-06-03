@@ -109,8 +109,16 @@ export const getRandomInt = (min: number, max: number) => {
 
 export const getStartCoordinatesConfig = ({
   dimensions: {width, height},
+  emitterX = width / 2,
+  emitterY = height / 2,
+  emitterSize = 100,
+  emitterAngle = 0,
 }: {
   dimensions: Dimensions;
+  emitterX?: number;
+  emitterY?: number;
+  emitterSize?: number;
+  emitterAngle?: number;
 }): Record<StartPositionType, () => Coordinates> => {
   const config: Record<StartPositionType, () => Coordinates> = {
     top: () => ({
@@ -149,6 +157,59 @@ export const getStartCoordinatesConfig = ({
     'bottom-right': () => ({
       x: width - Math.random() * (width / 5),
       y: height - Math.random() * (height / 5),
+    }),
+    canvasEdges: () => {
+      const edge = Math.floor(Math.random() * 4);
+      if (edge === 0) return {x: Math.random() * width, y: 0}; // top
+      if (edge === 1) return {x: Math.random() * width, y: height}; // bottom
+      if (edge === 2) return {x: 0, y: Math.random() * height}; // left
+      return {x: width, y: Math.random() * height}; // right
+    },
+    topLeft: () => ({x: 0, y: 0}),
+    emitterPoint: () => ({x: emitterX, y: emitterY}),
+    emitterCircle: () => {
+      const angle = Math.random() * 2 * Math.PI;
+      const radius = Math.random() * emitterSize;
+      return {
+        x: emitterX + radius * Math.cos(angle),
+        y: emitterY + radius * Math.sin(angle),
+      };
+    },
+    emitterSquare: () => ({
+      x: emitterX + (Math.random() - 0.5) * emitterSize,
+      y: emitterY + (Math.random() - 0.5) * emitterSize,
+    }),
+    emitterHLine: () => {
+      const angleRad = emitterAngle * (Math.PI / 180);
+      const offsetX = (Math.random() - 0.5) * emitterSize;
+      return {
+        x: emitterX + offsetX * Math.cos(angleRad),
+        y: emitterY + offsetX * Math.sin(angleRad),
+      };
+    },
+    emitterVLine: () => {
+      const angleRad = (emitterAngle + 90) * (Math.PI / 180); // Perpendicular to horizontal line
+      const offsetY = (Math.random() - 0.5) * emitterSize;
+      return {
+        x: emitterX + offsetY * Math.cos(angleRad),
+        y: emitterY + offsetY * Math.sin(angleRad),
+      };
+    },
+    enterTopTextWidth: () => ({
+      x: width * 0.2 + Math.random() * width * 0.6, // Rough text width estimate
+      y: height * 0.3, // Rough text top estimate
+    }),
+    enterBottomTextWidth: () => ({
+      x: width * 0.2 + Math.random() * width * 0.6,
+      y: height * 0.7, // Rough text bottom estimate
+    }),
+    enterLeftTextHeight: () => ({
+      x: width * 0.2, // Rough text left estimate
+      y: height * 0.3 + Math.random() * height * 0.4,
+    }),
+    enterRightTextHeight: () => ({
+      x: width * 0.8, // Rough text right estimate
+      y: height * 0.3 + Math.random() * height * 0.4,
     }),
   };
   return config;

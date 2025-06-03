@@ -13,6 +13,10 @@ import {
   DEFAULT_START_PARTICLE_SIZE,
   DEFAULT_END_PARTICLE_SIZE,
   DEFAULT_DELAY,
+  DEFAULT_EMITTER_X,
+  DEFAULT_EMITTER_Y,
+  DEFAULT_EMITTER_SIZE,
+  DEFAULT_EMITTER_ANGLE,
 } from './constants';
 import {
   Particle,
@@ -56,6 +60,10 @@ const defaultAppProps: AppProps = {
   startParticleSize: DEFAULT_START_PARTICLE_SIZE,
   endParticleSize: DEFAULT_END_PARTICLE_SIZE,
   delay: DEFAULT_DELAY,
+  emitterX: DEFAULT_EMITTER_X,
+  emitterY: DEFAULT_EMITTER_Y,
+  emitterSize: DEFAULT_EMITTER_SIZE,
+  emitterAngle: DEFAULT_EMITTER_ANGLE,
 };
 
 const workerState: {
@@ -132,7 +140,13 @@ const handleInitialize = (data: InitializeMessagePayload) => {
   workerState.validBlocks = _validBlocks;
   workerState.blockHeight = _blockHeight;
   workerState.blockWidth = _blockWidth;
-  startCoordinatesConfig = getStartCoordinatesConfig({dimensions});
+  startCoordinatesConfig = getStartCoordinatesConfig({
+    dimensions,
+    emitterX: workerState.appProps.emitterX,
+    emitterY: workerState.appProps.emitterY,
+    emitterSize: workerState.appProps.emitterSize,
+    emitterAngle: workerState.appProps.emitterAngle,
+  });
 
   workerState.workerParticles = generateParticles({
     validBlocks: workerState.validBlocks,
@@ -498,6 +512,10 @@ const handleUpdateBitmap = (payload: MessagePayloadMap[Action.UPDATE_BITMAP]) =>
         width: workerState.mainCanvas.width,
         height: workerState.mainCanvas.height,
       },
+      emitterX: workerState.appProps.emitterX,
+      emitterY: workerState.appProps.emitterY,
+      emitterSize: workerState.appProps.emitterSize,
+      emitterAngle: workerState.appProps.emitterAngle,
     });
 
     workerState.frameContext!.clearRect(
@@ -558,6 +576,24 @@ const handleUpdateAppProps = (payload: MessagePayloadMap[Action.UPDATE_APP_PROPS
       particle.initialY = initialCoordinates.y;
       particle.x = initialCoordinates.x;
       particle.y = initialCoordinates.y;
+    });
+  }
+
+  // Update startCoordinatesConfig if any emitter properties or start position changed
+  if (appProps.startPosition !== undefined ||
+    appProps.emitterX !== undefined ||
+    appProps.emitterY !== undefined ||
+    appProps.emitterSize !== undefined ||
+    appProps.emitterAngle !== undefined) {
+    startCoordinatesConfig = getStartCoordinatesConfig({
+      dimensions: {
+        width: workerState.mainCanvas!.width,
+        height: workerState.mainCanvas!.height,
+      },
+      emitterX: workerState.appProps.emitterX,
+      emitterY: workerState.appProps.emitterY,
+      emitterSize: workerState.appProps.emitterSize,
+      emitterAngle: workerState.appProps.emitterAngle,
     });
   }
 

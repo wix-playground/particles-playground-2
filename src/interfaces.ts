@@ -25,16 +25,27 @@ export interface Particle extends Coordinates {
 }
 
 export type StartPositionType =
+  | 'random'
+  | 'canvasEdges'
+  | 'center'
+  | 'topLeft'
+  | 'emitterPoint'
+  | 'emitterCircle'
+  | 'emitterSquare'
+  | 'emitterHLine'
+  | 'emitterVLine'
+  | 'enterTopTextWidth'
+  | 'enterBottomTextWidth'
+  | 'enterLeftTextHeight'
+  | 'enterRightTextHeight'
   | 'top-left'
   | 'top-right'
   | 'top'
-  | 'center'
   | 'bottom-left'
   | 'bottom-right'
   | 'bottom'
   | 'left'
-  | 'right'
-  | 'random';
+  | 'right';
 
 export enum Action {
   INITIALIZE = 'INITIALIZE',
@@ -182,10 +193,10 @@ export const fontFamilies = [
 export type FontFamily = (typeof fontFamilies)[number];
 
 export interface AppProps {
-  startPosition: StartPositionType;
-  movementFunctionCode: string;
-  selectedMovementFunction: string;
   particleRadius: number;
+  startPosition: StartPositionType;
+  selectedMovementFunction: string;
+  movementFunctionCode: string;
   text: string;
   font: FontState;
   particleColors: string[];
@@ -195,7 +206,11 @@ export interface AppProps {
   endParticleOpacity: number;
   startParticleSize: number;
   endParticleSize: number;
-  delay: number
+  delay: number;
+  emitterX: number;
+  emitterY: number;
+  emitterSize: number;
+  emitterAngle: number;
 }
 
 export interface WorkerMessage<T extends Action = Action> {

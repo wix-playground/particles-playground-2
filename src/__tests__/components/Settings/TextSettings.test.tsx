@@ -2,7 +2,7 @@ import {render, screen} from '@testing-library/react';
 import {TextSettings} from '../../../components/Settings/TextSettings';
 import {AppContext} from '../../../contexts/AppContext';
 import {WorkerContext} from '../../../contexts/WorkerContext';
-import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_DELAY, DEFAULT_END_PARTICLE_OPACITY, DEFAULT_END_PARTICLE_SIZE, DEFAULT_FONT_STATE, DEFAULT_PARTICLE_SPREAD, DEFAULT_START_PARTICLE_OPACITY, DEFAULT_START_PARTICLE_SIZE} from '../../../constants';
+import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_DELAY, DEFAULT_END_PARTICLE_OPACITY, DEFAULT_END_PARTICLE_SIZE, DEFAULT_FONT_STATE, DEFAULT_PARTICLE_SPREAD, DEFAULT_START_PARTICLE_OPACITY, DEFAULT_START_PARTICLE_SIZE, DEFAULT_EMITTER_X, DEFAULT_EMITTER_Y, DEFAULT_EMITTER_SIZE, DEFAULT_EMITTER_ANGLE} from '../../../constants';
 import {AppProps, FontState} from '../../../interfaces';
 
 // Mock Worker class
@@ -36,6 +36,10 @@ describe('TextSettings', () => {
       startParticleSize: DEFAULT_START_PARTICLE_SIZE,
       endParticleSize: DEFAULT_END_PARTICLE_SIZE,
       delay: DEFAULT_DELAY,
+      emitterX: DEFAULT_EMITTER_X,
+      emitterY: DEFAULT_EMITTER_Y,
+      emitterSize: DEFAULT_EMITTER_SIZE,
+      emitterAngle: DEFAULT_EMITTER_ANGLE,
     };
 
     // Create mock worker
@@ -95,6 +99,10 @@ describe('TextSettings', () => {
       startParticleSize: DEFAULT_START_PARTICLE_SIZE,
       endParticleSize: DEFAULT_END_PARTICLE_SIZE,
       delay: DEFAULT_DELAY,
+      emitterX: DEFAULT_EMITTER_X,
+      emitterY: DEFAULT_EMITTER_Y,
+      emitterSize: DEFAULT_EMITTER_SIZE,
+      emitterAngle: DEFAULT_EMITTER_ANGLE,
     };
 
     // Create mock worker

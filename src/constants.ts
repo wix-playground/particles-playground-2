@@ -111,3 +111,9 @@ export const DATA_TEST_IDS = {
     FONT_ITALIC_CHECKBOX: 'font-italic-checkbox',
     TEXT_INPUT: 'text-input',
 }
+
+// New emitter defaults
+export const DEFAULT_EMITTER_X = 500;
+export const DEFAULT_EMITTER_Y = 300;
+export const DEFAULT_EMITTER_SIZE = 100;
+export const DEFAULT_EMITTER_ANGLE = 0;
