@@ -33,6 +33,7 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
 
   return (
     <div className="controls-container">
+      {/* Effect Mode Group */}
       <div className="control-group effects-preset-group">
         <label htmlFor="effectsPreset">Effect Mode:</label>
         <select
@@ -46,14 +47,20 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
       </div>
 
       {!appProps?.enableRevealAnimation && <MovementEasingDropdown />}
-
       {appProps?.enableRevealAnimation && <RevealDirection />}
 
+      {/* Text Settings Group */}
+      <div className="settings-group-divider"></div>
       <TextInput />
-      <MultiColorPicker />
       <FontSettings />
+      <MultiColorPicker />
+
+      {/* Particle Settings Group */}
+      <div className="settings-group-divider"></div>
       <ParticleDensity />
       <ParticleSpread />
+      <ParticleSize />
+      <ParticleOpacity />
       <div className="control-group">
         <label htmlFor="particleShape" style={{opacity: 0.5}}>Particle Shape:</label>
         <select
@@ -73,12 +80,22 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
           <option value="star">Star</option>
         </select>
       </div>
-      {!appProps?.enableRevealAnimation && <ParticleOrigin />}
-      <ParticleSize />
+
+      {/* Position Settings Group */}
+      {!appProps?.enableRevealAnimation && (
+        <>
+          <div className="settings-group-divider"></div>
+          <ParticleOrigin />
+        </>
+      )}
+
+      {/* Timing Settings Group */}
+      <div className="settings-group-divider"></div>
       {!appProps?.enableRevealAnimation && <ParticleDelay />}
-      <ParticleOpacity />
       <AnimationDuration />
 
+      {/* Actions Group */}
+      <div className="settings-group-divider"></div>
       <div className="control-group" style={{gridColumn: '1 / -1', display: 'flex', flexDirection: 'row', gap: '20px'}}>
         <button onClick={onPlay} style={{flex: '1 1 0'}}>Play Animation</button>
         <ShuffleSettingsButton />
