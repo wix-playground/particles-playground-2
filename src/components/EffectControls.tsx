@@ -11,41 +11,43 @@ import {ParticleDelay} from './Settings/ParticleDelay';
 import {ParticleOrigin} from './Settings/ParticleOrigin';
 import {ShuffleSettingsButton} from './ShuffleSettingsButton';
 import {MovementEasingDropdown} from './Settings/MovementEasingDropdown';
-import {RevealAnimation} from './Settings/RevealAnimation';
 import {RevealDirection} from './Settings/RevealDirection';
+import {useContext, useCallback} from 'react';
+import {AppContext} from '../contexts/AppContext';
+import {useWorkerActions} from '../hooks/useWorkerActions';
 
 interface EffectControlsProps {
   onPlay: () => void;
 }
 export const EffectControls = ({onPlay}: EffectControlsProps) => {
+  const appProps = useContext(AppContext);
+  const workerActions = useWorkerActions();
+
+  const handleEffectModeChange = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const isRevealMode = event.target.value === 'reveal';
+      workerActions?.updateRevealAnimation(isRevealMode);
+    },
+    [workerActions]
+  );
 
   return (
     <div className="controls-container">
       <div className="control-group effects-preset-group">
-        <label htmlFor="effectsPreset" style={{opacity: 0.5}}>Effects Preset:</label>
+        <label htmlFor="effectsPreset">Effect Mode:</label>
         <select
           id="effectsPreset"
-          disabled
-          style={{
-            opacity: 0.5,
-            cursor: 'not-allowed',
-            backgroundColor: '#f5f5f5',
-            color: '#999'
-          }}
+          value={appProps?.enableRevealAnimation ? 'reveal' : 'movement'}
+          onChange={handleEffectModeChange}
         >
-          <option value="custom">Custom (No Preset)</option>
-          <option value="snow">Snow</option>
-          <option value="smoke">Smoke</option>
-          <option value="fire">Fire</option>
-          <option value="neon">Neon Glow</option>
-          <option value="matrix">Matrix Code</option>
+          <option value="movement">Movement easing</option>
+          <option value="reveal">Reveal</option>
         </select>
       </div>
 
-      <MovementEasingDropdown />
+      {!appProps?.enableRevealAnimation && <MovementEasingDropdown />}
 
-      <RevealAnimation />
-      <RevealDirection />
+      {appProps?.enableRevealAnimation && <RevealDirection />}
 
       <TextInput />
       <MultiColorPicker />
@@ -71,9 +73,9 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
           <option value="star">Star</option>
         </select>
       </div>
-      <ParticleOrigin />
+      {!appProps?.enableRevealAnimation && <ParticleOrigin />}
       <ParticleSize />
-      <ParticleDelay />
+      {!appProps?.enableRevealAnimation && <ParticleDelay />}
       <ParticleOpacity />
       <AnimationDuration />
 
