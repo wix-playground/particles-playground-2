@@ -1,7 +1,7 @@
 ---
 description:
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 When asked to create a setting or a control for a feature:
 - render the control in [EffectControls.tsx](mdc:src/components/EffectControls.tsx) with the same styling as other controls;

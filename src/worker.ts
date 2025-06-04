@@ -21,6 +21,8 @@ import {
   DEFAULT_EMITTER_ANGLE,
   DEFAULT_ENABLE_REVEAL_ANIMATION,
   DEFAULT_REVEAL_DIRECTION,
+  EFFECT_PARTICLE_MAX_LIFETIME,
+  EFFECT_PARTICLE_MIN_LIFETIME,
 } from './constants';
 import {
   Particle,
@@ -90,6 +92,7 @@ const workerState: {
   // Main thread facing props
   appProps: AppProps;
   revealProgress: number;
+  effectParticles: EffectParticle[];
 } = {
   workerParticles: [],
   imageBitmap: null,
@@ -103,6 +106,7 @@ const workerState: {
   blockWidth: 0,
   appProps: defaultAppProps,
   revealProgress: 0,
+  effectParticles: [],
 };
 
 let startCoordinatesConfig: ReturnType<typeof getStartCoordinatesConfig>;
@@ -396,6 +400,19 @@ const getCurrentParticleSize = (particleProgress: number): number => {
   return startSize + (endSize - startSize) * easingMultiplier;
 };
 
+// Add interface for effect particles at the top after other interfaces
+interface EffectParticle {
+  x: number;
+  y: number;
+  vx: number; // velocity x
+  vy: number; // velocity y
+  startTime: number;
+  lifetime: number;
+  size: number;
+  opacity: number;
+  color: string;
+}
+
 const renderRevealAnimation = (
   animationStartTime: number,
   requestAnimationFrameTime: number,
@@ -409,31 +426,89 @@ const renderRevealAnimation = (
   );
 
   const elapsedTime = requestAnimationFrameTime - animationStartTime;
+  const textRevealDuration = workerState.appProps.animationDuration - EFFECT_PARTICLE_MAX_LIFETIME;
   workerState.revealProgress = Math.min(
     1,
     elapsedTime / workerState.appProps.animationDuration
   );
 
+  const textRevealProgress = Math.min(
+    1,
+    elapsedTime / textRevealDuration
+  );
+
   // Reset alpha for particle rendering
   workerState.frameContext!.globalAlpha = 1;
 
-  workerState.workerParticles.forEach((particle) => {
+  workerState.workerParticles.forEach((particle, index) => {
     // Check if particle should be revealed
     const shouldReveal = shouldParticleBeRevealed(
       particle,
-      workerState.revealProgress,
+      textRevealProgress,
       workerState.appProps.revealDirection,
       textBoundaries
     );
 
     if (!shouldReveal) {
-      return; // Skip rendering this particle
+      return;
     }
 
+    // Check if this particle was just revealed (spawn effect particles)
+    if (!particle.emittedBubbles) {
+      particle.emittedBubbles = true;
 
+      // Only spawn effect particles for every other particle (even indices)
+      if (index % 2 === 0) {
+        // Spawn effect particles from this position
+        const numEffectParticles = 3 + Math.floor(Math.random() * 3); // 3-5 particles
 
-    // Always render as image for reveal animation
+        for (let i = 0; i < numEffectParticles; i++) {
+          // Calculate base direction based on reveal direction
+          let baseVx = 0, baseVy = 0;
+          const speed = 0.5 + Math.random() * 1; // Base speed
 
+          switch (workerState.appProps.revealDirection) {
+            case 'left-to-right':
+              baseVx = speed;
+              baseVy = 0;
+              break;
+            case 'right-to-left':
+              baseVx = -speed;
+              baseVy = 0;
+              break;
+            case 'top-to-bottom':
+              baseVx = 0;
+              baseVy = speed;
+              break;
+            case 'bottom-to-top':
+              baseVx = 0;
+              baseVy = -speed;
+              break;
+          }
+
+          // Add turbulence
+          const turbulence = 0.8;
+          const vx = baseVx + (Math.random() - 0.5) * turbulence;
+          const vy = baseVy + (Math.random() - 0.5) * turbulence;
+
+          workerState.effectParticles.push({
+            x: particle.x + workerState.appProps.particleRadius / 2,
+            y: particle.y + workerState.appProps.particleRadius / 2,
+            vx,
+            vy,
+            startTime: requestAnimationFrameTime,
+            lifetime: EFFECT_PARTICLE_MIN_LIFETIME + Math.random() * (EFFECT_PARTICLE_MAX_LIFETIME - EFFECT_PARTICLE_MIN_LIFETIME),
+            size: workerState.appProps.particleRadius * (0.3 + Math.random() * 0.4), // 30-70% of particle radius
+            opacity: 1,
+            color: workerState.appProps.particleColors.length
+              ? getColorFromProgress(workerState.appProps.particleColors, Math.random())
+              : DEFAULT_PARTICLE_COLOR,
+          });
+        }
+      }
+    }
+
+    // Draw the revealed particle
     workerState.frameContext!.drawImage(
       workerState.imageBitmap!,
       particle.targetX,
@@ -447,10 +522,56 @@ const renderRevealAnimation = (
     );
   });
 
+  // Update and render effect particles
+  for (let i = workerState.effectParticles.length - 1; i >= 0; i--) {
+    const effectParticle = workerState.effectParticles[i];
+    const particleAge = requestAnimationFrameTime - effectParticle.startTime;
+    const progress = Math.min(1, particleAge / effectParticle.lifetime);
+
+    // Remove expired particles
+    if (progress >= 1) {
+      workerState.effectParticles.splice(i, 1);
+      continue;
+    }
+
+    // Update position
+    effectParticle.x += effectParticle.vx;
+    effectParticle.y += effectParticle.vy;
+
+    // Apply slight deceleration
+    effectParticle.vx *= 0.99;
+    effectParticle.vy *= 0.99;
+
+    // Calculate current opacity and size based on progress and app props (same as regular particles)
+    const currentOpacity = getCurrentParticleOpacity(progress);
+    const currentSize = getCurrentParticleSize(progress);
+    const radius = effectParticle.size * currentSize;
+
+    // Use color progression similar to regular particles
+    const particleColor = workerState.appProps.particleColors.length
+      ? getColorFromProgress(workerState.appProps.particleColors, progress)
+      : effectParticle.color;
+
+    // Draw effect particle (same pattern as regular circle particles)
+    workerState.frameContext!.globalAlpha = currentOpacity;
+    workerState.frameContext!.beginPath();
+    workerState.frameContext!.arc(
+      Math.floor(effectParticle.x),
+      Math.floor(effectParticle.y),
+      radius / 2,
+      0,
+      2 * Math.PI
+    );
+    workerState.frameContext!.fillStyle = particleColor;
+    workerState.frameContext!.fill();
+  }
+
+  // Reset alpha
+  workerState.frameContext!.globalAlpha = 1;
+
   const frameBitmap = workerState.frameCanvas!.transferToImageBitmap();
   workerState.mainContext!.transferFromImageBitmap(frameBitmap);
 
-  // Continue animation until reveal is complete
   if (workerState.revealProgress < 1) {
     workerState.animationFrameId = requestAnimationFrame(
       (requestAnimationFrameTime) =>
@@ -461,6 +582,9 @@ const renderRevealAnimation = (
     workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
     const finalBitmap = workerState.frameCanvas!.transferToImageBitmap();
     workerState.mainContext!.transferFromImageBitmap(finalBitmap);
+
+    // Clear effect particles
+    workerState.effectParticles = [];
 
     // Send animation complete message to main thread
     self.postMessage({
@@ -633,6 +757,9 @@ const handlePlay = () => {
     cancelAnimationFrame(workerState.animationFrameId);
   }
 
+  // Clear any existing effect particles
+  workerState.effectParticles = [];
+
   customMovementFunction = new Function(
     workerState.appProps.movementFunctionCode
   )();
@@ -653,6 +780,10 @@ const handleReset = () => {
   if (workerState.animationFrameId) {
     cancelAnimationFrame(workerState.animationFrameId);
   }
+
+  // Clear effect particles
+  workerState.effectParticles = [];
+
   workerState.workerParticles = workerState.workerParticles.map(
     (particle) => {
       const initialCoordinates =
@@ -673,6 +804,8 @@ const handleReset = () => {
         color: particle.color,
         revealProgress: 0,
         revealThreshold: particle.revealThreshold,
+        reachedTarget: false,
+        emittedBubbles: false,
         delay: particleDelay,
         lifetime: particleLifetime,
       };
