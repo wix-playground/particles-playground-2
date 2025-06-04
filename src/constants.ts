@@ -1,4 +1,4 @@
-import {FontState, StartPositionType, ParticleSizeEasingType, ParticleOpacityEasingType} from './interfaces';
+import {FontState, StartPositionType, ParticleSizeEasingType, ParticleOpacityEasingType, RevealDirection} from './interfaces';
 
 export const DEFAULT_PARTICLE_RADIUS = 5;
 export const DEFAULT_PARTICLE_SPREAD = 3;
@@ -18,6 +18,8 @@ export const DEFAULT_LIGHT_THEME_COLOR = '#213547';
 export const DEFAULT_PARTICLES_TEXT = 'WIX 🤠\nParticles!';
 export const DEFAULT_PARTICLE_COLOR = '#ffffff';
 export const DEFAULT_PARTICLE_COLORS = ['#ff0000', '#00ff00', '#0000ff'];
+export const DEFAULT_ENABLE_REVEAL_ANIMATION = false;
+export const DEFAULT_REVEAL_DIRECTION: RevealDirection = 'left-to-right';
 export const DEFAULT_FONT_STATE: FontState = {
     fontFamily: 'Arial',
     fontSize: 64,

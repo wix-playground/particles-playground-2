@@ -11,6 +11,7 @@ import {ParticleDelay} from './Settings/ParticleDelay';
 import {ParticleOrigin} from './Settings/ParticleOrigin';
 import {ShuffleSettingsButton} from './ShuffleSettingsButton';
 import {MovementEasingDropdown} from './Settings/MovementEasingDropdown';
+import {RevealAnimation} from './Settings/RevealAnimation';
 
 interface EffectControlsProps {
   onPlay: () => void;
@@ -41,6 +42,8 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
       </div>
 
       <MovementEasingDropdown />
+
+      <RevealAnimation />
 
       <TextInput />
       <MultiColorPicker />

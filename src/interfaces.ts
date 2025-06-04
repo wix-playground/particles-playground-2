@@ -66,6 +66,7 @@ export enum Action {
   UPDATE_START_PARTICLE_SIZE = 'UPDATE_START_PARTICLE_SIZE',
   UPDATE_END_PARTICLE_SIZE = 'UPDATE_END_PARTICLE_SIZE',
   UPDATE_DELAY = 'UPDATE_DELAY',
+  UPDATE_REVEAL_ANIMATION = 'UPDATE_REVEAL_ANIMATION',
 }
 
 export enum WorkerAction {
@@ -148,6 +149,7 @@ export type MessagePayloadMap = {
   [Action.UPDATE_START_PARTICLE_SIZE]: number;
   [Action.UPDATE_END_PARTICLE_SIZE]: number;
   [Action.UPDATE_DELAY]: number;
+  [Action.UPDATE_REVEAL_ANIMATION]: boolean;
 };
 export type MainThreadMessage =
   | WorkerMessage<typeof Action.INITIALIZE>
@@ -168,6 +170,7 @@ export type MainThreadMessage =
   | WorkerMessage<typeof Action.UPDATE_START_PARTICLE_SIZE>
   | WorkerMessage<typeof Action.UPDATE_END_PARTICLE_SIZE>
   | WorkerMessage<typeof Action.UPDATE_DELAY>
+  | WorkerMessage<typeof Action.UPDATE_REVEAL_ANIMATION>
 
 export const fontFamilies = [
   'Arial',
@@ -200,6 +203,8 @@ export type ParticleOpacityEasingType =
   | 'linear'
   | 'multiPulse';
 
+export type RevealDirection = 'left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top';
+
 export interface AppProps {
   particleRadius: number;
   startPosition: StartPositionType;
@@ -221,6 +226,8 @@ export interface AppProps {
   emitterY: number;
   emitterSize: number;
   emitterAngle: number;
+  enableRevealAnimation: boolean;
+  revealDirection: RevealDirection;
 }
 
 export interface WorkerMessage<T extends Action = Action> {

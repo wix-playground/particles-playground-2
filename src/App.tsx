@@ -26,6 +26,7 @@ const App = () => {
   const [appProps, setAppProps] = useState<AppProps | null>(null);
   const dimensions = useComputedDimensions({elementRef: textRef});
   const [fontLoaded, setFontLoaded] = useState(false);
+  // TODO: reveal text option
 
   // Get canvas scale from appProps, fallback to default
   const canvasScale = appProps?.particleSpread ?? DEFAULT_PARTICLE_SPREAD;

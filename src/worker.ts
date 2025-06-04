@@ -19,6 +19,8 @@ import {
   DEFAULT_EMITTER_Y,
   DEFAULT_EMITTER_SIZE,
   DEFAULT_EMITTER_ANGLE,
+  DEFAULT_ENABLE_REVEAL_ANIMATION,
+  DEFAULT_REVEAL_DIRECTION,
 } from './constants';
 import {
   Particle,
@@ -30,6 +32,7 @@ import {
   MainThreadMessage,
   InitializeMessagePayload,
   MessagePayloadMap,
+  RevealDirection,
 } from './interfaces';
 import {getPredefinedMovementOptions} from './movement';
 import {
@@ -68,6 +71,8 @@ const defaultAppProps: AppProps = {
   emitterY: DEFAULT_EMITTER_Y,
   emitterSize: DEFAULT_EMITTER_SIZE,
   emitterAngle: DEFAULT_EMITTER_ANGLE,
+  enableRevealAnimation: DEFAULT_ENABLE_REVEAL_ANIMATION,
+  revealDirection: DEFAULT_REVEAL_DIRECTION,
 };
 
 const workerState: {
@@ -160,6 +165,7 @@ const handleInitialize = (data: InitializeMessagePayload) => {
     startPosition: workerState.appProps.startPosition,
     delay: workerState.appProps.delay,
     animationDuration: workerState.appProps.animationDuration,
+    revealAnimation: workerState.appProps.enableRevealAnimation,
   });
 
   self.postMessage({
@@ -175,7 +181,7 @@ const generateParticles = ({
   blockWidth,
   startPosition,
   delay,
-  animationDuration,
+  animationDuration, revealAnimation
 }: {
   validBlocks: Uint8Array<ArrayBuffer>;
   radius: number;
@@ -184,6 +190,7 @@ const generateParticles = ({
   startPosition: StartPositionType;
   delay: number;
   animationDuration: number;
+  revealAnimation: boolean;
 }) => {
   const particles: Array<Particle> = [];
 
@@ -194,8 +201,7 @@ const generateParticles = ({
         const x = blockX * radius;
         const y = blockY * radius;
 
-        const {x: initialX, y: initialY} =
-          startCoordinatesConfig[startPosition as StartPositionType]();
+        const {x: initialX, y: initialY} = revealAnimation ? {x: x, y: y} : startCoordinatesConfig[startPosition as StartPositionType]();
 
         const particleDelay = Math.random() * delay;
         const particleLifetime = animationDuration - particleDelay;
@@ -222,6 +228,35 @@ const generateParticles = ({
   }
 
   return particles;
+};
+
+// Function to determine if a particle should be revealed based on reveal progress and direction
+const shouldParticleBeRevealed = (
+  particle: Particle,
+  revealProgress: number,
+  revealDirection: RevealDirection,
+  canvasDimensions: Dimensions
+): boolean => {
+  switch (revealDirection) {
+    case 'left-to-right': {
+      const revealXPosition = revealProgress * canvasDimensions.width;
+      return particle.targetX <= revealXPosition;
+    }
+    case 'right-to-left': {
+      const revealXPosition = (1 - revealProgress) * canvasDimensions.width;
+      return particle.targetX >= revealXPosition;
+    }
+    case 'top-to-bottom': {
+      const revealYPosition = revealProgress * canvasDimensions.height;
+      return particle.targetY <= revealYPosition;
+    }
+    case 'bottom-to-top': {
+      const revealYPosition = (1 - revealProgress) * canvasDimensions.height;
+      return particle.targetY >= revealYPosition;
+    }
+    default:
+      return true; // fallback
+  }
 };
 
 // Add function to calculate transition blend factor
@@ -333,6 +368,89 @@ const getCurrentParticleSize = (particleProgress: number): number => {
   return startSize + (endSize - startSize) * easingMultiplier;
 };
 
+const renderRevealAnimation = (
+  animationStartTime: number,
+  requestAnimationFrameTime: number
+) => {
+  workerState.frameContext!.clearRect(
+    0,
+    0,
+    workerState.frameCanvas!.width,
+    workerState.frameCanvas!.height
+  );
+
+  const elapsedTime = requestAnimationFrameTime - animationStartTime;
+  workerState.revealProgress = Math.min(
+    1,
+    elapsedTime / workerState.appProps.animationDuration
+  );
+
+  // Reset alpha for particle rendering
+  workerState.frameContext!.globalAlpha = 1;
+
+  workerState.workerParticles.forEach((particle) => {
+    if (particle.delay > requestAnimationFrameTime - animationStartTime) {
+      return;
+    }
+
+    // Check if particle should be revealed
+    const shouldReveal = shouldParticleBeRevealed(
+      particle,
+      workerState.revealProgress,
+      workerState.appProps.revealDirection,
+      {
+        width: workerState.mainCanvas!.width,
+        height: workerState.mainCanvas!.height,
+      }
+    );
+
+    if (!shouldReveal) {
+      return; // Skip rendering this particle
+    }
+
+    // Calculate individual particle progress
+    const elapsedTimeForParticle = elapsedTime - particle.delay;
+    const individualParticleProgress = Math.max(0, Math.min(1, elapsedTimeForParticle / particle.lifetime));
+
+    const currentOpacity = getCurrentParticleOpacity(individualParticleProgress);
+
+    // Always render as image for reveal animation
+    workerState.frameContext!.globalAlpha = currentOpacity;
+    workerState.frameContext!.drawImage(
+      workerState.imageBitmap!,
+      particle.targetX,
+      particle.targetY,
+      workerState.appProps.particleRadius,
+      workerState.appProps.particleRadius,
+      Math.floor(particle.x),
+      Math.floor(particle.y),
+      workerState.appProps.particleRadius,
+      workerState.appProps.particleRadius
+    );
+  });
+
+  const frameBitmap = workerState.frameCanvas!.transferToImageBitmap();
+  workerState.mainContext!.transferFromImageBitmap(frameBitmap);
+
+  // Continue animation until reveal is complete
+  if (workerState.revealProgress < 1) {
+    workerState.animationFrameId = requestAnimationFrame(
+      (requestAnimationFrameTime) =>
+        renderRevealAnimation(animationStartTime, requestAnimationFrameTime)
+    );
+  } else {
+    // Reveal complete - draw final image
+    workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
+    const finalBitmap = workerState.frameCanvas!.transferToImageBitmap();
+    workerState.mainContext!.transferFromImageBitmap(finalBitmap);
+
+    // Send animation complete message to main thread
+    self.postMessage({
+      type: WorkerAction.ANIMATION_COMPLETE,
+    });
+  }
+};
+
 const renderParticles = (
   animationStartTime: number,
   requestAnimationFrameTime: number
@@ -353,7 +471,6 @@ const renderParticles = (
 
   // Reset alpha for particle rendering
   workerState.frameContext!.globalAlpha = 1;
-
 
   workerState.workerParticles.forEach((particle) => {
 
@@ -385,7 +502,6 @@ const renderParticles = (
       // Blending mode: draw both circle and image with appropriate opacities
       const radius =
         workerState.appProps.particleRadius * (currentSize || 1);
-
 
       // Draw circle with reduced opacity
       workerState.frameContext!.globalAlpha = currentOpacity * (1 - blendFactor);
@@ -504,7 +620,13 @@ const handlePlay = () => {
   )();
   const startTime = performance.now();
   workerState.revealProgress = 0;
-  renderParticles(startTime, startTime);
+
+  // Choose rendering function based on reveal animation setting
+  if (workerState.appProps.enableRevealAnimation) {
+    renderRevealAnimation(startTime, startTime);
+  } else {
+    renderParticles(startTime, startTime);
+  }
 };
 
 const handleReset = () => {
@@ -607,6 +729,7 @@ const handleUpdateBitmap = (payload: MessagePayloadMap[Action.UPDATE_BITMAP]) =>
       startPosition: workerState.appProps.startPosition,
       delay: workerState.appProps.delay,
       animationDuration: workerState.appProps.animationDuration,
+      revealAnimation: workerState.appProps.enableRevealAnimation,
     });
   }
 }
@@ -659,6 +782,7 @@ const handleUpdateAppProps = (payload: MessagePayloadMap[Action.UPDATE_APP_PROPS
     startPosition: workerState.appProps.startPosition,
     delay: workerState.appProps.delay,
     animationDuration: workerState.appProps.animationDuration,
+    revealAnimation: workerState.appProps.enableRevealAnimation,
   });
 
   // Send updated app props back to main thread
