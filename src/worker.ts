@@ -786,6 +786,9 @@ const handlePlay = () => {
   if (workerState.appProps.enableRevealAnimation) {
     const textBoundaries = getTextBoundaries(workerState.workerParticles);
     workerState.frameContext!.globalAlpha = 1;
+    workerState.workerParticles.forEach(particle => {
+      particle.emittedBubbles = false;
+    });
     renderRevealAnimation(startTime, startTime, textBoundaries);
   } else {
     renderParticles(startTime, startTime);
