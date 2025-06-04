@@ -1,6 +1,6 @@
 import {useCallback} from "react";
 import {useWorkerActions} from "../hooks/useWorkerActions";
-import {ParticleSizeEasingType, ParticleOpacityEasingType, FontFamily, fontFamilies, StartPositionType} from "../interfaces";
+import {ParticleSizeEasingType, ParticleOpacityEasingType, FontFamily, fontFamilies, StartPositionType, RevealDirection} from "../interfaces";
 import {getPredefinedMovementOptions} from "../movement";
 import {getRandomValueForSetting} from "../settings-config";
 
@@ -69,6 +69,13 @@ const startPositions: StartPositionType[] = [
   'right'
 ];
 
+// Available reveal directions
+const revealDirections: RevealDirection[] = [
+  'left-to-right',
+  'right-to-left',
+  'top-to-bottom',
+  'bottom-to-top'
+];
 
 export const ShuffleSettingsButton = () => {
   // Available easing types
@@ -146,6 +153,8 @@ export const ShuffleSettingsButton = () => {
       emitterY: getRandomValueForSetting('emitterY'),
       emitterSize: getRandomValueForSetting('emitterSize'),
       emitterAngle: getRandomValueForSetting('emitterAngle'),
+      revealDirection: getRandomElement(revealDirections),
+      enableRevealAnimation: Math.random() > 0.8,
     });
   }, [workerActions]);
 

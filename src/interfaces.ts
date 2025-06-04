@@ -67,6 +67,7 @@ export enum Action {
   UPDATE_END_PARTICLE_SIZE = 'UPDATE_END_PARTICLE_SIZE',
   UPDATE_DELAY = 'UPDATE_DELAY',
   UPDATE_REVEAL_ANIMATION = 'UPDATE_REVEAL_ANIMATION',
+  UPDATE_REVEAL_DIRECTION = 'UPDATE_REVEAL_DIRECTION',
 }
 
 export enum WorkerAction {
@@ -150,6 +151,7 @@ export type MessagePayloadMap = {
   [Action.UPDATE_END_PARTICLE_SIZE]: number;
   [Action.UPDATE_DELAY]: number;
   [Action.UPDATE_REVEAL_ANIMATION]: boolean;
+  [Action.UPDATE_REVEAL_DIRECTION]: RevealDirection;
 };
 export type MainThreadMessage =
   | WorkerMessage<typeof Action.INITIALIZE>
@@ -171,6 +173,7 @@ export type MainThreadMessage =
   | WorkerMessage<typeof Action.UPDATE_END_PARTICLE_SIZE>
   | WorkerMessage<typeof Action.UPDATE_DELAY>
   | WorkerMessage<typeof Action.UPDATE_REVEAL_ANIMATION>
+  | WorkerMessage<typeof Action.UPDATE_REVEAL_DIRECTION>;
 
 export const fontFamilies = [
   'Arial',

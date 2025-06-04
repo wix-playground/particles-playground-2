@@ -385,14 +385,8 @@ const renderRevealAnimation = (
     elapsedTime / workerState.appProps.animationDuration
   );
 
-  // Reset alpha for particle rendering
-  workerState.frameContext!.globalAlpha = 1;
 
   workerState.workerParticles.forEach((particle) => {
-    if (particle.delay > requestAnimationFrameTime - animationStartTime) {
-      return;
-    }
-
     // Check if particle should be revealed
     const shouldReveal = shouldParticleBeRevealed(
       particle,
@@ -408,14 +402,10 @@ const renderRevealAnimation = (
       return; // Skip rendering this particle
     }
 
-    // Calculate individual particle progress
-    const elapsedTimeForParticle = elapsedTime - particle.delay;
-    const individualParticleProgress = Math.max(0, Math.min(1, elapsedTimeForParticle / particle.lifetime));
 
-    const currentOpacity = getCurrentParticleOpacity(individualParticleProgress);
 
     // Always render as image for reveal animation
-    workerState.frameContext!.globalAlpha = currentOpacity;
+
     workerState.frameContext!.drawImage(
       workerState.imageBitmap!,
       particle.targetX,
@@ -623,6 +613,7 @@ const handlePlay = () => {
 
   // Choose rendering function based on reveal animation setting
   if (workerState.appProps.enableRevealAnimation) {
+    workerState.frameContext!.globalAlpha = 1;
     renderRevealAnimation(startTime, startTime);
   } else {
     renderParticles(startTime, startTime);

@@ -1,0 +1,10 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+When asked to create a setting or a control for a feature:
+- render the control in [EffectControls.tsx](mdc:src/components/EffectControls.tsx) with the same styling as other controls;
+- create a new property in AppProps interface which is found in [interfaces.ts](mdc:src/interfaces.ts);
+- use existing upadting app property architecture from [worker-messenger.ts](mdc:src/worker-messenger.ts), for example the property `text` is updated like so:  in [worker-messenger.ts](mdc:src/worker-messenger.ts) `updateText = (text: string) => this.updateAppProps({text});` and in [TextInput.tsx](mdc:src/components/Settings/TextSettings/TextInput.tsx): `workerActions?.updateText(value ?? '');`;
+- make sure to add the property to the [ShuffleSettingsButton.tsx](mdc:src/components/ShuffleSettingsButton.tsx);

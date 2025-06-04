@@ -1,4 +1,4 @@
-import {Action, MessagePayloadMap, WorkerMessage, StartPositionType, FontState, InitializeMessagePayload, AppProps, ParticleSizeEasingType, ParticleOpacityEasingType} from "./interfaces";
+import {Action, MessagePayloadMap, WorkerMessage, StartPositionType, FontState, InitializeMessagePayload, AppProps, ParticleSizeEasingType, ParticleOpacityEasingType, RevealDirection} from "./interfaces";
 export class WorkerMessenger {
   constructor(private worker: Worker | null) { }
 
@@ -53,6 +53,7 @@ export class WorkerMessenger {
   updateParticleSizeEasing = (particleSizeEasing: ParticleSizeEasingType) => this.updateAppProps({particleSizeEasing});
   updateParticleOpacityEasing = (particleOpacityEasing: ParticleOpacityEasingType) => this.updateAppProps({particleOpacityEasing});
   updateRevealAnimation = (enableRevealAnimation: boolean) => this.updateAppProps({enableRevealAnimation});
+  updateRevealDirection = (revealDirection: RevealDirection) => this.updateAppProps({revealDirection});
 
   updateSelectedMovementFunction = (selectedMovementFunction: string, movementFunctionCode?: string) =>
     this.updateAppProps({
