@@ -22,6 +22,7 @@ export interface Particle extends Coordinates {
   reachedTarget?: boolean;
   delay: number;
   lifetime: number;
+  radius: number;
 }
 
 export type StartPositionType =
@@ -236,4 +237,24 @@ export interface AppProps {
 export interface WorkerMessage<T extends Action = Action> {
   type: T;
   payload: MessagePayloadMap[T];
+}
+
+
+export interface EffectParticle {
+  x: number;
+  y: number;
+  vx: number; // velocity x
+  vy: number; // velocity y
+  startTime: number;
+  lifetime: number;
+  radius: number;
+  opacity: number;
+  color: string;
+}
+
+export interface DrawableParticle {
+  x: number;
+  y: number;
+  color: string;
+  radius: number;
 }

@@ -35,6 +35,8 @@ import {
   InitializeMessagePayload,
   MessagePayloadMap,
   RevealDirection,
+  DrawableParticle,
+  EffectParticle,
 } from './interfaces';
 import {getPredefinedMovementOptions} from './movement';
 import {
@@ -226,6 +228,7 @@ const generateParticles = ({
           emittedBubbles: false,
           delay: particleDelay,
           lifetime: particleLifetime,
+          radius,
         });
       }
     }
@@ -400,18 +403,39 @@ const getCurrentParticleSize = (particleProgress: number): number => {
   return startSize + (endSize - startSize) * easingMultiplier;
 };
 
-// Add interface for effect particles at the top after other interfaces
-interface EffectParticle {
-  x: number;
-  y: number;
-  vx: number; // velocity x
-  vy: number; // velocity y
-  startTime: number;
-  lifetime: number;
-  size: number;
-  opacity: number;
-  color: string;
-}
+// Helper function to draw a circle particle
+const drawCircleParticle = (
+  particle: DrawableParticle,
+  progress: number,
+  centerOffset: boolean = true
+) => {
+  // Calculate current size and opacity based on individual particle progress
+  const currentOpacity = getCurrentParticleOpacity(progress);
+  const currentSize = getCurrentParticleSize(progress);
+  const radius = particle.radius * currentSize;
+
+  // Calculate color based on color progress
+  const particleColor = workerState.appProps.particleColors.length
+    ? getColorFromProgress(workerState.appProps.particleColors, progress)
+    : particle.color;
+
+  // Calculate position
+  const centerX = centerOffset ? Math.floor(particle.x) + radius / 2 : Math.floor(particle.x);
+  const centerY = centerOffset ? Math.floor(particle.y) + radius / 2 : Math.floor(particle.y);
+
+  // Draw the circle
+  workerState.frameContext!.globalAlpha = currentOpacity;
+  workerState.frameContext!.beginPath();
+  workerState.frameContext!.arc(
+    centerX,
+    centerY,
+    radius / 2,
+    0,
+    2 * Math.PI
+  );
+  workerState.frameContext!.fillStyle = particleColor;
+  workerState.frameContext!.fill();
+};
 
 const renderRevealAnimation = (
   animationStartTime: number,
@@ -498,7 +522,7 @@ const renderRevealAnimation = (
             vy,
             startTime: requestAnimationFrameTime,
             lifetime: EFFECT_PARTICLE_MIN_LIFETIME + Math.random() * (EFFECT_PARTICLE_MAX_LIFETIME - EFFECT_PARTICLE_MIN_LIFETIME),
-            size: workerState.appProps.particleRadius * (0.3 + Math.random() * 0.4), // 30-70% of particle radius
+            radius: workerState.appProps.particleRadius * (0.3 + Math.random() * 0.4), // 30-70% of particle radius
             opacity: 1,
             color: workerState.appProps.particleColors.length
               ? getColorFromProgress(workerState.appProps.particleColors, Math.random())
@@ -542,28 +566,14 @@ const renderRevealAnimation = (
     effectParticle.vx *= 0.99;
     effectParticle.vy *= 0.99;
 
-    // Calculate current opacity and size based on progress and app props (same as regular particles)
-    const currentOpacity = getCurrentParticleOpacity(progress);
-    const currentSize = getCurrentParticleSize(progress);
-    const radius = effectParticle.size * currentSize;
 
-    // Use color progression similar to regular particles
-    const particleColor = workerState.appProps.particleColors.length
-      ? getColorFromProgress(workerState.appProps.particleColors, progress)
-      : effectParticle.color;
 
-    // Draw effect particle (same pattern as regular circle particles)
-    workerState.frameContext!.globalAlpha = currentOpacity;
-    workerState.frameContext!.beginPath();
-    workerState.frameContext!.arc(
-      Math.floor(effectParticle.x),
-      Math.floor(effectParticle.y),
-      radius / 2,
-      0,
-      2 * Math.PI
+    // Draw effect particle using helper function
+    drawCircleParticle(
+      effectParticle,
+      progress,
+      false // effect particles don't need center offset
     );
-    workerState.frameContext!.fillStyle = particleColor;
-    workerState.frameContext!.fill();
   }
 
   // Reset alpha
@@ -642,27 +652,13 @@ const renderParticles = (
 
     if (blendFactor > 0 && blendFactor < 1) {
       // Blending mode: draw both circle and image with appropriate opacities
-      const radius =
-        workerState.appProps.particleRadius * (currentSize || 1);
 
-      // Draw circle with reduced opacity
-      workerState.frameContext!.globalAlpha = currentOpacity * (1 - blendFactor);
-      workerState.frameContext!.beginPath();
-      workerState.frameContext!.arc(
-        Math.floor(particle.x) + radius / 2,
-        Math.floor(particle.y) + radius / 2,
-        radius / 2,
-        0,
-        2 * Math.PI
+
+      drawCircleParticle(
+        particle,
+        individualParticleProgress,
+        true, // regular particles need center offset
       );
-      workerState.frameContext!.fillStyle = workerState.appProps.particleColors
-        .length
-        ? getColorFromProgress(
-          workerState.appProps.particleColors,
-          workerState.revealProgress
-        )
-        : particle.color;
-      workerState.frameContext!.fill();
 
       // Draw image with increasing opacity
       workerState.frameContext!.globalAlpha = blendFactor * currentOpacity;
@@ -693,26 +689,11 @@ const renderParticles = (
       );
     } else {
       // Fully circle
-      const radius =
-        workerState.appProps.particleRadius * (currentSize || 1);
-
-      workerState.frameContext!.globalAlpha = currentOpacity;
-      workerState.frameContext!.beginPath();
-      workerState.frameContext!.arc(
-        Math.floor(particle.x) + radius / 2,
-        Math.floor(particle.y) + radius / 2,
-        radius / 2,
-        0,
-        2 * Math.PI
+      drawCircleParticle(
+        particle,
+        individualParticleProgress,
+        true, // regular particles need center offset
       );
-      workerState.frameContext!.fillStyle = workerState.appProps.particleColors
-        .length
-        ? getColorFromProgress(
-          workerState.appProps.particleColors,
-          workerState.revealProgress
-        )
-        : particle.color;
-      workerState.frameContext!.fill();
     }
 
     if (
@@ -808,6 +789,7 @@ const handleReset = () => {
         emittedBubbles: false,
         delay: particleDelay,
         lifetime: particleLifetime,
+        radius: workerState.appProps.particleRadius,
       };
     }
   );
