@@ -23,7 +23,7 @@ export const ShareButton = () => {
       });
     }
   };
-  return <button className="share-button" disabled={!appProps} onClick={handleShareClick} style={{width: '100%'}}>
+  return <button className="share-button" disabled={!appProps} onClick={handleShareClick} style={{flex: '1 1 0'}}>
     {shareButtonText}
   </button>;
 };
