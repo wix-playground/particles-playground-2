@@ -203,7 +203,7 @@ const generateParticles = ({
 
         const {x: initialX, y: initialY} = revealAnimation ? {x: x, y: y} : startCoordinatesConfig[startPosition as StartPositionType]();
 
-        const particleDelay = Math.random() * delay;
+        const particleDelay = revealAnimation ? 0 : Math.random() * delay;
         const particleLifetime = animationDuration - particleDelay;
 
         particles.push({
@@ -230,28 +230,56 @@ const generateParticles = ({
   return particles;
 };
 
+// Function to calculate the actual text boundaries from particles
+const getTextBoundaries = (particles: Particle[]): Dimensions & {minX: number; minY: number; maxX: number; maxY: number} => {
+  if (particles.length === 0) {
+    return {width: 0, height: 0, minX: 0, minY: 0, maxX: 0, maxY: 0};
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  particles.forEach(particle => {
+    minX = Math.min(minX, particle.targetX);
+    minY = Math.min(minY, particle.targetY);
+    maxX = Math.max(maxX, particle.targetX + workerState.appProps.particleRadius);
+    maxY = Math.max(maxY, particle.targetY + workerState.appProps.particleRadius);
+  });
+
+  return {
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
+};
+
 // Function to determine if a particle should be revealed based on reveal progress and direction
 const shouldParticleBeRevealed = (
   particle: Particle,
   revealProgress: number,
   revealDirection: RevealDirection,
-  canvasDimensions: Dimensions
+  textBoundaries: ReturnType<typeof getTextBoundaries>
 ): boolean => {
   switch (revealDirection) {
     case 'left-to-right': {
-      const revealXPosition = revealProgress * canvasDimensions.width;
+      const revealXPosition = textBoundaries.minX + (revealProgress * textBoundaries.width);
       return particle.targetX <= revealXPosition;
     }
     case 'right-to-left': {
-      const revealXPosition = (1 - revealProgress) * canvasDimensions.width;
+      const revealXPosition = textBoundaries.maxX - (revealProgress * textBoundaries.width);
       return particle.targetX >= revealXPosition;
     }
     case 'top-to-bottom': {
-      const revealYPosition = revealProgress * canvasDimensions.height;
+      const revealYPosition = textBoundaries.minY + (revealProgress * textBoundaries.height);
       return particle.targetY <= revealYPosition;
     }
     case 'bottom-to-top': {
-      const revealYPosition = (1 - revealProgress) * canvasDimensions.height;
+      const revealYPosition = textBoundaries.maxY - (revealProgress * textBoundaries.height);
       return particle.targetY >= revealYPosition;
     }
     default:
@@ -370,7 +398,8 @@ const getCurrentParticleSize = (particleProgress: number): number => {
 
 const renderRevealAnimation = (
   animationStartTime: number,
-  requestAnimationFrameTime: number
+  requestAnimationFrameTime: number,
+  textBoundaries: ReturnType<typeof getTextBoundaries>
 ) => {
   workerState.frameContext!.clearRect(
     0,
@@ -385,6 +414,8 @@ const renderRevealAnimation = (
     elapsedTime / workerState.appProps.animationDuration
   );
 
+  // Reset alpha for particle rendering
+  workerState.frameContext!.globalAlpha = 1;
 
   workerState.workerParticles.forEach((particle) => {
     // Check if particle should be revealed
@@ -392,10 +423,7 @@ const renderRevealAnimation = (
       particle,
       workerState.revealProgress,
       workerState.appProps.revealDirection,
-      {
-        width: workerState.mainCanvas!.width,
-        height: workerState.mainCanvas!.height,
-      }
+      textBoundaries
     );
 
     if (!shouldReveal) {
@@ -426,7 +454,7 @@ const renderRevealAnimation = (
   if (workerState.revealProgress < 1) {
     workerState.animationFrameId = requestAnimationFrame(
       (requestAnimationFrameTime) =>
-        renderRevealAnimation(animationStartTime, requestAnimationFrameTime)
+        renderRevealAnimation(animationStartTime, requestAnimationFrameTime, textBoundaries)
     );
   } else {
     // Reveal complete - draw final image
@@ -613,8 +641,9 @@ const handlePlay = () => {
 
   // Choose rendering function based on reveal animation setting
   if (workerState.appProps.enableRevealAnimation) {
+    const textBoundaries = getTextBoundaries(workerState.workerParticles);
     workerState.frameContext!.globalAlpha = 1;
-    renderRevealAnimation(startTime, startTime);
+    renderRevealAnimation(startTime, startTime, textBoundaries);
   } else {
     renderParticles(startTime, startTime);
   }

@@ -121,10 +121,12 @@ export const ShuffleSettingsButton = () => {
       return ranges[fontFamily] || [400];
     };
 
+    const revealAnimation = Math.random() > 0.8;
     const randomWeight = getRandomElement(getFontWeightRange(randomFont));
-    const randomAnimationDuration = getRandomValueForSetting('animationDuration')
-    const randomDelay = getRandomValueForSetting('delay', {max: randomAnimationDuration})
+    const randomAnimationDuration = getRandomValueForSetting('animationDuration', {max: revealAnimation ? 3000 : undefined})
+    const randomDelay = revealAnimation ? 0 : getRandomValueForSetting('delay', {max: randomAnimationDuration})
     const randomFontSize = getRandomValueForSetting('fontSize', {min: 64, max: 64})
+    const randomParticleRadius = revealAnimation ? 1 : getRandomValueForSetting('particleRadius')
 
     // Apply all randomized settings in one call using centralized config
     workerActions.updateAppProps({
@@ -139,7 +141,7 @@ export const ShuffleSettingsButton = () => {
         italic: Math.random() > 0.7, // 30% chance for italic
         weight: randomWeight,
       },
-      particleRadius: getRandomValueForSetting('particleRadius'),
+      particleRadius: randomParticleRadius,
       particleSpread: 3,
       startParticleOpacity: getRandomValueForSetting('startParticleOpacity'),
       endParticleOpacity: getRandomValueForSetting('endParticleOpacity'),
@@ -154,7 +156,7 @@ export const ShuffleSettingsButton = () => {
       emitterSize: getRandomValueForSetting('emitterSize'),
       emitterAngle: getRandomValueForSetting('emitterAngle'),
       revealDirection: getRandomElement(revealDirections),
-      enableRevealAnimation: Math.random() > 0.8,
+      enableRevealAnimation: revealAnimation,
     });
   }, [workerActions]);
 
