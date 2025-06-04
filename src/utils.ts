@@ -100,6 +100,11 @@ export const hslToRgb = (hslString: string): {r: number, g: number, b: number} =
 
 // Parse color string (supports both hex and HSL)
 export const parseColor = (colorString: string): {r: number, g: number, b: number} => {
+  // Handle undefined or null colorString
+  if (!colorString || typeof colorString !== 'string') {
+    throw new Error(`Invalid color string provided to parseColor: ${JSON.stringify(colorString)}`);
+  }
+
   if (colorString.startsWith('hsl(')) {
     return hslToRgb(colorString);
   } else {
@@ -115,26 +120,35 @@ export const rgbToHex = (r: number, g: number, b: number): string => {
 // Get color based on progress and array of colors
 export const getColorFromProgress = (colors: string[], progress: number): string => {
   if (!colors?.length) return '#ffffff';
-  if (colors.length === 1) return colors[0];
+
+  // Filter out any undefined or invalid colors
+  const validColors = colors.filter(color => color && typeof color === 'string');
+  if (!validColors.length) {
+    throw new Error(`Invalid colors provided to getColorFromProgress: ${JSON.stringify(colors)}`);
+  }
+
+  if (validColors.length === 1) return validColors[0];
+
+
 
   // Ensure progress is between 0 and 1
   const clampedProgress = Math.max(0, Math.min(1, progress));
 
   // Calculate which segment of the gradient we're in
-  const segment = clampedProgress * (colors.length - 1);
+  const segment = clampedProgress * (validColors.length - 1);
   const segmentIndex = Math.floor(segment);
 
   // Handle edge case when progress is exactly 1
-  if (segmentIndex === colors.length - 1) {
-    return colors[colors.length - 1];
+  if (segmentIndex === validColors.length - 1) {
+    return validColors[validColors.length - 1];
   }
 
   // Calculate interpolation value within this segment (0-1)
   const segmentProgress = segment - segmentIndex;
 
   // Get the two colors to interpolate between - now supports both hex and HSL
-  const color1 = parseColor(colors[segmentIndex]);
-  const color2 = parseColor(colors[segmentIndex + 1]);
+  const color1 = parseColor(validColors[segmentIndex]);
+  const color2 = parseColor(validColors[segmentIndex + 1]);
 
   // Interpolate RGB values
   const r = Math.round(lerp(color1.r, color2.r, segmentProgress));

@@ -123,7 +123,7 @@ export const ShuffleSettingsButton = () => {
 
     const revealAnimation = Math.random() > 0.8;
     const randomWeight = getRandomElement(getFontWeightRange(randomFont));
-    const randomAnimationDuration = getRandomValueForSetting('animationDuration', {max: revealAnimation ? 3000 : undefined})
+    const randomAnimationDuration = getRandomValueForSetting('animationDuration', revealAnimation ? {max: 3000} : undefined)
     const randomDelay = revealAnimation ? 0 : getRandomValueForSetting('delay', {max: randomAnimationDuration})
     const randomFontSize = getRandomValueForSetting('fontSize', {min: 64, max: 64})
     const randomParticleRadius = revealAnimation ? 1 : getRandomValueForSetting('particleRadius')

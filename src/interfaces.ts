@@ -250,6 +250,7 @@ export interface EffectParticle {
   radius: number;
   opacity: number;
   color: string;
+  progress: number;
 }
 
 export interface DrawableParticle {

@@ -136,6 +136,7 @@ const handleInitialize = (data: InitializeMessagePayload) => {
     workerState.appProps = {...defaultAppProps, ...appProps};
   }
 
+
   initializeCanvas(canvas);
   workerState.frameContext!.drawImage(workerState.imageBitmap!, 0, 0);
   const {
@@ -414,10 +415,21 @@ const drawCircleParticle = (
   const currentSize = getCurrentParticleSize(progress);
   const radius = particle.radius * currentSize;
 
-  // Calculate color based on color progress
-  const particleColor = workerState.appProps.particleColors.length
-    ? getColorFromProgress(workerState.appProps.particleColors, progress)
-    : particle.color;
+  // Calculate color based on color progress with fallback
+  let particleColor: string;
+  try {
+    particleColor = workerState.appProps.particleColors.length
+      ? getColorFromProgress(workerState.appProps.particleColors, progress)
+      : particle.color;
+
+    // Additional fallback if color is still undefined or invalid
+    if (!particleColor || typeof particleColor !== 'string') {
+      particleColor = DEFAULT_PARTICLE_COLOR;
+    }
+  } catch (error) {
+    console.warn('Error getting particle color:', error);
+    particleColor = DEFAULT_PARTICLE_COLOR;
+  }
 
   // Calculate position
   const centerX = centerOffset ? Math.floor(particle.x) + radius / 2 : Math.floor(particle.x);
@@ -435,6 +447,70 @@ const drawCircleParticle = (
   );
   workerState.frameContext!.fillStyle = particleColor;
   workerState.frameContext!.fill();
+};
+
+// Helper function to create effect particles when a particle is revealed
+const createEffectParticles = (
+  particle: Particle,
+  requestAnimationFrameTime: number
+): EffectParticle[] => {
+  const effectParticles: EffectParticle[] = [];
+  const numEffectParticles = 3 + Math.floor(Math.random() * 3); // 3-5 particles
+  const effectParticleProgress = 0;
+
+  for (let i = 0; i < numEffectParticles; i++) {
+    // Calculate base direction based on reveal direction
+    let baseVx = 0, baseVy = 0;
+    const speed = 0.5 + Math.random() * 1; // Base speed
+
+    switch (workerState.appProps.revealDirection) {
+      case 'left-to-right':
+        baseVx = speed;
+        baseVy = 0;
+        break;
+      case 'right-to-left':
+        baseVx = -speed;
+        baseVy = 0;
+        break;
+      case 'top-to-bottom':
+        baseVx = 0;
+        baseVy = speed;
+        break;
+      case 'bottom-to-top':
+        baseVx = 0;
+        baseVy = -speed;
+        break;
+    }
+
+    // Add turbulence
+    const turbulence = 0.8;
+    const vx = baseVx + (Math.random() - 0.5) * turbulence;
+    const vy = baseVy + (Math.random() - 0.5) * turbulence;
+
+    effectParticles.push({
+      x: particle.x + workerState.appProps.particleRadius / 2,
+      y: particle.y + workerState.appProps.particleRadius / 2,
+      vx,
+      vy,
+      startTime: requestAnimationFrameTime,
+      lifetime: EFFECT_PARTICLE_MIN_LIFETIME + Math.random() * (EFFECT_PARTICLE_MAX_LIFETIME - EFFECT_PARTICLE_MIN_LIFETIME),
+      radius: workerState.appProps.particleRadius,
+      opacity: 1,
+      progress: effectParticleProgress,
+      color: (() => {
+        try {
+          return workerState.appProps.particleColors.length
+            ? getColorFromProgress(workerState.appProps.particleColors, effectParticleProgress)
+            : DEFAULT_PARTICLE_COLOR;
+        } catch (error) {
+          console.warn('Error getting effect particle color:', error);
+          return DEFAULT_PARTICLE_COLOR;
+        }
+      })(),
+    });
+  }
+
+  return effectParticles;
 };
 
 const renderRevealAnimation = (
@@ -483,52 +559,9 @@ const renderRevealAnimation = (
 
       // Only spawn effect particles for every other particle (even indices)
       if (index % 2 === 0) {
-        // Spawn effect particles from this position
-        const numEffectParticles = 3 + Math.floor(Math.random() * 3); // 3-5 particles
-
-        for (let i = 0; i < numEffectParticles; i++) {
-          // Calculate base direction based on reveal direction
-          let baseVx = 0, baseVy = 0;
-          const speed = 0.5 + Math.random() * 1; // Base speed
-
-          switch (workerState.appProps.revealDirection) {
-            case 'left-to-right':
-              baseVx = speed;
-              baseVy = 0;
-              break;
-            case 'right-to-left':
-              baseVx = -speed;
-              baseVy = 0;
-              break;
-            case 'top-to-bottom':
-              baseVx = 0;
-              baseVy = speed;
-              break;
-            case 'bottom-to-top':
-              baseVx = 0;
-              baseVy = -speed;
-              break;
-          }
-
-          // Add turbulence
-          const turbulence = 0.8;
-          const vx = baseVx + (Math.random() - 0.5) * turbulence;
-          const vy = baseVy + (Math.random() - 0.5) * turbulence;
-
-          workerState.effectParticles.push({
-            x: particle.x + workerState.appProps.particleRadius / 2,
-            y: particle.y + workerState.appProps.particleRadius / 2,
-            vx,
-            vy,
-            startTime: requestAnimationFrameTime,
-            lifetime: EFFECT_PARTICLE_MIN_LIFETIME + Math.random() * (EFFECT_PARTICLE_MAX_LIFETIME - EFFECT_PARTICLE_MIN_LIFETIME),
-            radius: workerState.appProps.particleRadius * (0.3 + Math.random() * 0.4), // 30-70% of particle radius
-            opacity: 1,
-            color: workerState.appProps.particleColors.length
-              ? getColorFromProgress(workerState.appProps.particleColors, Math.random())
-              : DEFAULT_PARTICLE_COLOR,
-          });
-        }
+        // Create and add effect particles
+        const newEffectParticles = createEffectParticles(particle, requestAnimationFrameTime);
+        workerState.effectParticles.push(...newEffectParticles);
       }
     }
 
@@ -550,10 +583,10 @@ const renderRevealAnimation = (
   for (let i = workerState.effectParticles.length - 1; i >= 0; i--) {
     const effectParticle = workerState.effectParticles[i];
     const particleAge = requestAnimationFrameTime - effectParticle.startTime;
-    const progress = Math.min(1, particleAge / effectParticle.lifetime);
+    effectParticle.progress = Math.min(1, particleAge / effectParticle.lifetime);
 
     // Remove expired particles
-    if (progress >= 1) {
+    if (effectParticle.progress >= 1) {
       workerState.effectParticles.splice(i, 1);
       continue;
     }
@@ -566,12 +599,10 @@ const renderRevealAnimation = (
     effectParticle.vx *= 0.99;
     effectParticle.vy *= 0.99;
 
-
-
     // Draw effect particle using helper function
     drawCircleParticle(
       effectParticle,
-      progress,
+      effectParticle.progress,
       false // effect particles don't need center offset
     );
   }
