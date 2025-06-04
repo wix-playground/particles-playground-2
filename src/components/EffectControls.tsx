@@ -34,20 +34,21 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
   return (
     <div className="controls-container">
       {/* Effect Mode Group */}
-      <div className="control-group effects-preset-group">
-        <label htmlFor="effectsPreset">Effect Mode:</label>
-        <select
-          id="effectsPreset"
-          value={appProps?.enableRevealAnimation ? 'reveal' : 'movement'}
-          onChange={handleEffectModeChange}
-        >
-          <option value="movement">Movement easing</option>
-          <option value="reveal">Reveal</option>
-        </select>
+      <div className="effects-preset-group">
+        <div className="control-group">
+          <label htmlFor="effectsPreset">Effect Mode:</label>
+          <select
+            id="effectsPreset"
+            value={appProps?.enableRevealAnimation ? 'reveal' : 'movement'}
+            onChange={handleEffectModeChange}
+          >
+            <option value="movement">Movement easing</option>
+            <option value="reveal">Reveal</option>
+          </select>
+        </div>
+        {!appProps?.enableRevealAnimation && <MovementEasingDropdown />}
+        {appProps?.enableRevealAnimation && <RevealDirection />}
       </div>
-
-      {!appProps?.enableRevealAnimation && <MovementEasingDropdown />}
-      {appProps?.enableRevealAnimation && <RevealDirection />}
 
       {/* Text Settings Group */}
       <div className="settings-group-divider"></div>
