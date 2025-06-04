@@ -596,6 +596,10 @@ const renderRevealAnimation = (
     // Clear effect particles
     workerState.effectParticles = [];
 
+    workerState.workerParticles.forEach((particle) => {
+      particle.emittedBubbles = false;
+    });
+
     // Send animation complete message to main thread
     self.postMessage({
       type: WorkerAction.ANIMATION_COMPLETE,
