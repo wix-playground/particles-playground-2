@@ -25,6 +25,14 @@ const generateRandomColors = (): string[] => {
   return colors;
 };
 
+// Helper function to generate random text color
+const generateRandomTextColor = (): string => {
+  const hue = Math.floor(Math.random() * 360);
+  const saturation = Math.floor(Math.random() * 51) + 50; // 50-100%
+  const lightness = Math.floor(Math.random() * 41) + 40; // 40-80%
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
 // Predefined fun text options
 const textOptions = [
   'WIX 🤠\nParticles!',
@@ -87,6 +95,7 @@ export const ShuffleSettingsButton = () => {
     const randomMovementKey = getRandomElement(movementKeys);
     const randomFont: FontFamily = getRandomElement([...fontFamilies]);
     const randomText = getRandomElement(textOptions);
+    const randomTextColor = generateRandomTextColor();
     const randomColors = generateRandomColors();
     const randomStartPosition = getRandomElement(startPositions);
 
@@ -123,6 +132,7 @@ export const ShuffleSettingsButton = () => {
     // Apply all randomized settings in one call using centralized config
     workerActions.updateAppProps({
       text: randomText,
+      textColor: randomTextColor,
       particleColors: randomColors,
       selectedMovementFunction: randomMovementKey,
       startPosition: randomStartPosition,

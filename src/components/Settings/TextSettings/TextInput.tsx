@@ -23,10 +23,11 @@ export const TextInput = () => {
           fontSize: `24px`,
           fontWeight: fontState.weight,
           fontStyle: fontState.italic ? 'italic' : 'normal',
+          color: appProps?.textColor || '#ffffff',
           whiteSpace: 'pre-line' as const,
         }
         : {},
-    [fontState]
+    [fontState, appProps?.textColor]
   );
 
   if (!appProps) {

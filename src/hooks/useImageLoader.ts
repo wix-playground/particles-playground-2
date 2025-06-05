@@ -1,13 +1,10 @@
 import {useMemo} from 'react';
-import {
-  DEFAULT_DARK_THEME_COLOR,
-  DEFAULT_LIGHT_THEME_COLOR,
-} from '../constants';
 
 export const useImageLoader = ({
   width: _width,
   height: _height,
   text,
+  textColor,
   font,
   fontLoaded,
   canvasScale,
@@ -15,6 +12,7 @@ export const useImageLoader = ({
   width: number;
   height: number;
   text: string;
+  textColor: string;
   font: string;
   fontLoaded: boolean;
   canvasScale: number;
@@ -38,11 +36,7 @@ export const useImageLoader = ({
 
     analysisContext.textAlign = 'center';
     analysisContext.textBaseline = 'middle';
-    analysisContext.fillStyle =
-      window.matchMedia &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? DEFAULT_DARK_THEME_COLOR
-        : DEFAULT_LIGHT_THEME_COLOR;
+    analysisContext.fillStyle = textColor;
     analysisContext.font = font;
 
     // Handle multiline text
@@ -59,7 +53,7 @@ export const useImageLoader = ({
 
     // Analyze image data without affecting main canvas
     return analysisCanvas.transferToImageBitmap();
-  }, [width, height, text, font, fontLoaded, canvasScale]);
+  }, [width, height, text, textColor, font, fontLoaded, canvasScale]);
 
   return imageData;
 };

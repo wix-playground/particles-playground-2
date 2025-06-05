@@ -1,7 +1,7 @@
 import FontFaceObserver from 'fontfaceobserver';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import './App.css';
-import {DEFAULT_FONT_STATE, SNIPPET_QUERY_PARAM, DEFAULT_PARTICLE_SPREAD} from './constants';
+import {DEFAULT_FONT_STATE, SNIPPET_QUERY_PARAM, DEFAULT_PARTICLE_SPREAD, DEFAULT_TEXT_COLOR} from './constants';
 import {
   AppProps,
   getInitializeMessage,
@@ -53,6 +53,7 @@ const App = () => {
     width: dimensions.width,
     height: dimensions.height,
     text: appProps?.text ?? '',
+    textColor: appProps?.textColor ?? DEFAULT_TEXT_COLOR,
     font: getFontString(appProps?.font ?? DEFAULT_FONT_STATE),
     fontLoaded,
     canvasScale,

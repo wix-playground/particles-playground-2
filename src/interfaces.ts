@@ -213,6 +213,7 @@ export interface AppProps {
   startPosition: StartPositionType;
   selectedMovementFunction: string;
   text: string;
+  textColor: string;
   font: FontState;
   particleColors: string[];
   animationDuration: number;

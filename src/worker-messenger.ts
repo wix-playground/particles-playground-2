@@ -39,6 +39,7 @@ export class WorkerMessenger {
 
   // Convenience methods that use the unified updateAppProps
   updateText = (text: string) => this.updateAppProps({text});
+  updateTextColor = (textColor: string) => this.updateAppProps({textColor});
   updateDelay = (delay: number) => this.updateAppProps({delay});
   updateParticleColors = (particleColors: string[]) => this.updateAppProps({particleColors});
   updateAnimationDuration = (animationDuration: number) => this.updateAppProps({animationDuration});

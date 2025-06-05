@@ -2,7 +2,7 @@ import {render, screen} from '@testing-library/react';
 import {TextSettings} from '../../../components/Settings/TextSettings';
 import {AppContext} from '../../../contexts/AppContext';
 import {WorkerContext} from '../../../contexts/WorkerContext';
-import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_DELAY, DEFAULT_END_PARTICLE_OPACITY, DEFAULT_END_PARTICLE_SIZE, DEFAULT_FONT_STATE, DEFAULT_PARTICLE_SPREAD, DEFAULT_START_PARTICLE_OPACITY, DEFAULT_START_PARTICLE_SIZE, DEFAULT_EMITTER_X, DEFAULT_EMITTER_Y, DEFAULT_EMITTER_SIZE, DEFAULT_EMITTER_ANGLE, DEFAULT_PARTICLE_SIZE_EASING, DEFAULT_PARTICLE_OPACITY_EASING, DEFAULT_ENABLE_REVEAL_ANIMATION, DEFAULT_REVEAL_DIRECTION, DEFAULT_TURBULENCE, DEFAULT_WIND_SPEED, DEFAULT_WIND_DIRECTION, DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME} from '../../../constants';
+import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_DELAY, DEFAULT_END_PARTICLE_OPACITY, DEFAULT_END_PARTICLE_SIZE, DEFAULT_FONT_STATE, DEFAULT_PARTICLE_SPREAD, DEFAULT_START_PARTICLE_OPACITY, DEFAULT_START_PARTICLE_SIZE, DEFAULT_EMITTER_X, DEFAULT_EMITTER_Y, DEFAULT_EMITTER_SIZE, DEFAULT_EMITTER_ANGLE, DEFAULT_PARTICLE_SIZE_EASING, DEFAULT_PARTICLE_OPACITY_EASING, DEFAULT_ENABLE_REVEAL_ANIMATION, DEFAULT_REVEAL_DIRECTION, DEFAULT_TURBULENCE, DEFAULT_WIND_SPEED, DEFAULT_WIND_DIRECTION, DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME, DEFAULT_TEXT_COLOR} from '../../../constants';
 import {AppProps, FontState} from '../../../interfaces';
 
 // Mock Worker class
@@ -26,6 +26,7 @@ describe('TextSettings', () => {
       selectedMovementFunction: 'linear',
       particleRadius: 2,
       text: 'Test',
+      textColor: DEFAULT_TEXT_COLOR,
       particleColors: ['#000000'],
       font: undefined as any, // Cast to any to simulate undefined font
       animationDuration: DEFAULT_ANIMATION_DURATION,
@@ -90,6 +91,7 @@ describe('TextSettings', () => {
       selectedMovementFunction: '',
       particleRadius: 2,
       text: 'Test',
+      textColor: DEFAULT_TEXT_COLOR,
       particleColors: ['#000000'],
       font: mockFontState,
       animationDuration: DEFAULT_ANIMATION_DURATION,

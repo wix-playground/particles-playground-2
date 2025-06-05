@@ -1,4 +1,5 @@
 import {TextInput} from './Settings/TextSettings/TextInput';
+import {TextColorPicker} from './Settings/TextSettings/TextColorPicker';
 import {FontSettings} from './Settings/TextSettings/FontSettings';
 import {MultiColorPicker} from './Settings/MultiColorPicker';
 import {ParticleDensity} from './Settings/ParticleDensity';
@@ -60,6 +61,7 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
       {/* Text Settings Group */}
       <div className="settings-group-divider"></div>
       <TextInput />
+      <TextColorPicker />
       <FontSettings />
       <MultiColorPicker />
 

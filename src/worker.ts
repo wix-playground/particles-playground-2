@@ -26,6 +26,7 @@ import {
   DEFAULT_WIND_DIRECTION,
   DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME,
   EFFECT_PARTICLE_MIN_LIFETIME,
+  DEFAULT_TEXT_COLOR,
 } from './constants';
 import {
   Particle,
@@ -53,6 +54,7 @@ const defaultAppProps: AppProps = {
   startPosition: DEFAULT_START_POSITION,
   selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
   text: DEFAULT_PARTICLES_TEXT,
+  textColor: DEFAULT_TEXT_COLOR,
   font: DEFAULT_FONT_STATE,
   particleColors: DEFAULT_PARTICLE_COLORS,
   animationDuration: DEFAULT_ANIMATION_DURATION,
