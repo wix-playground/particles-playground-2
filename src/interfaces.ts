@@ -233,6 +233,7 @@ export interface AppProps {
   turbulence: number;
   windSpeed: number;
   windDirection: number;
+  maxEffectParticleLifetime: number;
 }
 
 export interface WorkerMessage<T extends Action = Action> {

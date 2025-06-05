@@ -97,6 +97,11 @@ export const getSettingsConfig = (): Record<string, SettingConfig> => ({
     max: 360,
     step: 1,
   },
+  maxEffectParticleLifetime: {
+    min: 500,
+    max: 3000,
+    step: 100,
+  },
 });
 
 export const getRandomValueForSetting = (settingName: string, override?: {max?: number; min?: number; step?: number}): number => {

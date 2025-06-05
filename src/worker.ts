@@ -24,7 +24,7 @@ import {
   DEFAULT_TURBULENCE,
   DEFAULT_WIND_SPEED,
   DEFAULT_WIND_DIRECTION,
-  EFFECT_PARTICLE_MAX_LIFETIME,
+  DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME,
   EFFECT_PARTICLE_MIN_LIFETIME,
 } from './constants';
 import {
@@ -73,6 +73,7 @@ const defaultAppProps: AppProps = {
   turbulence: DEFAULT_TURBULENCE,
   windSpeed: DEFAULT_WIND_SPEED,
   windDirection: DEFAULT_WIND_DIRECTION,
+  maxEffectParticleLifetime: DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME,
 };
 
 const workerState: {
@@ -481,7 +482,7 @@ const createEffectParticles = (
       vx,
       vy,
       startTime: requestAnimationFrameTime,
-      lifetime: EFFECT_PARTICLE_MIN_LIFETIME + Math.random() * (EFFECT_PARTICLE_MAX_LIFETIME - EFFECT_PARTICLE_MIN_LIFETIME),
+      lifetime: EFFECT_PARTICLE_MIN_LIFETIME + Math.random() * (workerState.appProps.maxEffectParticleLifetime - EFFECT_PARTICLE_MIN_LIFETIME),
       radius: workerState.appProps.particleRadius,
       opacity: 1,
       progress: effectParticleProgress,
@@ -514,7 +515,7 @@ const renderRevealAnimation = (
   );
 
   const elapsedTime = requestAnimationFrameTime - animationStartTime;
-  const textRevealDuration = workerState.appProps.animationDuration - EFFECT_PARTICLE_MAX_LIFETIME;
+  const textRevealDuration = workerState.appProps.animationDuration - workerState.appProps.maxEffectParticleLifetime;
   workerState.revealProgress = Math.min(
     1,
     elapsedTime / workerState.appProps.animationDuration

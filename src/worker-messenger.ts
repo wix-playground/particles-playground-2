@@ -57,6 +57,7 @@ export class WorkerMessenger {
   updateParticleOpacityEasing = (particleOpacityEasing: ParticleOpacityEasingType) => this.updateAppProps({particleOpacityEasing});
   updateRevealAnimation = (enableRevealAnimation: boolean) => this.updateAppProps({enableRevealAnimation});
   updateRevealDirection = (revealDirection: RevealDirection) => this.updateAppProps({revealDirection});
+  updateMaxEffectParticleLifetime = (maxEffectParticleLifetime: number) => this.updateAppProps({maxEffectParticleLifetime});
 
   updateSelectedMovementFunction = (selectedMovementFunction: string) =>
     this.updateAppProps({
