@@ -23,6 +23,7 @@ import {
   DEFAULT_REVEAL_DIRECTION,
   DEFAULT_TURBULENCE,
   DEFAULT_WIND_SPEED,
+  DEFAULT_WIND_DIRECTION,
   EFFECT_PARTICLE_MAX_LIFETIME,
   EFFECT_PARTICLE_MIN_LIFETIME,
 } from './constants';
@@ -71,6 +72,7 @@ const defaultAppProps: AppProps = {
   revealDirection: DEFAULT_REVEAL_DIRECTION,
   turbulence: DEFAULT_TURBULENCE,
   windSpeed: DEFAULT_WIND_SPEED,
+  windDirection: DEFAULT_WIND_DIRECTION,
 };
 
 const workerState: {
@@ -453,28 +455,12 @@ const createEffectParticles = (
   const effectParticleProgress = 0;
 
   for (let i = 0; i < numEffectParticles; i++) {
-    // Calculate base direction based on reveal direction
-    let baseVx = 0, baseVy = 0;
+    // Calculate base direction based on wind direction
+    const windDirectionRadians = (workerState.appProps.windDirection * Math.PI) / 180;
     const speed = workerState.appProps.windSpeed * (0.5 + Math.random() * 1); // Base speed with random variation
 
-    switch (workerState.appProps.revealDirection) {
-      case 'left-to-right':
-        baseVx = speed;
-        baseVy = 0;
-        break;
-      case 'right-to-left':
-        baseVx = -speed;
-        baseVy = 0;
-        break;
-      case 'top-to-bottom':
-        baseVx = 0;
-        baseVy = speed;
-        break;
-      case 'bottom-to-top':
-        baseVx = 0;
-        baseVy = -speed;
-        break;
-    }
+    const baseVx = Math.cos(windDirectionRadians) * speed;
+    const baseVy = Math.sin(windDirectionRadians) * speed;
 
     // Add turbulence
     const turbulence = workerState.appProps.turbulence;

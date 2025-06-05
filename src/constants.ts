@@ -22,6 +22,7 @@ export const DEFAULT_ENABLE_REVEAL_ANIMATION = false;
 export const DEFAULT_REVEAL_DIRECTION: RevealDirection = 'left-to-right';
 export const DEFAULT_TURBULENCE = 0.8;
 export const DEFAULT_WIND_SPEED = 1.0;
+export const DEFAULT_WIND_DIRECTION = 0; // 0 degrees (right direction)
 export const DEFAULT_FONT_STATE: FontState = {
     fontFamily: 'Arial',
     fontSize: 64,

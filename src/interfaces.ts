@@ -232,6 +232,7 @@ export interface AppProps {
   revealDirection: RevealDirection;
   turbulence: number;
   windSpeed: number;
+  windDirection: number;
 }
 
 export interface WorkerMessage<T extends Action = Action> {

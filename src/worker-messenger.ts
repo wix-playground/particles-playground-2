@@ -48,6 +48,7 @@ export class WorkerMessenger {
   updateParticleSpread = (particleSpread: number) => this.updateAppProps({particleSpread});
   updateTurbulence = (turbulence: number) => this.updateAppProps({turbulence});
   updateWindSpeed = (windSpeed: number) => this.updateAppProps({windSpeed});
+  updateWindDirection = (windDirection: number) => this.updateAppProps({windDirection});
   updateStartParticleOpacity = (startParticleOpacity: number) => this.updateAppProps({startParticleOpacity},);
   updateEndParticleOpacity = (endParticleOpacity: number) => this.updateAppProps({endParticleOpacity},);
   updateStartParticleSize = (startParticleSize: number) => this.updateAppProps({startParticleSize},);
