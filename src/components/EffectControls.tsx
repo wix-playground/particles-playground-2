@@ -12,6 +12,8 @@ import {ParticleOrigin} from './Settings/ParticleOrigin';
 import {ShuffleSettingsButton} from './ShuffleSettingsButton';
 import {MovementEasingDropdown} from './Settings/MovementEasingDropdown';
 import {RevealDirection} from './Settings/RevealDirection';
+import {Turbulence} from './Settings/Turbulence';
+import {WindSpeed} from './Settings/WindSpeed';
 import {useContext, useCallback} from 'react';
 import {AppContext} from '../contexts/AppContext';
 import {useWorkerActions} from '../hooks/useWorkerActions';
@@ -48,6 +50,8 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
         </div>
         {!appProps?.enableRevealAnimation && <MovementEasingDropdown />}
         {appProps?.enableRevealAnimation && <RevealDirection />}
+        {appProps?.enableRevealAnimation && <Turbulence />}
+        {appProps?.enableRevealAnimation && <WindSpeed />}
       </div>
 
       {/* Text Settings Group */}

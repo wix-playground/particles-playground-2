@@ -20,6 +20,8 @@ export const DEFAULT_PARTICLE_COLOR = '#ffffff';
 export const DEFAULT_PARTICLE_COLORS = ['#ff0000', '#00ff00', '#0000ff'];
 export const DEFAULT_ENABLE_REVEAL_ANIMATION = false;
 export const DEFAULT_REVEAL_DIRECTION: RevealDirection = 'left-to-right';
+export const DEFAULT_TURBULENCE = 0.8;
+export const DEFAULT_WIND_SPEED = 1.0;
 export const DEFAULT_FONT_STATE: FontState = {
     fontFamily: 'Arial',
     fontSize: 64,

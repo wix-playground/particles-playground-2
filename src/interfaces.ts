@@ -232,6 +232,8 @@ export interface AppProps {
   emitterAngle: number;
   enableRevealAnimation: boolean;
   revealDirection: RevealDirection;
+  turbulence: number;
+  windSpeed: number;
 }
 
 export interface WorkerMessage<T extends Action = Action> {

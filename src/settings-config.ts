@@ -11,6 +11,16 @@ export const getSettingsConfig = (): Record<string, SettingConfig> => ({
     max: 5,
     step: 0.5,
   },
+  turbulence: {
+    min: 0,
+    max: 4,
+    step: 0.1,
+  },
+  windSpeed: {
+    min: 0.1,
+    max: 3,
+    step: 0.1,
+  },
   startParticleSize: {
     min: 0.5,
     max: 10,

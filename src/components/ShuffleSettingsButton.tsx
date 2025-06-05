@@ -157,6 +157,8 @@ export const ShuffleSettingsButton = () => {
       emitterAngle: getRandomValueForSetting('emitterAngle'),
       revealDirection: getRandomElement(revealDirections),
       enableRevealAnimation: revealAnimation,
+      turbulence: getRandomValueForSetting('turbulence'),
+      windSpeed: getRandomValueForSetting('windSpeed'),
     });
   }, [workerActions]);
 

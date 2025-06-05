@@ -21,6 +21,8 @@ import {
   DEFAULT_EMITTER_ANGLE,
   DEFAULT_ENABLE_REVEAL_ANIMATION,
   DEFAULT_REVEAL_DIRECTION,
+  DEFAULT_TURBULENCE,
+  DEFAULT_WIND_SPEED,
   EFFECT_PARTICLE_MAX_LIFETIME,
   EFFECT_PARTICLE_MIN_LIFETIME,
 } from './constants';
@@ -77,6 +79,8 @@ const defaultAppProps: AppProps = {
   emitterAngle: DEFAULT_EMITTER_ANGLE,
   enableRevealAnimation: DEFAULT_ENABLE_REVEAL_ANIMATION,
   revealDirection: DEFAULT_REVEAL_DIRECTION,
+  turbulence: DEFAULT_TURBULENCE,
+  windSpeed: DEFAULT_WIND_SPEED,
 };
 
 const workerState: {
@@ -461,7 +465,7 @@ const createEffectParticles = (
   for (let i = 0; i < numEffectParticles; i++) {
     // Calculate base direction based on reveal direction
     let baseVx = 0, baseVy = 0;
-    const speed = 0.5 + Math.random() * 1; // Base speed
+    const speed = workerState.appProps.windSpeed * (0.5 + Math.random() * 1); // Base speed with random variation
 
     switch (workerState.appProps.revealDirection) {
       case 'left-to-right':
@@ -483,7 +487,7 @@ const createEffectParticles = (
     }
 
     // Add turbulence
-    const turbulence = 0.8;
+    const turbulence = workerState.appProps.turbulence;
     const vx = baseVx + (Math.random() - 0.5) * turbulence;
     const vy = baseVy + (Math.random() - 0.5) * turbulence;
 
