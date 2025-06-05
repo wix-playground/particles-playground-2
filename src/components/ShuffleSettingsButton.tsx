@@ -133,7 +133,6 @@ export const ShuffleSettingsButton = () => {
       text: randomText,
       particleColors: randomColors,
       selectedMovementFunction: randomMovementKey,
-      movementFunctionCode: movementOptions[randomMovementKey].code,
       startPosition: randomStartPosition,
       font: {
         fontFamily: randomFont,

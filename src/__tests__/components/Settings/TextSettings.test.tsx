@@ -23,8 +23,7 @@ describe('TextSettings', () => {
     // Create a mock AppProps with undefined font
     const mockAppProps: AppProps = {
       startPosition: 'random',
-      movementFunctionCode: '',
-      selectedMovementFunction: '',
+      selectedMovementFunction: 'linear',
       particleRadius: 2,
       text: 'Test',
       particleColors: ['#000000'],
@@ -86,7 +85,6 @@ describe('TextSettings', () => {
     }
     const mockAppProps: AppProps = {
       startPosition: 'random',
-      movementFunctionCode: '',
       selectedMovementFunction: '',
       particleRadius: 2,
       text: 'Test',

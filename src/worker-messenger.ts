@@ -57,10 +57,9 @@ export class WorkerMessenger {
   updateRevealAnimation = (enableRevealAnimation: boolean) => this.updateAppProps({enableRevealAnimation});
   updateRevealDirection = (revealDirection: RevealDirection) => this.updateAppProps({revealDirection});
 
-  updateSelectedMovementFunction = (selectedMovementFunction: string, movementFunctionCode?: string) =>
+  updateSelectedMovementFunction = (selectedMovementFunction: string) =>
     this.updateAppProps({
-      selectedMovementFunction,
-      ...(movementFunctionCode !== undefined && {movementFunctionCode})
+      selectedMovementFunction
     });
 
   // Lifecycle methods

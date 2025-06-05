@@ -40,27 +40,17 @@ import {
   DrawableParticle,
   EffectParticle,
 } from './interfaces';
-import {getPredefinedMovementOptions} from './movement';
+import {getMovementFunction} from './movementFunctions';
 import {
   getStartCoordinatesConfig,
   getValidImageBlocks,
   getColorFromProgress,
 } from './utils';
 
-let customMovementFunction: (
-  particle: Particle,
-  animationStartTime: number,
-  requestAnimationFrameTime: number,
-  canvasDimensions: Dimensions,
-  animationDuration: number
-) => void;
-
 const defaultAppProps: AppProps = {
   particleRadius: DEFAULT_PARTICLE_RADIUS,
   startPosition: DEFAULT_START_POSITION,
   selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
-  movementFunctionCode:
-    getPredefinedMovementOptions()[DEFAULT_MOVEMENT_FUNCTION_KEY].code,
   text: DEFAULT_PARTICLES_TEXT,
   font: DEFAULT_FONT_STATE,
   particleColors: DEFAULT_PARTICLE_COLORS,
@@ -674,16 +664,20 @@ const renderParticles = (
     const individualParticleProgress = Math.max(0, Math.min(1, elapsedTimeForParticle / particle.lifetime));
 
     // Update particles position by calling your movement function here:
-    customMovementFunction(
-      particle,
-      animationStartTime,
-      requestAnimationFrameTime,
-      {
-        width: workerState.mainCanvas!.width,
-        height: workerState.mainCanvas!.height,
-      },
-      workerState.appProps.animationDuration
-    );
+    const movementFunction = getMovementFunction(workerState.appProps.selectedMovementFunction);
+    if (movementFunction) {
+      const newPosition = movementFunction(
+        {
+          targetCoordinates: {x: particle.targetX, y: particle.targetY},
+          initialCoordinates: {x: particle.initialX, y: particle.initialY},
+          progress: workerState.revealProgress
+        }
+      );
+
+      // Update particle position with the returned coordinates
+      particle.x = newPosition.x;
+      particle.y = newPosition.y;
+    }
 
     const blendFactor = getTransitionBlendFactor(particle, workerState.revealProgress);
     const currentOpacity = getCurrentParticleOpacity(individualParticleProgress);
@@ -780,9 +774,6 @@ const handlePlay = () => {
   // Clear any existing effect particles
   workerState.effectParticles = [];
 
-  customMovementFunction = new Function(
-    workerState.appProps.movementFunctionCode
-  )();
   const startTime = performance.now();
   workerState.revealProgress = 0;
 

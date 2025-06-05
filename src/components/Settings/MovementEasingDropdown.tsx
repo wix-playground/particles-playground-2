@@ -24,10 +24,7 @@ export const MovementEasingDropdown = () => {
     (event: React.ChangeEvent<HTMLSelectElement>) => {
       const selectedOption = event.target.value;
       if (workerActions && predefinedMovementOptions[selectedOption]) {
-        workerActions.updateSelectedMovementFunction(
-          selectedOption,
-          predefinedMovementOptions[selectedOption].code
-        );
+        workerActions.updateSelectedMovementFunction(selectedOption);
       }
     },
     [predefinedMovementOptions, workerActions]
@@ -43,7 +40,7 @@ export const MovementEasingDropdown = () => {
       >
         {movementOptionArray.map((option) => (
           <option key={option.name} value={option.name}>
-            {option.name}
+            {option.displayName}
           </option>
         ))}
       </select>

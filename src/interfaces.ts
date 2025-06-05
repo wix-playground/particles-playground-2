@@ -112,8 +112,7 @@ export const getResetMessage = () => ({
 });
 
 export interface UpdateSelectedMovementFunctionPayload {
-  key?: string;
-  movementFunctionCode?: string;
+  key: string;
 }
 
 export const getUpdateBitmapMessage = (payload: MessagePayloadMap[Action.UPDATE_BITMAP]) => ({
@@ -213,7 +212,6 @@ export interface AppProps {
   particleRadius: number;
   startPosition: StartPositionType;
   selectedMovementFunction: string;
-  movementFunctionCode: string;
   text: string;
   font: FontState;
   particleColors: string[];
