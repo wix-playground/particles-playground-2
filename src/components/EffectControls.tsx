@@ -17,6 +17,7 @@ import {Turbulence} from './Settings/Turbulence';
 import {WindSpeed} from './Settings/WindSpeed';
 import {WindDirection} from './Settings/WindDirection';
 import {MaxEffectParticleLifetime} from './Settings/MaxEffectParticleLifetime';
+import {EffectParticleCount} from './Settings/EffectParticleCount';
 import {useContext, useCallback} from 'react';
 import {AppContext} from '../contexts/AppContext';
 import {useWorkerActions} from '../hooks/useWorkerActions';
@@ -104,6 +105,7 @@ export const EffectControls = ({onPlay}: EffectControlsProps) => {
       {!appProps?.enableRevealAnimation && <ParticleDelay />}
       <AnimationDuration />
       {appProps?.enableRevealAnimation && <MaxEffectParticleLifetime />}
+      {appProps?.enableRevealAnimation && <EffectParticleCount />}
 
       {/* Actions Group */}
       <div className="settings-group-divider"></div>

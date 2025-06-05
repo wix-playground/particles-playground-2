@@ -2,7 +2,7 @@ import {render, screen} from '@testing-library/react';
 import {TextSettings} from '../../../components/Settings/TextSettings';
 import {AppContext} from '../../../contexts/AppContext';
 import {WorkerContext} from '../../../contexts/WorkerContext';
-import {DATA_TEST_IDS, DEFAULT_ANIMATION_DURATION, DEFAULT_DELAY, DEFAULT_END_PARTICLE_OPACITY, DEFAULT_END_PARTICLE_SIZE, DEFAULT_FONT_STATE, DEFAULT_PARTICLE_SPREAD, DEFAULT_START_PARTICLE_OPACITY, DEFAULT_START_PARTICLE_SIZE, DEFAULT_EMITTER_X, DEFAULT_EMITTER_Y, DEFAULT_EMITTER_SIZE, DEFAULT_EMITTER_ANGLE, DEFAULT_PARTICLE_SIZE_EASING, DEFAULT_PARTICLE_OPACITY_EASING, DEFAULT_ENABLE_REVEAL_ANIMATION, DEFAULT_REVEAL_DIRECTION, DEFAULT_TURBULENCE, DEFAULT_WIND_SPEED, DEFAULT_WIND_DIRECTION, DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME, DEFAULT_TEXT_COLOR} from '../../../constants';
+import {DATA_TEST_IDS, DEFAULT_FONT_STATE, DEFAULT_APP_PROPS} from '../../../constants';
 import {AppProps, FontState} from '../../../interfaces';
 
 // Mock Worker class
@@ -18,37 +18,20 @@ class MockWorker {
 // Set global Worker class
 (global as any).Worker = MockWorker;
 
+// Helper function to create mock AppProps with overrides
+const getMockAppProps = (override: Partial<AppProps> = {}): AppProps => {
+  return {
+    ...DEFAULT_APP_PROPS,
+    ...override,
+  };
+};
+
 describe('TextSettings', () => {
   test('renders with default font state when appProps.font is undefined', () => {
     // Create a mock AppProps with undefined font
-    const mockAppProps: AppProps = {
-      startPosition: 'random',
-      selectedMovementFunction: 'linear',
-      particleRadius: 2,
-      text: 'Test',
-      textColor: DEFAULT_TEXT_COLOR,
-      particleColors: ['#000000'],
+    const mockAppProps = getMockAppProps({
       font: undefined as any, // Cast to any to simulate undefined font
-      animationDuration: DEFAULT_ANIMATION_DURATION,
-      particleSpread: DEFAULT_PARTICLE_SPREAD,
-      startParticleOpacity: DEFAULT_START_PARTICLE_OPACITY,
-      endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
-      startParticleSize: DEFAULT_START_PARTICLE_SIZE,
-      endParticleSize: DEFAULT_END_PARTICLE_SIZE,
-      particleSizeEasing: DEFAULT_PARTICLE_SIZE_EASING,
-      particleOpacityEasing: DEFAULT_PARTICLE_OPACITY_EASING,
-      delay: DEFAULT_DELAY,
-      emitterX: DEFAULT_EMITTER_X,
-      emitterY: DEFAULT_EMITTER_Y,
-      emitterSize: DEFAULT_EMITTER_SIZE,
-      emitterAngle: DEFAULT_EMITTER_ANGLE,
-      enableRevealAnimation: DEFAULT_ENABLE_REVEAL_ANIMATION,
-      revealDirection: DEFAULT_REVEAL_DIRECTION,
-      turbulence: DEFAULT_TURBULENCE,
-      windSpeed: DEFAULT_WIND_SPEED,
-      windDirection: DEFAULT_WIND_DIRECTION,
-      maxEffectParticleLifetime: DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME,
-    };
+    });
 
     // Create mock worker
     const mockWorker = new MockWorker() as unknown as Worker;
@@ -86,34 +69,9 @@ describe('TextSettings', () => {
       fontSize: 96,
       fontFamily: "UnifrakturMaguntia",
     }
-    const mockAppProps: AppProps = {
-      startPosition: 'random',
-      selectedMovementFunction: '',
-      particleRadius: 2,
-      text: 'Test',
-      textColor: DEFAULT_TEXT_COLOR,
-      particleColors: ['#000000'],
+    const mockAppProps = getMockAppProps({
       font: mockFontState,
-      animationDuration: DEFAULT_ANIMATION_DURATION,
-      particleSpread: DEFAULT_PARTICLE_SPREAD,
-      startParticleOpacity: DEFAULT_START_PARTICLE_OPACITY,
-      endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
-      startParticleSize: DEFAULT_START_PARTICLE_SIZE,
-      endParticleSize: DEFAULT_END_PARTICLE_SIZE,
-      particleSizeEasing: DEFAULT_PARTICLE_SIZE_EASING,
-      particleOpacityEasing: DEFAULT_PARTICLE_OPACITY_EASING,
-      delay: DEFAULT_DELAY,
-      emitterX: DEFAULT_EMITTER_X,
-      emitterY: DEFAULT_EMITTER_Y,
-      emitterSize: DEFAULT_EMITTER_SIZE,
-      emitterAngle: DEFAULT_EMITTER_ANGLE,
-      enableRevealAnimation: DEFAULT_ENABLE_REVEAL_ANIMATION,
-      revealDirection: DEFAULT_REVEAL_DIRECTION,
-      turbulence: DEFAULT_TURBULENCE,
-      windSpeed: DEFAULT_WIND_SPEED,
-      windDirection: DEFAULT_WIND_DIRECTION,
-      maxEffectParticleLifetime: DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME,
-    };
+    });
 
     // Create mock worker
     const mockWorker = new MockWorker() as unknown as Worker;

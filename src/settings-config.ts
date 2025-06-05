@@ -102,6 +102,16 @@ export const getSettingsConfig = (): Record<string, SettingConfig> => ({
     max: 3000,
     step: 100,
   },
+  minEffectParticles: {
+    min: 1,
+    max: 10,
+    step: 1,
+  },
+  maxEffectParticles: {
+    min: 1,
+    max: 10,
+    step: 1,
+  },
 });
 
 export const getRandomValueForSetting = (settingName: string, override?: {max?: number; min?: number; step?: number}): number => {

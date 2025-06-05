@@ -162,6 +162,8 @@ export const ShuffleSettingsButton = () => {
       windSpeed: getRandomValueForSetting('windSpeed'),
       windDirection: getRandomValueForSetting('windDirection'),
       maxEffectParticleLifetime: getRandomValueForSetting('maxEffectParticleLifetime'),
+      minEffectParticles: getRandomValueForSetting('minEffectParticles'),
+      maxEffectParticles: getRandomValueForSetting('maxEffectParticles'),
     });
   }, [workerActions]);
 

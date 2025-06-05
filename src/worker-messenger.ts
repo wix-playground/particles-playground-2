@@ -59,6 +59,8 @@ export class WorkerMessenger {
   updateRevealAnimation = (enableRevealAnimation: boolean) => this.updateAppProps({enableRevealAnimation});
   updateRevealDirection = (revealDirection: RevealDirection) => this.updateAppProps({revealDirection});
   updateMaxEffectParticleLifetime = (maxEffectParticleLifetime: number) => this.updateAppProps({maxEffectParticleLifetime});
+  updateMinEffectParticles = (minEffectParticles: number) => this.updateAppProps({minEffectParticles});
+  updateMaxEffectParticles = (maxEffectParticles: number) => this.updateAppProps({maxEffectParticles});
 
   updateSelectedMovementFunction = (selectedMovementFunction: string) =>
     this.updateAppProps({

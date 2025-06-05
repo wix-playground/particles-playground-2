@@ -1,4 +1,4 @@
-import {FontState, StartPositionType, ParticleSizeEasingType, ParticleOpacityEasingType} from './interfaces';
+import {FontState, StartPositionType, ParticleSizeEasingType, ParticleOpacityEasingType, AppProps} from './interfaces';
 
 export const DEFAULT_PARTICLE_RADIUS = 5;
 export const DEFAULT_PARTICLE_SPREAD = 3;
@@ -125,3 +125,37 @@ export const EFFECT_PARTICLE_MAX_LIFETIME = 1000;
 export const EFFECT_PARTICLE_MIN_LIFETIME = 500;
 export const DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME = 1000;
 export const DEFAULT_TEXT_COLOR = '#FFFFFF';
+export const DEFAULT_MIN_EFFECT_PARTICLES = 3;
+export const DEFAULT_MAX_EFFECT_PARTICLES = 5;
+
+
+export const DEFAULT_APP_PROPS: AppProps = {
+    particleRadius: DEFAULT_PARTICLE_RADIUS,
+    startPosition: DEFAULT_START_POSITION,
+    selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
+    text: DEFAULT_PARTICLES_TEXT,
+    textColor: DEFAULT_TEXT_COLOR,
+    font: DEFAULT_FONT_STATE,
+    particleColors: DEFAULT_PARTICLE_COLORS,
+    animationDuration: DEFAULT_ANIMATION_DURATION,
+    particleSpread: DEFAULT_PARTICLE_SPREAD,
+    startParticleOpacity: DEFAULT_START_PARTICLE_OPACITY,
+    endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
+    startParticleSize: DEFAULT_START_PARTICLE_SIZE,
+    endParticleSize: DEFAULT_END_PARTICLE_SIZE,
+    particleSizeEasing: DEFAULT_PARTICLE_SIZE_EASING,
+    particleOpacityEasing: DEFAULT_PARTICLE_OPACITY_EASING,
+    delay: DEFAULT_DELAY,
+    emitterX: DEFAULT_EMITTER_X,
+    emitterY: DEFAULT_EMITTER_Y,
+    emitterSize: DEFAULT_EMITTER_SIZE,
+    emitterAngle: DEFAULT_EMITTER_ANGLE,
+    enableRevealAnimation: DEFAULT_ENABLE_REVEAL_ANIMATION,
+    revealDirection: DEFAULT_REVEAL_DIRECTION,
+    turbulence: DEFAULT_TURBULENCE,
+    windSpeed: DEFAULT_WIND_SPEED,
+    windDirection: DEFAULT_WIND_DIRECTION,
+    maxEffectParticleLifetime: DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME,
+    minEffectParticles: DEFAULT_MIN_EFFECT_PARTICLES,
+    maxEffectParticles: DEFAULT_MAX_EFFECT_PARTICLES,
+};

@@ -1,32 +1,7 @@
 import {
-  DEFAULT_FONT_STATE,
-  DEFAULT_MOVEMENT_FUNCTION_KEY,
   DEFAULT_PARTICLE_COLOR,
-  DEFAULT_PARTICLE_COLORS,
-  DEFAULT_PARTICLE_RADIUS,
-  DEFAULT_PARTICLES_TEXT,
-  DEFAULT_START_POSITION,
-  DEFAULT_ANIMATION_DURATION,
-  DEFAULT_PARTICLE_SPREAD,
-  DEFAULT_START_PARTICLE_OPACITY,
-  DEFAULT_END_PARTICLE_OPACITY,
-  DEFAULT_START_PARTICLE_SIZE,
-  DEFAULT_END_PARTICLE_SIZE,
-  DEFAULT_PARTICLE_SIZE_EASING,
-  DEFAULT_PARTICLE_OPACITY_EASING,
-  DEFAULT_DELAY,
-  DEFAULT_EMITTER_X,
-  DEFAULT_EMITTER_Y,
-  DEFAULT_EMITTER_SIZE,
-  DEFAULT_EMITTER_ANGLE,
-  DEFAULT_ENABLE_REVEAL_ANIMATION,
-  DEFAULT_REVEAL_DIRECTION,
-  DEFAULT_TURBULENCE,
-  DEFAULT_WIND_SPEED,
-  DEFAULT_WIND_DIRECTION,
-  DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME,
+  DEFAULT_APP_PROPS,
   EFFECT_PARTICLE_MIN_LIFETIME,
-  DEFAULT_TEXT_COLOR,
 } from './constants';
 import {
   Particle,
@@ -48,35 +23,6 @@ import {
   getValidImageBlocks,
   getColorFromProgress,
 } from './utils';
-
-const defaultAppProps: AppProps = {
-  particleRadius: DEFAULT_PARTICLE_RADIUS,
-  startPosition: DEFAULT_START_POSITION,
-  selectedMovementFunction: DEFAULT_MOVEMENT_FUNCTION_KEY,
-  text: DEFAULT_PARTICLES_TEXT,
-  textColor: DEFAULT_TEXT_COLOR,
-  font: DEFAULT_FONT_STATE,
-  particleColors: DEFAULT_PARTICLE_COLORS,
-  animationDuration: DEFAULT_ANIMATION_DURATION,
-  particleSpread: DEFAULT_PARTICLE_SPREAD,
-  startParticleOpacity: DEFAULT_START_PARTICLE_OPACITY,
-  endParticleOpacity: DEFAULT_END_PARTICLE_OPACITY,
-  startParticleSize: DEFAULT_START_PARTICLE_SIZE,
-  endParticleSize: DEFAULT_END_PARTICLE_SIZE,
-  particleSizeEasing: DEFAULT_PARTICLE_SIZE_EASING,
-  particleOpacityEasing: DEFAULT_PARTICLE_OPACITY_EASING,
-  delay: DEFAULT_DELAY,
-  emitterX: DEFAULT_EMITTER_X,
-  emitterY: DEFAULT_EMITTER_Y,
-  emitterSize: DEFAULT_EMITTER_SIZE,
-  emitterAngle: DEFAULT_EMITTER_ANGLE,
-  enableRevealAnimation: DEFAULT_ENABLE_REVEAL_ANIMATION,
-  revealDirection: DEFAULT_REVEAL_DIRECTION,
-  turbulence: DEFAULT_TURBULENCE,
-  windSpeed: DEFAULT_WIND_SPEED,
-  windDirection: DEFAULT_WIND_DIRECTION,
-  maxEffectParticleLifetime: DEFAULT_MAX_EFFECT_PARTICLE_LIFETIME,
-};
 
 const workerState: {
   // Internal worker state
@@ -105,7 +51,7 @@ const workerState: {
   validBlocks: null,
   blockHeight: 0,
   blockWidth: 0,
-  appProps: defaultAppProps,
+  appProps: DEFAULT_APP_PROPS,
   revealProgress: 0,
   effectParticles: [],
 };
@@ -132,7 +78,7 @@ const handleInitialize = (data: InitializeMessagePayload) => {
   workerState.imageBitmap = _imageBitmap;
 
   if (Object.keys(appProps).length) {
-    workerState.appProps = {...defaultAppProps, ...appProps};
+    workerState.appProps = {...DEFAULT_APP_PROPS, ...appProps};
   }
 
 
@@ -462,7 +408,8 @@ const createEffectParticles = (
   requestAnimationFrameTime: number
 ): EffectParticle[] => {
   const effectParticles: EffectParticle[] = [];
-  const numEffectParticles = 3 + Math.floor(Math.random() * 3); // 3-5 particles
+  const range = workerState.appProps.maxEffectParticles - workerState.appProps.minEffectParticles;
+  const numEffectParticles = workerState.appProps.minEffectParticles + Math.floor(Math.random() * (range + 1));
   const effectParticleProgress = 0;
 
   for (let i = 0; i < numEffectParticles; i++) {
