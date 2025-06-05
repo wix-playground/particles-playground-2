@@ -269,26 +269,34 @@ const shouldParticleBeRevealed = (
   revealDirection: RevealDirection,
   textBoundaries: ReturnType<typeof getTextBoundaries>
 ): boolean => {
-  switch (revealDirection) {
-    case 'left-to-right': {
-      const revealXPosition = textBoundaries.minX + (revealProgress * textBoundaries.width);
-      return particle.targetX <= revealXPosition;
-    }
-    case 'right-to-left': {
-      const revealXPosition = textBoundaries.maxX - (revealProgress * textBoundaries.width);
-      return particle.targetX >= revealXPosition;
-    }
-    case 'top-to-bottom': {
-      const revealYPosition = textBoundaries.minY + (revealProgress * textBoundaries.height);
-      return particle.targetY <= revealYPosition;
-    }
-    case 'bottom-to-top': {
-      const revealYPosition = textBoundaries.maxY - (revealProgress * textBoundaries.height);
-      return particle.targetY >= revealYPosition;
-    }
-    default:
-      return true; // fallback
-  }
+  // Convert degrees to radians for mathematical calculations
+  const angleInRadians = (revealDirection * Math.PI) / 180;
+
+  // Calculate the center of the text boundaries
+  const centerX = textBoundaries.minX + textBoundaries.width / 2;
+  const centerY = textBoundaries.minY + textBoundaries.height / 2;
+
+  // Calculate particle position relative to center
+  const particleCenterX = particle.targetX + workerState.appProps.particleRadius / 2;
+  const particleCenterY = particle.targetY + workerState.appProps.particleRadius / 2;
+
+  const relativeX = particleCenterX - centerX;
+  const relativeY = particleCenterY - centerY;
+
+  // Project the particle position onto the reveal direction vector
+  const projectionDistance = relativeX * Math.cos(angleInRadians) + relativeY * Math.sin(angleInRadians);
+
+  // Calculate the maximum projection distance in the text boundaries
+  const maxProjectionDistance = Math.max(
+    Math.abs(textBoundaries.width / 2 * Math.cos(angleInRadians)) + Math.abs(textBoundaries.height / 2 * Math.sin(angleInRadians)),
+    Math.abs(textBoundaries.width / 2 * Math.cos(angleInRadians)) - Math.abs(textBoundaries.height / 2 * Math.sin(angleInRadians))
+  );
+
+  // Calculate the reveal threshold based on progress
+  const revealThreshold = -maxProjectionDistance + (revealProgress * 2 * maxProjectionDistance);
+
+  // Particle should be revealed if its projection distance is less than the threshold
+  return projectionDistance <= revealThreshold;
 };
 
 // Add function to calculate transition blend factor

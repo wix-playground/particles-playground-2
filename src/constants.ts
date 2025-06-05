@@ -1,4 +1,4 @@
-import {FontState, StartPositionType, ParticleSizeEasingType, ParticleOpacityEasingType, RevealDirection} from './interfaces';
+import {FontState, StartPositionType, ParticleSizeEasingType, ParticleOpacityEasingType} from './interfaces';
 
 export const DEFAULT_PARTICLE_RADIUS = 5;
 export const DEFAULT_PARTICLE_SPREAD = 3;
@@ -19,7 +19,7 @@ export const DEFAULT_PARTICLES_TEXT = 'WIX 🤠\nParticles!';
 export const DEFAULT_PARTICLE_COLOR = '#ffffff';
 export const DEFAULT_PARTICLE_COLORS = ['#ff0000', '#00ff00', '#0000ff'];
 export const DEFAULT_ENABLE_REVEAL_ANIMATION = false;
-export const DEFAULT_REVEAL_DIRECTION: RevealDirection = 'left-to-right';
+export const DEFAULT_REVEAL_DIRECTION = 0; // 0 degrees = left-to-right
 export const DEFAULT_TURBULENCE = 0.8;
 export const DEFAULT_WIND_SPEED = 1.0;
 export const DEFAULT_WIND_DIRECTION = 0; // 0 degrees (right direction)

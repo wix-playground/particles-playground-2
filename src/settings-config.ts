@@ -26,6 +26,11 @@ export const getSettingsConfig = (): Record<string, SettingConfig> => ({
     max: 360,
     step: 1,
   },
+  revealDirection: {
+    min: 0,
+    max: 360,
+    step: 1,
+  },
   startParticleSize: {
     min: 0.5,
     max: 10,

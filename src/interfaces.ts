@@ -206,7 +206,7 @@ export type ParticleOpacityEasingType =
   | 'linear'
   | 'multiPulse';
 
-export type RevealDirection = 'left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top';
+export type RevealDirection = number; // 0-360 degrees
 
 export interface AppProps {
   particleRadius: number;
